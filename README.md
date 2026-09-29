@@ -48,4 +48,4 @@ Toda la documentación técnica de análisis, diagnóstico y maquetado desarroll
   * [Árbol de Problemas](./docs/arbol-de-problemas.png)
   * [Árbol de Objetivos](./docs/arbol-de-objetivos.png)
 
-> **Nota de Créditos (1er al 3er Bimestre):** La fase de diagnóstico, investigación, MML, requerimientos y maquetados fue realizada en conjunto por el equipo original: Arce Thiago, Cabrera Ulises, Denuble Franco y González Manuel.
+> **Nota** (1er al 3er Bimestre):** La fase de diagnóstico, investigación, MML, requerimientos y maquetados fue realizada en conjunto por el equipo original: Arce Thiago, Cabrera Ulises, Denuble Franco y González Manuel.
