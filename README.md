@@ -34,7 +34,7 @@ En esta etapa correspondiente al **4° Bimestre**, el proyecto avanza en la prog
 ---
 
 ## 4. Documentación y Antecedentes (Carpeta V1 - `/docs`)
-Toda la documentación técnica de análisis, diagnóstico y maquetado desarrollada entre el **1er y 3er Bimestre** se encuentra organizada en [`/docs`](./docs):
+Toda la documentación técnica de análisis, diagnóstico y maquetado desarrollada durante el **3er Bimestre** se encuentra organizada en [`/docs`](./docs):
 
 * 📀 **[Defensa Oral](https://canva.link/ecw1bmcqn1ekxgu):** Diapositivas visuales para la defensa oral del tema.
 * 📊 **[Matriz de Marco Lógico (MML)](./docs/marco-logico.xlsx):** Planificación sintética de jerarquía de objetivos, indicadores, medios de verificación y supuestos.
@@ -48,4 +48,4 @@ Toda la documentación técnica de análisis, diagnóstico y maquetado desarroll
   * [Árbol de Problemas](./docs/arbol-de-problemas.png)
   * [Árbol de Objetivos](./docs/arbol-de-objetivos.png)
 
-> **Nota* (1er al 3er Bimestre):** La fase de diagnóstico, investigación, MML, requerimientos y maquetados fue realizada en conjunto por el equipo original: Arce Thiago, Cabrera Ulises, Denuble Franco y González Manuel.
+> **Nota de Créditos (3er Bimestre):** La fase de diagnóstico, investigación, MML, requerimientos y maquetados de la Carpeta V1 fue realizada durante el 3er Bimestre por el equipo original: Arce Thiago, Cabrera Ulises, Denuble Franco y González Manuel.
