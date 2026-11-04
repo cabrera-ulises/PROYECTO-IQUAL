@@ -1,31 +1,884 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>800</width>
-    <height>600</height>
-   </rect>
-  </property>
-  <property name="windowTitle">
-   <string>MainWindow</string>
-  </property>
-  <widget class="QWidget" name="centralwidget"/>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>800</width>
-     <height>22</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QStatusBar" name="statusbar"/>
- </widget>
- <resources/>
- <connections/>
+<class>MainWindow</class>
+<widget class="QMainWindow" name="MainWindow">
+<property name="geometry"><rect><x>0</x><y>0</y><width>800</width><height>600</height></rect></property>
+<property name="windowTitle"><string>IQUAL - Sistema de Gestión Escolar</string></property>
+<property name="styleSheet"><string>background-color: #F8FAFC; color: #1E293B; font: 12pt;</string></property>
+<widget class="QWidget" name="centralwidget">
+<widget class="QStackedWidget" name="stackedWidget">
+<property name="geometry"><rect><x>10</x><y>10</y><width>780</width><height>580</height></rect></property>
+<property name="currentIndex"><number>0</number></property>
+<widget class="QWidget" name="page_0_landing">
+<widget class="QLabel" name="lblLogo">
+<property name="geometry"><rect><x>190</x><y>100</y><width>400</width><height>100</height></rect></property>
+<property name="styleSheet"><string>color: #102542; font: bold 40pt;</string></property>
+<property name="text"><string>IQUAL</string></property>
+<property name="alignment"><set>Qt::AlignCenter</set></property>
+</widget>
+<widget class="QLabel" name="lblSlogan">
+<property name="geometry"><rect><x>90</x><y>210</y><width>600</width><height>30</height></rect></property>
+<property name="styleSheet"><string>color: #1E293B;</string></property>
+<property name="text"><string>Tu escuela, en un solo lugar</string></property>
+<property name="alignment"><set>Qt::AlignCenter</set></property>
+</widget>
+<widget class="QPushButton" name="btnLandingLogin">
+<property name="geometry"><rect><x>290</x><y>280</y><width>200</width><height>50</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; font: bold; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Iniciar Sesión</string></property>
+<property name="toolTip"><string>Entrá con tu usuario y contraseña</string></property>
+</widget>
+<widget class="QPushButton" name="btnLandingRegister">
+<property name="geometry"><rect><x>290</x><y>350</y><width>200</width><height>50</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; font: bold; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Registrarse</string></property>
+<property name="toolTip"><string>Creá tu cuenta de IQUAL</string></property>
+</widget>
+</widget>
+<widget class="QWidget" name="page_1_acceso">
+<widget class="QPushButton" name="btnVolverAcceso">
+<property name="geometry"><rect><x>20</x><y>20</y><width>100</width><height>40</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Volver</string></property>
+<property name="toolTip"><string>Volver al inicio</string></property>
+</widget>
+<widget class="QLabel" name="lblTituloAcceso">
+<property name="geometry"><rect><x>190</x><y>20</y><width>400</width><height>40</height></rect></property>
+<property name="styleSheet"><string>color: #102542; font: bold 18pt;</string></property>
+<property name="text"><string>Acceso</string></property>
+<property name="alignment"><set>Qt::AlignCenter</set></property>
+</widget>
+<widget class="QTabWidget" name="tabAcceso">
+<property name="geometry"><rect><x>90</x><y>80</y><width>600</width><height>340</height></rect></property>
+<property name="styleSheet"><string>background-color: #F8FAFC; color: #1E293B;</string></property>
+<property name="currentIndex"><number>0</number></property>
+<widget class="QWidget" name="tabLogin">
+<attribute name="title"><string>Iniciar sesión</string></attribute>
+<widget class="QLineEdit" name="leUsuario">
+<property name="geometry"><rect><x>150</x><y>40</y><width>300</width><height>40</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="placeholderText"><string>Usuario</string></property>
+<property name="toolTip"><string>Escribí tu usuario y apretá Enter para seguir</string></property>
+</widget>
+<widget class="QLineEdit" name="leClave">
+<property name="geometry"><rect><x>150</x><y>100</y><width>300</width><height>40</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="placeholderText"><string>Contraseña</string></property>
+<property name="toolTip"><string>Escribí tu contraseña y apretá Enter para ingresar</string></property>
+<property name="echoMode"><enum>QLineEdit::Password</enum></property>
+</widget>
+<widget class="QPushButton" name="btnLoginIngresar">
+<property name="geometry"><rect><x>150</x><y>170</y><width>300</width><height>50</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; font: bold; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Ingresar</string></property>
+<property name="toolTip"><string>Ingresar al sistema</string></property>
+</widget>
+</widget>
+<widget class="QWidget" name="tabRegistro">
+<attribute name="title"><string>Registrarse</string></attribute>
+<widget class="QLineEdit" name="leRegNombre">
+<property name="geometry"><rect><x>20</x><y>15</y><width>265</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="placeholderText"><string>Nombre y apellido</string></property>
+<property name="toolTip"><string>Por ejemplo: Juan Pérez</string></property>
+</widget>
+<widget class="QLineEdit" name="leRegUsuario">
+<property name="geometry"><rect><x>300</x><y>15</y><width>265</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="placeholderText"><string>Usuario (mínimo 3 letras)</string></property>
+<property name="toolTip"><string>Con este usuario vas a ingresar</string></property>
+</widget>
+<widget class="QLineEdit" name="leRegClave">
+<property name="geometry"><rect><x>20</x><y>60</y><width>265</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="placeholderText"><string>Contraseña (mínimo 4)</string></property>
+<property name="toolTip"><string>Mínimo 4 caracteres</string></property>
+<property name="echoMode"><enum>QLineEdit::Password</enum></property>
+</widget>
+<widget class="QLineEdit" name="leRegDni">
+<property name="geometry"><rect><x>300</x><y>60</y><width>265</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="placeholderText"><string>DNI (7 u 8 números)</string></property>
+<property name="toolTip"><string>Solo números, sin puntos</string></property>
+</widget>
+<widget class="QLineEdit" name="leRegMail">
+<property name="geometry"><rect><x>20</x><y>105</y><width>265</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="placeholderText"><string>Correo electrónico</string></property>
+<property name="toolTip"><string>Tiene que llevar @ y un punto</string></property>
+</widget>
+<widget class="QLineEdit" name="leRegContacto">
+<property name="geometry"><rect><x>300</x><y>105</y><width>265</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="placeholderText"><string>Teléfono (8 a 15 números)</string></property>
+<property name="toolTip"><string>Solo números. Enter para crear la cuenta</string></property>
+</widget>
+<widget class="QComboBox" name="cbRegRol">
+<property name="geometry"><rect><x>20</x><y>150</y><width>265</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Elegí tu rol</string></property>
+</widget>
+<widget class="QLineEdit" name="leRegPin">
+<property name="geometry"><rect><x>300</x><y>150</y><width>265</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="placeholderText"><string>PIN de personal</string></property>
+<property name="toolTip"><string>Los roles que no son alumno piden el PIN del colegio</string></property>
+<property name="echoMode"><enum>QLineEdit::Password</enum></property>
+</widget>
+<widget class="QComboBox" name="cbRegAnio">
+<property name="geometry"><rect><x>20</x><y>195</y><width>175</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Año de tu curso</string></property>
+</widget>
+<widget class="QComboBox" name="cbRegDivision">
+<property name="geometry"><rect><x>205</x><y>195</y><width>175</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>División de tu curso</string></property>
+</widget>
+<widget class="QComboBox" name="cbRegEspecialidad">
+<property name="geometry"><rect><x>390</x><y>195</y><width>175</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Especialidad de tu curso</string></property>
+</widget>
+<widget class="QPushButton" name="btnRegistrar">
+<property name="geometry"><rect><x>150</x><y>255</y><width>300</width><height>45</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; font: bold; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Crear cuenta</string></property>
+<property name="toolTip"><string>Se habilita cuando elegís el rol y, si sos alumno, el curso completo</string></property>
+</widget>
+</widget>
+</widget>
+</widget>
+<widget class="QWidget" name="page_2_dashboard">
+<widget class="QLabel" name="lblHeader2">
+<property name="geometry"><rect><x>0</x><y>0</y><width>780</width><height>70</height></rect></property>
+<property name="styleSheet"><string>background-color: #102542; color: #FFFFFF; font: bold 18pt;</string></property>
+<property name="text"><string>  IQUAL</string></property>
+</widget>
+<widget class="QPushButton" name="btnHamb2">
+<property name="geometry"><rect><x>700</x><y>15</y><width>60</width><height>40</height></rect></property>
+<property name="styleSheet"><string>background-color: #1E3A8A; color: #FFFFFF; font: bold 16pt;</string></property>
+<property name="text"><string>☰</string></property>
+<property name="toolTip"><string>Menú: Menú Principal, Mi Cuenta, Cerrar Sesión</string></property>
+</widget>
+<widget class="QLabel" name="lblBienvenida">
+<property name="geometry"><rect><x>20</x><y>85</y><width>740</width><height>30</height></rect></property>
+<property name="styleSheet"><string>color: #102542; font: bold;</string></property>
+<property name="text"><string></string></property>
+</widget>
+<widget class="QPushButton" name="btnMenuObjetos">
+<property name="geometry"><rect><x>100</x><y>140</y><width>270</width><height>90</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Objetos Perdidos</string></property>
+<property name="toolTip"><string>Abrir Objetos Perdidos</string></property>
+</widget>
+<widget class="QPushButton" name="btnMenuHigiene">
+<property name="geometry"><rect><x>410</x><y>140</y><width>270</width><height>90</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Higiene y Mantenimiento</string></property>
+<property name="toolTip"><string>Abrir Higiene y Mantenimiento</string></property>
+</widget>
+<widget class="QPushButton" name="btnMenuBuffet">
+<property name="geometry"><rect><x>100</x><y>250</y><width>270</width><height>90</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Buffet Paralelo</string></property>
+<property name="toolTip"><string>Abrir Buffet Paralelo</string></property>
+</widget>
+<widget class="QPushButton" name="btnMenuPlanillas">
+<property name="geometry"><rect><x>410</x><y>250</y><width>270</width><height>90</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Planillas de Taller</string></property>
+<property name="toolTip"><string>Abrir Planillas de Taller</string></property>
+</widget>
+<widget class="QPushButton" name="btnMenuSectores">
+<property name="geometry"><rect><x>100</x><y>360</y><width>270</width><height>90</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Reserva de Sectores</string></property>
+<property name="toolTip"><string>Abrir Reserva de Sectores</string></property>
+</widget>
+<widget class="QPushButton" name="btnMenuEdFisica">
+<property name="geometry"><rect><x>410</x><y>360</y><width>270</width><height>90</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Educación Física</string></property>
+<property name="toolTip"><string>Abrir Educación Física</string></property>
+</widget>
+</widget>
+<widget class="QWidget" name="page_3_objetos">
+<widget class="QLabel" name="lblHeader3">
+<property name="geometry"><rect><x>0</x><y>0</y><width>780</width><height>70</height></rect></property>
+<property name="styleSheet"><string>background-color: #102542; color: #FFFFFF; font: bold 18pt;</string></property>
+<property name="text"><string>  Objetos Perdidos</string></property>
+</widget>
+<widget class="QPushButton" name="btnHamb3">
+<property name="geometry"><rect><x>700</x><y>15</y><width>60</width><height>40</height></rect></property>
+<property name="styleSheet"><string>background-color: #1E3A8A; color: #FFFFFF; font: bold 16pt;</string></property>
+<property name="text"><string>☰</string></property>
+<property name="toolTip"><string>Menú: Menú Principal, Mi Cuenta, Cerrar Sesión</string></property>
+</widget>
+<widget class="QTabWidget" name="tabObjetos">
+<property name="geometry"><rect><x>10</x><y>80</y><width>760</width><height>435</height></rect></property>
+<property name="styleSheet"><string>background-color: #F8FAFC; color: #1E293B;</string></property>
+<property name="currentIndex"><number>0</number></property>
+<widget class="QWidget" name="tabObjetosLista">
+<attribute name="title"><string>Objetos</string></attribute>
+<widget class="QListWidget" name="listObjetos">
+<property name="geometry"><rect><x>10</x><y>8</y><width>735</width><height>130</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Objetos encontrados. Elegí uno para reclamarlo</string></property>
+</widget>
+<widget class="QLineEdit" name="leObjPrueba">
+<property name="geometry"><rect><x>10</x><y>145</y><width>490</width><height>32</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="placeholderText"><string>Prueba de pertenencia (mínimo 10 caracteres)</string></property>
+<property name="toolTip"><string>Describí algo que solo el dueño sabría</string></property>
+</widget>
+<widget class="QPushButton" name="btnObjReclamar">
+<property name="geometry"><rect><x>510</x><y>145</y><width>235</width><height>32</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Reclamar</string></property>
+<property name="toolTip"><string>Reclamar el objeto elegido (solo alumnos)</string></property>
+</widget>
+<widget class="QLabel" name="lblReclamos">
+<property name="geometry"><rect><x>10</x><y>185</y><width>735</width><height>22</height></rect></property>
+<property name="styleSheet"><string>color: #102542; font: bold;</string></property>
+<property name="text"><string>Reclamos pendientes (los resuelve el preceptor):</string></property>
+</widget>
+<widget class="QListWidget" name="listReclamos">
+<property name="geometry"><rect><x>10</x><y>210</y><width>735</width><height>110</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Reclamos que esperan respuesta</string></property>
+</widget>
+<widget class="QPushButton" name="btnReclamoAprobar">
+<property name="geometry"><rect><x>10</x><y>330</y><width>235</width><height>32</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Aprobar reclamo</string></property>
+<property name="toolTip"><string>Aprobar: el objeto pasa a Devuelto (solo preceptor)</string></property>
+</widget>
+<widget class="QPushButton" name="btnReclamoRechazar">
+<property name="geometry"><rect><x>255</x><y>330</y><width>235</width><height>32</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Rechazar reclamo</string></property>
+<property name="toolTip"><string>Rechazar: el objeto vuelve a Disponible (solo preceptor)</string></property>
+</widget>
+<widget class="QPushButton" name="btnObjArchivar">
+<property name="geometry"><rect><x>500</x><y>330</y><width>245</width><height>32</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Archivar objeto</string></property>
+<property name="toolTip"><string>Sacar de la lista el objeto elegido (solo preceptor)</string></property>
+</widget>
+</widget>
+<widget class="QWidget" name="tabObjetosConsultas">
+<attribute name="title"><string>Consultas</string></attribute>
+<widget class="QListWidget" name="listConsultas">
+<property name="geometry"><rect><x>10</x><y>8</y><width>735</width><height>200</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Consultas de todo el colegio</string></property>
+</widget>
+<widget class="QLineEdit" name="leConsultaDesc">
+<property name="geometry"><rect><x>10</x><y>218</y><width>490</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="placeholderText"><string>¿Vieron tal cosa? Descríbala (mínimo 10 caracteres)</string></property>
+<property name="toolTip"><string>Escribí qué perdiste y apretá Enter para publicar</string></property>
+</widget>
+<widget class="QPushButton" name="btnConsultaPublicar">
+<property name="geometry"><rect><x>510</x><y>218</y><width>235</width><height>35</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Publicar consulta</string></property>
+<property name="toolTip"><string>Publicar tu consulta para todo el colegio</string></property>
+</widget>
+<widget class="QPushButton" name="btnConsultaBorrar">
+<property name="geometry"><rect><x>10</x><y>262</y><width>250</width><height>35</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Borrar consulta</string></property>
+<property name="toolTip"><string>Borra tu consulta (el preceptor puede borrar cualquiera)</string></property>
+</widget>
+</widget>
+<widget class="QWidget" name="tabObjetosPublicar">
+<attribute name="title"><string>Publicar</string></attribute>
+<attribute name="toolTip"><string>Solo el preceptor puede publicar objetos</string></attribute>
+<widget class="QLineEdit" name="leObjTitulo">
+<property name="geometry"><rect><x>10</x><y>10</y><width>360</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="placeholderText"><string>Título del objeto</string></property>
+<property name="toolTip"><string>Por ejemplo: Buzo azul</string></property>
+</widget>
+<widget class="QLineEdit" name="leObjDescripcion">
+<property name="geometry"><rect><x>380</x><y>10</y><width>365</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="placeholderText"><string>Descripción (opcional)</string></property>
+<property name="toolTip"><string>Color, marca, detalles</string></property>
+</widget>
+<widget class="QComboBox" name="cbObjCategoria">
+<property name="geometry"><rect><x>10</x><y>55</y><width>235</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Categoría del objeto</string></property>
+</widget>
+<widget class="QComboBox" name="cbObjSector">
+<property name="geometry"><rect><x>255</x><y>55</y><width>235</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Sector donde se encontró</string></property>
+</widget>
+<widget class="QPushButton" name="btnObjFoto">
+<property name="geometry"><rect><x>500</x><y>55</y><width>245</width><height>35</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Elegir foto (opcional)</string></property>
+<property name="toolTip"><string>Elegí una imagen PNG o JPG</string></property>
+</widget>
+<widget class="QLabel" name="lblObjFoto">
+<property name="geometry"><rect><x>10</x><y>100</y><width>735</width><height>30</height></rect></property>
+<property name="styleSheet"><string>color: #1E293B;</string></property>
+<property name="text"><string>Sin foto</string></property>
+</widget>
+<widget class="QPushButton" name="btnObjPublicar">
+<property name="geometry"><rect><x>10</x><y>140</y><width>300</width><height>40</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; font: bold; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Publicar objeto</string></property>
+<property name="toolTip"><string>Publicar el objeto encontrado (solo preceptor)</string></property>
+</widget>
+</widget>
+</widget>
+<widget class="QPushButton" name="btnVolverObj">
+<property name="geometry"><rect><x>20</x><y>525</y><width>140</width><height>40</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Volver</string></property>
+<property name="toolTip"><string>Volver al menú principal</string></property>
+</widget>
+</widget>
+<widget class="QWidget" name="page_4_higiene">
+<widget class="QLabel" name="lblHeader4">
+<property name="geometry"><rect><x>0</x><y>0</y><width>780</width><height>70</height></rect></property>
+<property name="styleSheet"><string>background-color: #102542; color: #FFFFFF; font: bold 18pt;</string></property>
+<property name="text"><string>  Higiene y Mantenimiento</string></property>
+</widget>
+<widget class="QPushButton" name="btnHamb4">
+<property name="geometry"><rect><x>700</x><y>15</y><width>60</width><height>40</height></rect></property>
+<property name="styleSheet"><string>background-color: #1E3A8A; color: #FFFFFF; font: bold 16pt;</string></property>
+<property name="text"><string>☰</string></property>
+<property name="toolTip"><string>Menú: Menú Principal, Mi Cuenta, Cerrar Sesión</string></property>
+</widget>
+<widget class="QComboBox" name="cbHigieneSector">
+<property name="geometry"><rect><x>20</x><y>90</y><width>230</width><height>40</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Sector del reporte</string></property>
+</widget>
+<widget class="QComboBox" name="cbHigieneTipo">
+<property name="geometry"><rect><x>260</x><y>90</y><width>160</width><height>40</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Tipo de reporte</string></property>
+</widget>
+<widget class="QLineEdit" name="leHigieneObs">
+<property name="geometry"><rect><x>430</x><y>90</y><width>330</width><height>40</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="placeholderText"><string>Observaciones</string></property>
+<property name="toolTip"><string>Contá qué pasa. Enter para reportar</string></property>
+</widget>
+<widget class="QPushButton" name="btnHigieneReportar">
+<property name="geometry"><rect><x>20</x><y>145</y><width>370</width><height>40</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Reportar</string></property>
+<property name="toolTip"><string>Enviar el reporte</string></property>
+</widget>
+<widget class="QPushButton" name="btnHigieneResolver">
+<property name="geometry"><rect><x>400</x><y>145</y><width>360</width><height>40</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Marcar resuelto</string></property>
+<property name="toolTip"><string>Marcar el reporte elegido como resuelto (profesor, preceptor y maestranza)</string></property>
+</widget>
+<widget class="QLabel" name="lblHigieneUltimo">
+<property name="geometry"><rect><x>20</x><y>195</y><width>740</width><height>30</height></rect></property>
+<property name="styleSheet"><string>color: #102542; font: bold;</string></property>
+<property name="text"><string></string></property>
+</widget>
+<widget class="QListWidget" name="listHigiene">
+<property name="geometry"><rect><x>20</x><y>235</y><width>740</width><height>270</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Reportes de higiene y mantenimiento</string></property>
+</widget>
+<widget class="QPushButton" name="btnVolverHigiene">
+<property name="geometry"><rect><x>20</x><y>525</y><width>140</width><height>40</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Volver</string></property>
+<property name="toolTip"><string>Volver al menú principal</string></property>
+</widget>
+</widget>
+<widget class="QWidget" name="page_5_buffet">
+<widget class="QLabel" name="lblHeader5">
+<property name="geometry"><rect><x>0</x><y>0</y><width>780</width><height>70</height></rect></property>
+<property name="styleSheet"><string>background-color: #102542; color: #FFFFFF; font: bold 18pt;</string></property>
+<property name="text"><string>  Buffet Paralelo</string></property>
+</widget>
+<widget class="QPushButton" name="btnHamb5">
+<property name="geometry"><rect><x>700</x><y>15</y><width>60</width><height>40</height></rect></property>
+<property name="styleSheet"><string>background-color: #1E3A8A; color: #FFFFFF; font: bold 16pt;</string></property>
+<property name="text"><string>☰</string></property>
+<property name="toolTip"><string>Menú: Menú Principal, Mi Cuenta, Cerrar Sesión</string></property>
+</widget>
+<widget class="QTabWidget" name="tabBuffet">
+<property name="geometry"><rect><x>10</x><y>80</y><width>760</width><height>435</height></rect></property>
+<property name="styleSheet"><string>background-color: #F8FAFC; color: #1E293B;</string></property>
+<property name="currentIndex"><number>0</number></property>
+<widget class="QWidget" name="tabBuffetProductos">
+<attribute name="title"><string>Productos</string></attribute>
+<widget class="QComboBox" name="cbBuffetVista">
+<property name="geometry"><rect><x>10</x><y>8</y><width>735</width><height>32</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Elegí ver ventas individuales o un grupo</string></property>
+</widget>
+<widget class="QLabel" name="lblBuffetMeta">
+<property name="geometry"><rect><x>10</x><y>44</y><width>735</width><height>28</height></rect></property>
+<property name="styleSheet"><string>color: #102542; font: bold;</string></property>
+<property name="text"><string></string></property>
+</widget>
+<widget class="QListWidget" name="listBuffet">
+<property name="geometry"><rect><x>10</x><y>76</y><width>735</width><height>125</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Productos a la venta. Elegí uno para reservar</string></property>
+</widget>
+<widget class="QLabel" name="lblDonaciones">
+<property name="geometry"><rect><x>10</x><y>204</y><width>735</width><height>22</height></rect></property>
+<property name="styleSheet"><string>color: #1E293B;</string></property>
+<property name="text"><string>Donaciones recientes:</string></property>
+</widget>
+<widget class="QListWidget" name="listDonaciones">
+<property name="geometry"><rect><x>10</x><y>228</y><width>735</width><height>80</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Últimas donaciones del grupo</string></property>
+</widget>
+<widget class="QSpinBox" name="sbBuffetCantidad">
+<property name="geometry"><rect><x>10</x><y>320</y><width>90</width><height>34</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Cantidad a reservar</string></property>
+<property name="minimum"><number>1</number></property><property name="maximum"><number>999</number></property><property name="value"><number>1</number></property>
+</widget>
+<widget class="QPushButton" name="btnBuffetReservar">
+<property name="geometry"><rect><x>110</x><y>320</y><width>250</width><height>34</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Reservar producto</string></property>
+<property name="toolTip"><string>Reservar el producto elegido (descuenta stock)</string></property>
+</widget>
+</widget>
+<widget class="QWidget" name="tabBuffetPublicar">
+<attribute name="title"><string>Publicar</string></attribute>
+<attribute name="toolTip"><string>Solo los alumnos publican productos</string></attribute>
+<widget class="QLineEdit" name="leProdNombre">
+<property name="geometry"><rect><x>10</x><y>10</y><width>300</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="placeholderText"><string>Producto</string></property>
+<property name="toolTip"><string>Nombre del producto</string></property>
+</widget>
+<widget class="QLineEdit" name="leProdPrecio">
+<property name="geometry"><rect><x>320</x><y>10</y><width>120</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="placeholderText"><string>Precio</string></property>
+<property name="toolTip"><string>Precio entero, mayor a 0</string></property>
+</widget>
+<widget class="QLineEdit" name="leProdStock">
+<property name="geometry"><rect><x>450</x><y>10</y><width>120</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="placeholderText"><string>Stock</string></property>
+<property name="toolTip"><string>Unidades disponibles, mayor a 0</string></property>
+</widget>
+<widget class="QComboBox" name="cbProdGrupo">
+<property name="geometry"><rect><x>10</x><y>55</y><width>300</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Venta individual o de uno de tus grupos</string></property>
+</widget>
+<widget class="QLabel" name="lblProdContacto">
+<property name="geometry"><rect><x>320</x><y>55</y><width>425</width><height>35</height></rect></property>
+<property name="styleSheet"><string>color: #1E293B;</string></property>
+<property name="text"><string></string></property>
+</widget>
+<widget class="QPushButton" name="btnProdPublicar">
+<property name="geometry"><rect><x>10</x><y>100</y><width>300</width><height>40</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; font: bold; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Publicar producto</string></property>
+<property name="toolTip"><string>Publicar el producto (solo alumnos)</string></property>
+</widget>
+</widget>
+<widget class="QWidget" name="tabBuffetGrupos">
+<attribute name="title"><string>Grupos y donaciones</string></attribute>
+<widget class="QLabel" name="lblGrupoCrearTit">
+<property name="geometry"><rect><x>10</x><y>8</y><width>735</width><height>22</height></rect></property>
+<property name="styleSheet"><string>color: #102542; font: bold;</string></property>
+<property name="text"><string>Crear una venta grupal:</string></property>
+</widget>
+<widget class="QLineEdit" name="leGrupoNombre">
+<property name="geometry"><rect><x>10</x><y>34</y><width>300</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="placeholderText"><string>Nombre del grupo</string></property>
+<property name="toolTip"><string>Nombre único del grupo</string></property>
+</widget>
+<widget class="QLineEdit" name="leGrupoMeta">
+<property name="geometry"><rect><x>320</x><y>34</y><width>130</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="placeholderText"><string>Meta ($)</string></property>
+<property name="toolTip"><string>Monto a juntar, mayor a 0</string></property>
+</widget>
+<widget class="QLineEdit" name="leGrupoPin">
+<property name="geometry"><rect><x>460</x><y>34</y><width>130</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="placeholderText"><string>PIN (mín. 4)</string></property>
+<property name="toolTip"><string>Clave para que se unan otros alumnos</string></property>
+</widget>
+<widget class="QPushButton" name="btnGrupoCrear">
+<property name="geometry"><rect><x>600</x><y>34</y><width>145</width><height>35</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Crear grupo</string></property>
+<property name="toolTip"><string>Crear la venta grupal (solo alumnos)</string></property>
+</widget>
+<widget class="QLabel" name="lblGrupoUnirTit">
+<property name="geometry"><rect><x>10</x><y>85</y><width>735</width><height>22</height></rect></property>
+<property name="styleSheet"><string>color: #102542; font: bold;</string></property>
+<property name="text"><string>Unirte a un grupo con su PIN:</string></property>
+</widget>
+<widget class="QComboBox" name="cbUnirseGrupo">
+<property name="geometry"><rect><x>10</x><y>111</y><width>300</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Grupo al que querés unirte</string></property>
+</widget>
+<widget class="QLineEdit" name="leBuffetPin">
+<property name="geometry"><rect><x>320</x><y>111</y><width>130</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="placeholderText"><string>PIN del grupo</string></property>
+<property name="toolTip"><string>PIN que te dio el creador del grupo</string></property>
+<property name="echoMode"><enum>QLineEdit::Password</enum></property>
+</widget>
+<widget class="QPushButton" name="btnBuffetUnirse">
+<property name="geometry"><rect><x>460</x><y>111</y><width>130</width><height>35</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Unirme</string></property>
+<property name="toolTip"><string>Unirte al grupo (solo alumnos)</string></property>
+</widget>
+<widget class="QLabel" name="lblDonarTit">
+<property name="geometry"><rect><x>10</x><y>162</y><width>735</width><height>22</height></rect></property>
+<property name="styleSheet"><string>color: #102542; font: bold;</string></property>
+<property name="text"><string>Donar a un grupo:</string></property>
+</widget>
+<widget class="QComboBox" name="cbDonarGrupo">
+<property name="geometry"><rect><x>10</x><y>188</y><width>300</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Grupo al que querés donar</string></property>
+</widget>
+<widget class="QLineEdit" name="leBuffetMonto">
+<property name="geometry"><rect><x>320</x><y>188</y><width>130</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="placeholderText"><string>Monto ($)</string></property>
+<property name="toolTip"><string>Monto entero mayor a 0. Enter para donar</string></property>
+</widget>
+<widget class="QPushButton" name="btnBuffetDonar">
+<property name="geometry"><rect><x>460</x><y>188</y><width>130</width><height>35</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Donar</string></property>
+<property name="toolTip"><string>Donar el monto al grupo</string></property>
+</widget>
+</widget>
+<widget class="QWidget" name="tabBuffetReservas">
+<attribute name="title"><string>Mis reservas</string></attribute>
+<widget class="QListWidget" name="listMisReservas">
+<property name="geometry"><rect><x>10</x><y>8</y><width>735</width><height>300</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Tus reservas activas</string></property>
+</widget>
+<widget class="QPushButton" name="btnBuffetCancelar">
+<property name="geometry"><rect><x>10</x><y>318</y><width>250</width><height>35</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Cancelar reserva</string></property>
+<property name="toolTip"><string>Cancela la reserva elegida y devuelve el stock</string></property>
+</widget>
+</widget>
+</widget>
+<widget class="QPushButton" name="btnVolverBuffet">
+<property name="geometry"><rect><x>20</x><y>525</y><width>140</width><height>40</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Volver</string></property>
+<property name="toolTip"><string>Volver al menú principal</string></property>
+</widget>
+</widget>
+<widget class="QWidget" name="page_6_planillas">
+<widget class="QLabel" name="lblHeader6">
+<property name="geometry"><rect><x>0</x><y>0</y><width>780</width><height>70</height></rect></property>
+<property name="styleSheet"><string>background-color: #102542; color: #FFFFFF; font: bold 18pt;</string></property>
+<property name="text"><string>  Planillas de Taller</string></property>
+</widget>
+<widget class="QPushButton" name="btnHamb6">
+<property name="geometry"><rect><x>700</x><y>15</y><width>60</width><height>40</height></rect></property>
+<property name="styleSheet"><string>background-color: #1E3A8A; color: #FFFFFF; font: bold 16pt;</string></property>
+<property name="text"><string>☰</string></property>
+<property name="toolTip"><string>Menú: Menú Principal, Mi Cuenta, Cerrar Sesión</string></property>
+</widget>
+<widget class="QLineEdit" name="leFiltroPlanillas">
+<property name="geometry"><rect><x>20</x><y>85</y><width>200</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="placeholderText"><string>Buscar código (ej: C4-05)</string></property>
+<property name="toolTip"><string>Escribí parte del código (ej: C4-05) y se filtran los recursos y los préstamos</string></property>
+</widget>
+<widget class="QComboBox" name="cbPlanillasAlumno">
+<property name="geometry"><rect><x>230</x><y>85</y><width>300</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Alumno que se lleva el equipo</string></property>
+</widget>
+<widget class="QPushButton" name="btnPlanillasPrestar">
+<property name="geometry"><rect><x>540</x><y>85</y><width>220</width><height>35</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Registrar préstamo</string></property>
+<property name="toolTip"><string>Prestar el recurso elegido (profesor y preceptor)</string></property>
+</widget>
+<widget class="QListWidget" name="listPlanillas">
+<property name="geometry"><rect><x>20</x><y>128</y><width>740</width><height>120</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Recursos disponibles</string></property>
+</widget>
+<widget class="QLineEdit" name="lePlanillasObs">
+<property name="geometry"><rect><x>20</x><y>256</y><width>740</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="placeholderText"><string>Observaciones (ej: le falta una tecla)</string></property>
+<property name="toolTip"><string>Opcional. Se guarda con el préstamo</string></property>
+</widget>
+<widget class="QLabel" name="lblPlanillasPrestamos">
+<property name="geometry"><rect><x>20</x><y>298</y><width>740</width><height>22</height></rect></property>
+<property name="styleSheet"><string>color: #102542; font: bold;</string></property>
+<property name="text"><string>Préstamos (primero los activos):</string></property>
+</widget>
+<widget class="QListWidget" name="listPrestamos">
+<property name="geometry"><rect><x>20</x><y>322</y><width>740</width><height>140</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Elegí un préstamo activo para devolverlo</string></property>
+</widget>
+<widget class="QComboBox" name="cbPlanillasEstado">
+<property name="geometry"><rect><x>20</x><y>472</y><width>200</width><height>36</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Estado en que vuelve el equipo</string></property>
+<item><property name="text"><string>Funciona</string></property></item>
+<item><property name="text"><string>No funciona</string></property></item>
+</widget>
+<widget class="QPushButton" name="btnPlanillasDevolver">
+<property name="geometry"><rect><x>230</x><y>472</y><width>300</width><height>36</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Devolver seleccionado</string></property>
+<property name="toolTip"><string>Registrar la devolución del préstamo elegido (profesor y preceptor)</string></property>
+</widget>
+<widget class="QPushButton" name="btnVolverPlanillas">
+<property name="geometry"><rect><x>20</x><y>525</y><width>140</width><height>40</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Volver</string></property>
+<property name="toolTip"><string>Volver al menú principal</string></property>
+</widget>
+</widget>
+<widget class="QWidget" name="page_7_sectores">
+<widget class="QLabel" name="lblHeader7">
+<property name="geometry"><rect><x>0</x><y>0</y><width>780</width><height>70</height></rect></property>
+<property name="styleSheet"><string>background-color: #102542; color: #FFFFFF; font: bold 18pt;</string></property>
+<property name="text"><string>  Reserva de Sectores</string></property>
+</widget>
+<widget class="QPushButton" name="btnHamb7">
+<property name="geometry"><rect><x>700</x><y>15</y><width>60</width><height>40</height></rect></property>
+<property name="styleSheet"><string>background-color: #1E3A8A; color: #FFFFFF; font: bold 16pt;</string></property>
+<property name="text"><string>☰</string></property>
+<property name="toolTip"><string>Menú: Menú Principal, Mi Cuenta, Cerrar Sesión</string></property>
+</widget>
+<widget class="QComboBox" name="cbSectoresLugar">
+<property name="geometry"><rect><x>20</x><y>85</y><width>250</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Sector a reservar</string></property>
+</widget>
+<widget class="QDateEdit" name="deSectoresDia">
+<property name="geometry"><rect><x>280</x><y>85</y><width>150</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Elegí el día en el calendario</string></property>
+<property name="calendarPopup"><bool>true</bool></property><property name="displayFormat"><string>dd/MM/yyyy</string></property>
+</widget>
+<widget class="QTimeEdit" name="teSectoresInicio">
+<property name="geometry"><rect><x>440</x><y>85</y><width>90</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Hora de inicio</string></property>
+<property name="displayFormat"><string>HH:mm</string></property>
+</widget>
+<widget class="QTimeEdit" name="teSectoresFin">
+<property name="geometry"><rect><x>540</x><y>85</y><width>90</width><height>35</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Hora de fin</string></property>
+<property name="displayFormat"><string>HH:mm</string></property>
+</widget>
+<widget class="QPushButton" name="btnSectoresReservar">
+<property name="geometry"><rect><x>640</x><y>85</y><width>120</width><height>35</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Reservar</string></property>
+<property name="toolTip"><string>Reservar el sector (profesor y preceptor)</string></property>
+</widget>
+<widget class="QLabel" name="lblSectoresOcupacion">
+<property name="geometry"><rect><x>20</x><y>128</y><width>740</width><height>24</height></rect></property>
+<property name="styleSheet"><string>color: #102542; font: bold;</string></property>
+<property name="text"><string>Ocupación del sector ese día:</string></property>
+</widget>
+<widget class="QListWidget" name="listOcupacion">
+<property name="geometry"><rect><x>20</x><y>154</y><width>740</width><height>95</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Quién ocupa el sector y en qué horario</string></property>
+</widget>
+<widget class="QLabel" name="lblSectoresReservas">
+<property name="geometry"><rect><x>20</x><y>256</y><width>740</width><height>24</height></rect></property>
+<property name="styleSheet"><string>color: #102542; font: bold;</string></property>
+<property name="text"><string>Reservas próximas:</string></property>
+</widget>
+<widget class="QListWidget" name="listSectores">
+<property name="geometry"><rect><x>20</x><y>282</y><width>740</width><height>160</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Reservas. Elegí una para cancelar, aprobar o rechazar</string></property>
+</widget>
+<widget class="QPushButton" name="btnSectoresCancelar">
+<property name="geometry"><rect><x>20</x><y>452</y><width>200</width><height>36</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Cancelar reserva</string></property>
+<property name="toolTip"><string>Cancelar tu reserva (el preceptor puede cancelar cualquiera)</string></property>
+</widget>
+<widget class="QPushButton" name="btnSectoresAprobar">
+<property name="geometry"><rect><x>230</x><y>452</y><width>200</width><height>36</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Aprobar</string></property>
+<property name="toolTip"><string>Aprobar la reserva pendiente (solo preceptor)</string></property>
+</widget>
+<widget class="QPushButton" name="btnSectoresRechazar">
+<property name="geometry"><rect><x>440</x><y>452</y><width>200</width><height>36</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Rechazar</string></property>
+<property name="toolTip"><string>Rechazar la reserva pendiente (solo preceptor)</string></property>
+</widget>
+<widget class="QPushButton" name="btnVolverSectores">
+<property name="geometry"><rect><x>20</x><y>525</y><width>140</width><height>40</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Volver</string></property>
+<property name="toolTip"><string>Volver al menú principal</string></property>
+</widget>
+</widget>
+<widget class="QWidget" name="page_8_edfisica">
+<widget class="QLabel" name="lblHeader8">
+<property name="geometry"><rect><x>0</x><y>0</y><width>780</width><height>70</height></rect></property>
+<property name="styleSheet"><string>background-color: #102542; color: #FFFFFF; font: bold 18pt;</string></property>
+<property name="text"><string>  Educación Física</string></property>
+</widget>
+<widget class="QPushButton" name="btnHamb8">
+<property name="geometry"><rect><x>700</x><y>15</y><width>60</width><height>40</height></rect></property>
+<property name="styleSheet"><string>background-color: #1E3A8A; color: #FFFFFF; font: bold 16pt;</string></property>
+<property name="text"><string>☰</string></property>
+<property name="toolTip"><string>Menú: Menú Principal, Mi Cuenta, Cerrar Sesión</string></property>
+</widget>
+<widget class="QLabel" name="lblEdFisicaAyuda">
+<property name="geometry"><rect><x>20</x><y>85</y><width>740</width><height>25</height></rect></property>
+<property name="styleSheet"><string>color: #1E293B;</string></property>
+<property name="text"><string>Elegí una opción (una por alumno). Las que chocan con tu horario no se pueden elegir.</string></property>
+</widget>
+<widget class="QListWidget" name="listEdFisica">
+<property name="geometry"><rect><x>20</x><y>115</y><width>740</width><height>310</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Ofertas de Educación Física con cupos</string></property>
+</widget>
+<widget class="QLabel" name="lblEdFisicaMia">
+<property name="geometry"><rect><x>20</x><y>435</y><width>740</width><height>28</height></rect></property>
+<property name="styleSheet"><string>color: #102542; font: bold;</string></property>
+<property name="text"><string></string></property>
+</widget>
+<widget class="QPushButton" name="btnEdFisicaInscribir">
+<property name="geometry"><rect><x>20</x><y>470</y><width>250</width><height>40</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Inscribirme</string></property>
+<property name="toolTip"><string>Inscribirte a la opción elegida (solo alumnos)</string></property>
+</widget>
+<widget class="QPushButton" name="btnEdFisicaCancelar">
+<property name="geometry"><rect><x>280</x><y>470</y><width>250</width><height>40</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Cancelar inscripción</string></property>
+<property name="toolTip"><string>Cancelar tu inscripción actual (solo alumnos)</string></property>
+</widget>
+<widget class="QPushButton" name="btnVolverEdFisica">
+<property name="geometry"><rect><x>20</x><y>525</y><width>140</width><height>40</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Volver</string></property>
+<property name="toolTip"><string>Volver al menú principal</string></property>
+</widget>
+</widget>
+<widget class="QWidget" name="page_9_cuenta">
+<widget class="QLabel" name="lblHeader9">
+<property name="geometry"><rect><x>0</x><y>0</y><width>780</width><height>70</height></rect></property>
+<property name="styleSheet"><string>background-color: #102542; color: #FFFFFF; font: bold 18pt;</string></property>
+<property name="text"><string>  Mi Cuenta</string></property>
+</widget>
+<widget class="QPushButton" name="btnHamb9">
+<property name="geometry"><rect><x>700</x><y>15</y><width>60</width><height>40</height></rect></property>
+<property name="styleSheet"><string>background-color: #1E3A8A; color: #FFFFFF; font: bold 16pt;</string></property>
+<property name="text"><string>☰</string></property>
+<property name="toolTip"><string>Menú: Menú Principal, Mi Cuenta, Cerrar Sesión</string></property>
+</widget>
+<widget class="QLabel" name="lblCuentaNombre">
+<property name="geometry"><rect><x>20</x><y>90</y><width>740</width><height>28</height></rect></property>
+<property name="styleSheet"><string>color: #1E293B;</string></property>
+<property name="text"><string></string></property>
+</widget>
+<widget class="QLabel" name="lblCuentaUsuario">
+<property name="geometry"><rect><x>20</x><y>122</y><width>740</width><height>28</height></rect></property>
+<property name="styleSheet"><string>color: #1E293B;</string></property>
+<property name="text"><string></string></property>
+</widget>
+<widget class="QLabel" name="lblCuentaDni">
+<property name="geometry"><rect><x>20</x><y>154</y><width>740</width><height>28</height></rect></property>
+<property name="styleSheet"><string>color: #1E293B;</string></property>
+<property name="text"><string></string></property>
+</widget>
+<widget class="QLabel" name="lblCuentaMail">
+<property name="geometry"><rect><x>20</x><y>186</y><width>740</width><height>28</height></rect></property>
+<property name="styleSheet"><string>color: #1E293B;</string></property>
+<property name="text"><string></string></property>
+</widget>
+<widget class="QLabel" name="lblCuentaContacto">
+<property name="geometry"><rect><x>20</x><y>218</y><width>740</width><height>28</height></rect></property>
+<property name="styleSheet"><string>color: #1E293B;</string></property>
+<property name="text"><string></string></property>
+</widget>
+<widget class="QLabel" name="lblCuentaRol">
+<property name="geometry"><rect><x>20</x><y>250</y><width>740</width><height>28</height></rect></property>
+<property name="styleSheet"><string>color: #1E293B;</string></property>
+<property name="text"><string></string></property>
+</widget>
+<widget class="QLabel" name="lblCuentaCurso">
+<property name="geometry"><rect><x>20</x><y>282</y><width>740</width><height>28</height></rect></property>
+<property name="styleSheet"><string>color: #1E293B;</string></property>
+<property name="text"><string></string></property>
+</widget>
+<widget class="QLabel" name="lblCuentaCambio">
+<property name="geometry"><rect><x>20</x><y>325</y><width>740</width><height>25</height></rect></property>
+<property name="styleSheet"><string>color: #102542; font: bold;</string></property>
+<property name="text"><string>Cambiar mi curso (solo alumnos):</string></property>
+</widget>
+<widget class="QComboBox" name="cbCuentaAnio">
+<property name="geometry"><rect><x>20</x><y>355</y><width>170</width><height>38</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Año de tu curso</string></property>
+</widget>
+<widget class="QComboBox" name="cbCuentaDivision">
+<property name="geometry"><rect><x>200</x><y>355</y><width>170</width><height>38</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>División de tu curso</string></property>
+</widget>
+<widget class="QComboBox" name="cbCuentaEspecialidad">
+<property name="geometry"><rect><x>380</x><y>355</y><width>230</width><height>38</height></rect></property>
+<property name="styleSheet"><string>background-color: #FFFFFF; color: #1E293B;</string></property>
+<property name="toolTip"><string>Especialidad de tu curso</string></property>
+</widget>
+<widget class="QPushButton" name="btnCuentaGuardar">
+<property name="geometry"><rect><x>20</x><y>405</y><width>250</width><height>40</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; font: bold; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Guardar curso</string></property>
+<property name="toolTip"><string>Guardar el curso elegido</string></property>
+</widget>
+<widget class="QPushButton" name="btnCuentaVolver">
+<property name="geometry"><rect><x>20</x><y>525</y><width>140</width><height>40</height></rect></property>
+<property name="styleSheet"><string>QPushButton { background-color: #1E3A8A; color: #FFFFFF; } QPushButton:disabled { background-color: #F8FAFC; color: #1E293B; }</string></property>
+<property name="text"><string>Volver</string></property>
+<property name="toolTip"><string>Volver al menú principal</string></property>
+</widget>
+</widget>
+</widget>
+</widget>
+</widget>
+<resources/>
+<connections/>
 </ui>
