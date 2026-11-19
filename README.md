@@ -66,10 +66,10 @@ Para registrar cuentas de Profesor, Preceptor o Maestranza la app pide un PIN in
 1. **Instalar Qt** con Qt Creator y el kit **Desktop Qt 6.x MinGW 64-bit** (en el instalador, marcar los componentes *Qt 6 → MinGW 64-bit* y *Qt Creator*; se usó la versión 6.12.0). La app necesita los módulos **Widgets** y **Sql**.
 2. **Abrir el proyecto:** en Qt Creator, *Archivo → Abrir archivo o proyecto* y elegir el `CMakeLists.txt` de la raíz del repositorio. Elegir el kit MinGW y *Configurar proyecto*.
 3. **Compilar y ejecutar** el target `PROYECTO_IQUAL` (botón verde de Qt Creator). Las imágenes, los íconos, los dos temas y el script de respaldo SQLite van **dentro del ejecutable** (`recursos.qrc`): no hay que copiar nada al lado del `.exe`.
-4. Si CMake falla con *"Cannot find source file: harness.cpp"*: el `CMakeLists.txt` trae al final un bloque `foreach(h harness harness2 …)` que arma las pruebas automáticas internas, cuyos archivos no están en el repositorio. Borrar ese bloque (la app no depende de él). `[COMPLETAR: confirmar si el CMakeLists.txt final del repositorio ya viene sin ese bloque]`
+4. Si CMake falla, revisá que abriste el `CMakeLists.txt` de la raíz y que el kit sea MinGW 64-bit con Widgets y Sql instalados.
 
 ### 4.2 Base de datos (MySQL)
-1. Instalar MySQL, crear la base `iqual` y ejecutar `db/03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql` desde DBeaver o MySQL Workbench (47 tablas). Pasos detallados en [`db/guias/GUIA_INSTALACION_MYSQL.md`](./db/guias/GUIA_INSTALACION_MYSQL.md). La app **no crea** las tablas en MySQL; si la base existe pero está vacía, lo avisa.
+1. Instalar MySQL, crear la base `iqual` y ejecutar en este orden, con Alt+X en DBeaver o MySQL Workbench: `db/03_ModeloSQL_Grupo00.sql` (47 tablas), `db/04_DatosSQL_Grupo00.sql` (datos, 62 usuarios) y `db/05_Backend_Grupo00.sql` (procedimientos almacenados). Pasos detallados en [`db/guias/GUIA_INSTALACION_MYSQL.md`](./db/guias/GUIA_INSTALACION_MYSQL.md). La app **no crea** las tablas en MySQL; si la base existe pero está vacía, lo avisa.
 2. **Conexión (`iqual.ini`).** La primera vez que se abre, la app crea `iqual.ini` junto al ejecutable, con una sección `[base]`:
    | Clave | Valor por defecto | Para qué |
    | :--- | :--- | :--- |
@@ -85,10 +85,10 @@ Para registrar cuentas de Profesor, Preceptor o Maestranza la app pide un PIN in
 3. **Driver en Windows.** El Qt de MinGW no trae `QMYSQL` pero sí `QODBC`: el camino recomendado es instalar *MySQL Connector/ODBC* (no hay que compilar nada); el alternativo es compilar el plugin `QMYSQL`. Detalles en [`db/guias/GUIA_CONEXION_APP_MYSQL.md`](./db/guias/GUIA_CONEXION_APP_MYSQL.md).
 4. **Respaldo automático.** Si MySQL falla (servidor apagado, clave incorrecta, base vacía o sin driver), la app **avisa el motivo y sigue con `iqual.db` (SQLite)**. Si el conector ODBC no compara bien los textos, también vuelve a SQLite con aviso.
 5. **Qué motor está usando:** lo dice el título de la ventana ("· MySQL", "· MySQL (ODBC)" o sin sufijo si trabaja con SQLite).
-6. **Plan de emergencia para una demostración:** poner `motor=sqlite` en `iqual.ini` y mostrar MySQL aparte desde DBeaver (las dos bases tienen las mismas 47 tablas y los mismos datos de demostración).
+6. **Plan de emergencia para una demostración:** poner `motor=sqlite` en `iqual.ini` y mostrar MySQL aparte desde DBeaver (las dos bases tienen las mismas 47 tablas; MySQL trae 62 usuarios y SQLite un juego chico de 5).
 
 ### 4.3 Qué se probó y qué no
-* **Probado** (Linux, Qt 6.4, MariaDB 10.11): las pruebas automáticas internas de la v3 pasan con **0 fallas** con `QMYSQL` y con SQLite; las 131 consultas del código se validaron con `ONLY_FULL_GROUP_BY`; el script de 47 tablas, los 5 procedimientos, las 10 consultas de la defensa y las 28 de verificación corren sin errores.
+* **Probado** (Linux, Qt 6.4, MariaDB 10.11): las pruebas automáticas internas de la v3 pasan con **0 fallas** con `QMYSQL` y con SQLite; las 131 consultas del código se validaron con `ONLY_FULL_GROUP_BY`; el script de 47 tablas, los 27 procedimientos (107 casos de prueba de SP en `db/06_PruebasSQL.xlsx`, todos PASS), las 10 consultas de la defensa y las 28 de verificación corren sin errores.
 * **No probado:** MySQL 8 de Oracle, SQL Server 2005 y Windows (compilación y los dos caminos de driver). `[COMPLETAR: resultado de probarlo en la PC del equipo]`
 * Los casos de prueba por pantalla están escritos pero **sin ejecutar**: la columna Resultado la completa el equipo. `[COMPLETAR: resultados de los casos de prueba]`
 
@@ -103,18 +103,16 @@ Para registrar cuentas de Profesor, Preceptor o Maestranza la app pide un PIN in
 ├── recursos.qrc     Imágenes, íconos, temas (claro.qss y oscuro.qss) y script de respaldo iqual_sqlite.sql
 ├── recursos/        Los archivos que referencia recursos.qrc (imagenes/, iconos/, tema/)
 ├── docs/            Documentación del proyecto
-│   ├── casos_de_prueba/   Casos de prueba por pantalla
-│   ├── errores/           Errores encontrados, con su estado
-│   └── manuales/          Manual de usuario por pantalla y por rol
+│   ├── pruebas/           Casos de prueba, errores y revisión de código por módulo
+│   └── manuales/          Manual de usuario por módulo y por rol
 └── db/              Scripts SQL, consultas, justificación de 3FN, diagramas y guías (db/guias/)
 ```
 Contenido de `/db`:
-* **Scripts:** `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql` (el que usa la app con MySQL), `iqual_sqlite.sql` (el que la app embebe como respaldo), `03_ModeloSQL_Grupo00_sqlserver.sql` (SQL Server 2005) y `05_Backend_Grupo00.sql` (5 procedimientos de ejemplo; los carga el usuario a mano, no los ejecuta la app). Los tres scripts crean las mismas 47 tablas con los mismos nombres.
-* **Consultas:** `consultas_verificacion.sql` (y su versión para SQL Server) y `consultas_demo.sql` (consultas para mostrar en la defensa).
+* **Scripts (orden de carga 03, 04, 05):** `03_ModeloSQL_Grupo00.sql` (47 tablas), `04_DatosSQL_Grupo00.sql` (datos), `05_Backend_Grupo00.sql` (procedimientos almacenados: 15 funcionalidades, 8 reportes, 1 auditoría y 2 tuneados) y `06_PruebasSQL.xlsx` (107 casos de prueba). Versión SQL Server 2005 con schemas: `*_sqlserver.sql`. `iqual_sqlite.sql` es el respaldo que la app embebe.
+* **Consultas:** `consultas_verificacion_mysql.sql` (y su versión para SQL Server) y `consultas_demo.sql` (consultas para mostrar en la defensa).
 * **Documentos:** `justificacion_3FN.md` y las guías en `db/guias/` (`GUIA_INSTALACION_MYSQL.md`, `GUIA_CONEXION_APP_MYSQL.md`, `REVISION_ESTATICA_MYSQL.md`).
 * **Diagramas:** los dos XML de draw.io y sus PNG (sección 6).
 
-*Verificar la estructura real del repositorio antes de publicar.*
 
 ---
 
@@ -123,10 +121,9 @@ Diagramas del Hito 1 de Bases de Datos, actualizados al modelo de 47 tablas. Se 
 
 | Diagrama | Archivo XML editable | Archivo PNG |
 | :--- | :--- | :--- |
-| **Peter Chen** (modelo conceptual) | `/db/Proyecto_IQUAL_Peter_Chen.xml` | `/db/peter-chen-modelo-conceptual.png` |
-| **Edgar Codd** (modelo lógico, 3FN) | `/db/Proyecto_IQUAL_Edgar_Codd.xml` | `/db/edgar-codd-modelo-logico.png` |
+| **Peter Chen** (modelo conceptual) | `/db/Proyecto_IQUAL_PeterChen.drawio.xml` | `/db/Proyecto_IQUAL_PeterChen.png` |
+| **Edgar Codd** (modelo lógico, 3FN) | `/db/Proyecto_IQUAL_EdgarCodd.drawio.xml` | `/db/Proyecto_IQUAL_EdgarCodd.png` |
 
-> Pendiente: exportar los dos PNG nuevos desde draw.io con esos nombres y guardarlos en `/db` (hasta entonces el repositorio puede tener los PNG de la versión anterior).
 
 ---
 

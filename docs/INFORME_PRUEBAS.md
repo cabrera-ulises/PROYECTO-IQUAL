@@ -150,7 +150,7 @@ Controles del conteo: no hay IDs repetidos dentro de los casos (172, 78 y 87 IDs
 
 Los estados de Arce Thiago y Cabrera Ulises y Arce Thiago y Cabrera Ulises son los que ellos mismos escribieron en la columna «Estado» de sus `ERRORES_*.md` de la ronda final (verificados en el código v3). ERR-20 y ERR-22 (Corregidos en v3) y ERR-23 (decisión por defecto: no tocar el splash) y ERR-21 (a verificar en MySQL) se suman a la tabla 5.2 como filas nuevas; ERR-09 pasó de Abierto a Decisión por defecto y ERR-15 figura «Corregido en MySQL, abierto solo en SQLite» (se cuenta como Corregido).
 
-**Pendientes propios de Arce Thiago y Cabrera Ulises y 4** (no son errores de la tabla anterior): la pregunta sobre separar las observaciones de pedir y devolver un equipo (U11, decisión por defecto: un solo campo) y las listas de defectos visuales y de microcopy de las capturas (Arce Thiago y Cabrera Ulises sección 4b; Arce Thiago y Cabrera Ulises «Pendientes propios (b)», ítems V1–V13). Quedan registrados en sus documentos y en `ERRORES_Y_PENDIENTES.md`.
+**Pendientes propios de Arce Thiago y Cabrera Ulises y 4** (no son errores de la tabla anterior): la pregunta sobre separar las observaciones de pedir y devolver un equipo (U11, decisión por defecto: un solo campo) y las listas de defectos visuales y de microcopy de las capturas (Arce Thiago y Cabrera Ulises sección 4b; Arce Thiago y Cabrera Ulises «Pendientes propios (b)», ítems V1–V13). Quedan registrados en sus documentos y en `docs/pruebas`.
 
 ## 6. Conclusiones
 1. **El sistema está bien cubierto en papel, pero sin ejecución:** 337 casos para las diez pantallas, ninguno corrido. Hasta que se corran, no se puede afirmar que algo «pasa» ni que «falla».
@@ -164,7 +164,7 @@ Los estados de Arce Thiago y Cabrera Ulises y Arce Thiago y Cabrera Ulises son l
 - Los casos y errores de Arce Thiago y Cabrera Ulises y Arce Thiago y Cabrera Ulises de la ronda final llegaron después de este informe: Arce Thiago y Cabrera Ulises volvió a correr el conteo sobre sus archivos nuevos (172 y 78 casos) y actualizó las cifras de este informe y del consolidado.
 - En `CASOS_PRUEBA_CONSOLIDADO.md` reemplacé la clave de demostración por «la contraseña de demo» (no se escriben claves). Los IDs no cambian.
 - No ejecuté ningún caso ni ninguna prueba; todo lo que se cuenta sale de leer los documentos y el código.
-- El conteo de casos con `[COMPLETAR]` (11) lo hizo el script buscando esa marca en las filas de tabla; puede haber `[COMPLETAR]` en el texto fuera de las tablas (preámbulos, desvíos), que se listan en `ERRORES_Y_PENDIENTES.md`.
+- El conteo de casos con `[COMPLETAR]` (11) lo hizo el script buscando esa marca en las filas de tabla; puede haber `[COMPLETAR]` en el texto fuera de las tablas (preámbulos, desvíos), que se listan en `docs/pruebas`.
 
 ## Datos que faltan
 - Resultados (OK / FALLA / NO PROBADO) de los 337 casos: quien pruebe.
