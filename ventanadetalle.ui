@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>VentanaDetalle</class>
+ <widget class="QDialog" name="VentanaDetalle">
+  <property name="windowTitle"><string>Detalle del objeto</string></property>
+  <layout class="QVBoxLayout" name="layDetalle">
+   <property name="spacing"><number>14</number></property>
+   <property name="leftMargin"><number>24</number></property><property name="topMargin"><number>24</number></property><property name="rightMargin"><number>24</number></property><property name="bottomMargin"><number>24</number></property>
+   <item>
+    <widget class="QLabel" name="lblDetalleTitulo">
+     <property name="estilo" stdset="0"><string>titulo</string></property>
+     <property name="text"><string>Título</string></property>
+     <property name="wordWrap"><bool>true</bool></property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="lblDetalleDescripcion">
+     <property name="text"><string>Descripción</string></property>
+     <property name="alignment"><set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set></property>
+     <property name="wordWrap"><bool>true</bool></property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="frmDetalleFoto">
+     <property name="estilo" stdset="0"><string>tarjeta</string></property>
+     <layout class="QVBoxLayout" name="layDetalleFoto">
+      <property name="leftMargin"><number>8</number></property><property name="topMargin"><number>8</number></property><property name="rightMargin"><number>8</number></property><property name="bottomMargin"><number>8</number></property>
+      <item>
+       <widget class="QLabel" name="lblDetalleFoto">
+        <property name="minimumSize"><size><width>440</width><height>280</height></size></property>
+        <property name="maximumSize"><size><width>440</width><height>280</height></size></property>
+        <property name="text"><string>Sin foto</string></property>
+        <property name="alignment"><set>Qt::AlignCenter</set></property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="frmDetalleReservado">
+     <property name="visible"><bool>false</bool></property>
+     <property name="estilo" stdset="0"><string>tarjeta</string></property>
+     <layout class="QVBoxLayout" name="layDetalleReservado">
+      <property name="spacing"><number>6</number></property>
+      <property name="leftMargin"><number>16</number></property><property name="topMargin"><number>12</number></property><property name="rightMargin"><number>16</number></property><property name="bottomMargin"><number>12</number></property>
+      <item>
+       <widget class="QLabel" name="lblDetalleReservadoTit">
+        <property name="estilo" stdset="0"><string>seccion</string></property>
+        <property name="text">
+<string>Dato reservado (solo lo ve el preceptor)</string>
+</property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lblDetalleReservado">
+        <property name="text"><string>Detalle reservado</string></property>
+        <property name="wordWrap"><bool>true</bool></property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="layDetalleBotones">
+     <item><spacer name="spDetalleBotones"><property name="orientation"><enum>Qt::Horizontal</enum></property></spacer></item>
+     <item>
+      <widget class="QPushButton" name="btnDetalleCerrar">
+       <property name="text"><string>Cerrar</string></property>
+       <property name="toolTip"><string>Cerrar el detalle</string></property>
+       <property name="default"><bool>true</bool></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

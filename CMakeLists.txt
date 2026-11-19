@@ -12,8 +12,16 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets Sql)
 add_executable(PROYECTO_IQUAL
     main.cpp
     mainwindow.cpp
+    ventanadetalle.cpp
+    ventanaproducto.cpp
+    ventanainicio.cpp
     mainwindow.h
+    ventanadetalle.h
+    ventanaproducto.h
+    ventanainicio.h
     mainwindow.ui
+    ventanadetalle.ui
+    ventanaproducto.ui
     recursos.qrc
 )
 

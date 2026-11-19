@@ -1,0 +1,494 @@
+# Casos de prueba consolidados — PROYECTO IQUAL® (SGE)
+
+**Proyecto:** PROYECTO IQUAL® · SGE · E.T. N°3 D.E.9
+**Qué es:** las tres tablas de casos de prueba (Arce Thiago y Cabrera Ulises, Arce Thiago y Cabrera Ulises y Arce Thiago y Cabrera Ulises) juntas, con los **IDs sin cambiar**, en un solo archivo, para la app v3 (`iqual_integrado_v3`, CONTEXTO §20). Los textos son los de los archivos originales, salvo 10 casos de Arce Thiago y Cabrera Ulises y 4 que ajusté a la v3 y marqué con **[v3]** (ver Desvíos).
+**Cómo se contó:** un script lee cada archivo y toma las filas de tabla cuyo ID tiene el formato de caso (por ejemplo `OBJ-03`, `HIG-01`, `TIE-P0-01`). Total: **337 casos**.
+**Resultado:** la última columna está **vacía en todos los casos**: nadie ejecutó todavía los casos. Se completa con OK / FALLA / NO PROBADO y una nota.
+**Datos de acceso:** no se copian claves ni PIN; donde el original nombraba la clave de demostración, acá dice «la contraseña de demo» (están en el script de datos y en `GUIA_CONEXION_APP_MYSQL.md`).
+
+## Índice
+
+| Tabla | Autor | Pantallas | Casos |
+|---|---|---|---|
+| 1 | Arce Thiago y Cabrera Ulises | Inicio, Acceso, Dashboard, Objetos perdidos, Préstamo de equipos | 172 |
+| 2 | Arce Thiago y Cabrera Ulises | Higiene, Reserva de sectores, Mi cuenta | 78 |
+| 3 | Arce Thiago y Cabrera Ulises | Tienda de alumnos, Educación Física | 87 |
+| | | **Total** | **337** |
+
+---
+
+# Tabla 1 — Arce Thiago y Cabrera Ulises (Inicio, Acceso, Dashboard, Objetos perdidos, Préstamo de equipos)
+
+## 1. Inicio (landing) — página 0
+
+| ID | Cubre | Rol | Precondición | Pasos | Resultado esperado | Resultado |
+|---|---|---|---|---|---|---|
+| INI-01 | Portada (sin RF propio) | Sin sesión | App recién abierta | 1) Abrir la aplicación | Se ve el logo, el lema "Tu escuela, en un solo lugar", los botones "Iniciar sesión" y "Crear cuenta" y el pie "PROYECTO IQUAL® · Escuela Técnica N°3 D.E.9". **No** se ven la barra lateral ni la superior | |
+| INI-02 | US07 · RF13 | Sin sesión | Landing | 1) Clic en "Iniciar sesión" | Abre Acceso en la pestaña "Iniciar sesión" con el cursor en "Usuario" | |
+| INI-03 | US07 · RF13 | Sin sesión | Landing | 1) Clic en "Crear cuenta" | Abre Acceso en la pestaña "Crear cuenta" con el cursor en "Nombre y apellido" | |
+| INI-04 | US07 | Sin sesión | Pantalla de Acceso | 1) Clic en "← Volver" | Vuelve a la landing; las barras siguen ocultas | |
+| INI-05 | US07 · RF18 | Cualquiera | Sesión iniciada | 1) Clic en "Cerrar sesión" (barra lateral) | Vuelve a la landing sin barras. En Auditoría (preceptor) aparece "Cierre de sesión · Exitoso" | |
+| INI-06 | RNF01 (tema) | Cualquiera | Sesión iniciada | 1) Cambiar a "Tema oscuro"; 2) cerrar la aplicación; 3) abrirla | La landing se ve en tema oscuro (la elección se recuerda). Repetir al revés con el tema claro | |
+| INI-07 | RNF01 | Sin sesión | Landing | 1) Achicar la ventana al mínimo (1020×680) | Logo y botones siguen visibles, nada se corta | |
+| INI-08 | §19.1 (conexión) | Sin sesión | Servidor MySQL encendido y `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql` cargado | 1) Abrir la aplicación; 2) mirar el título de la ventana | El título es "IQUAL - Sistema de Gestión Escolar · MySQL" (o "· MySQL (ODBC)" si usa el driver ODBC) `[COMPLETAR: resultado en tu equipo con MySQL]` |  |
+| INI-09 | §19.1 (conexión) | Sin sesión | MySQL apagado, clave mal o base vacía | 1) Abrir la aplicación; 2) leer el aviso; 3) cerrarlo | Aviso "No se pudo usar MySQL:" con el motivo y la explicación de que la aplicación va a trabajar con la base local `iqual.db`. Después abre normal y el título **no** lleva sufijo de MySQL. *(Con el splash abierto el aviso puede salir antes o después de que se cierre, y el splash puede repetirse: ERR-23, decisión de no tocar la pantalla de inicio)* |  |
+
+## 2. Acceso: iniciar sesión — página 1, pestaña "Iniciar sesión"
+
+| ID | Cubre | Rol | Precondición | Pasos | Resultado esperado | Resultado |
+|---|---|---|---|---|---|---|
+| LOG-01 | US07 · RF13 (7.5) | Alumno | Base demo | 1) Usuario `alumno1`, contraseña `1234`; 2) "Ingresar" | Abre Inicio con "Hola, Alumno", chip "Alumno Uno · Alumno" y la barra lateral. En Auditoría (preceptor): "Inicio de sesión · Exitoso · Ingresó el usuario alumno1" | |
+| LOG-02 | US07 | Alumno | Base demo | 1) Usuario ` ALUMNO1 ` (mayúsculas y espacios alrededor), contraseña `1234`; 2) "Ingresar" | Ingresa igual (el usuario no distingue mayúsculas ni espacios en los extremos). La contraseña **sí** distingue mayúsculas | |
+| LOG-03 | US07 · RF13 | Sin sesión | Acceso | 1) Dejar ambos campos vacíos; 2) "Ingresar" | Aviso "Completá el usuario y la contraseña." No ingresa. Con solo uno de los dos vacío, el mismo aviso | |
+| LOG-04 | US07 · RF18 (11.3) | Sin sesión | Acceso | 1) `alumno1` con contraseña `0000`; 2) "Ingresar" | Aviso "Usuario o contraseña incorrectos. Intentos restantes: 4." En Auditoría: "Inicio de sesión · Fallido · Intento fallido con el usuario alumno1" | |
+| LOG-05 | US07 (7.5) · US11 (11.2) | Sin sesión | Acceso | 1) Usuario `noexiste`, contraseña `1234`; 2) "Ingresar" | El **mismo** aviso que LOG-04 (no revela si el usuario existe). En Auditoría la fila Fallido muestra el usuario "desconocido" y el detalle "Intento fallido con un usuario inexistente": **no** se guarda lo que se escribió en el campo |  |
+| LOG-06 | US07 | Sin sesión | App recién abierta | 1) Fallar 5 veces seguidas | En el 5.º intento: "Fallaste 5 veces seguidas. Cerrá y volvé a abrir la aplicación para intentar de nuevo." El botón "Ingresar" queda deshabilitado | |
+| LOG-07 | US07 | Sin sesión | Tras LOG-06 | 1) Escribir usuario y contraseña **correctos**; 2) apretar Enter en "Contraseña" | Aviso "Superaste el máximo de intentos. Cerrá y volvé a abrir la aplicación." No ingresa. Al cerrar y abrir la app se puede ingresar de nuevo | |
+| LOG-08 | US07 · RNF01 (H7) | Sin sesión | Acceso | 1) Escribir el usuario y apretar Enter; 2) escribir la contraseña y apretar Enter | El primer Enter pasa el cursor a "Contraseña"; el segundo equivale a "Ingresar" | |
+| LOG-09 | RNF02 | Sin sesión | Acceso | 1) Escribir en "Contraseña" | Se ven puntos, no el texto | |
+| LOG-10 | US07 | Sin sesión | App recién abierta | 1) Fallar 3 veces; 2) ingresar bien; 3) "Cerrar sesión"; 4) fallar 1 vez | El aviso dice "Intentos restantes: 4" (el contador volvió a cero con el ingreso correcto) | |
+| LOG-11 | US07 · RNF02 | Sin sesión | Acceso | 1) Usuario `' OR '1'='1`, contraseña `x`; 2) "Ingresar" | No ingresa; aviso de datos incorrectos (la consulta usa parámetros) | |
+| LOG-12 | US07 (7.6) · RF21 | Los 5 roles | Base demo | 1) Ingresar con cada cuenta | Cada una abre su Inicio con sus tarjetas (ver DAS-01 a DAS-04). "Educación Física" aparece **solo** para Alumno | |
+| LOG-13 | US07 | Alumno | Sesión iniciada | 1) "Cerrar sesión"; 2) "Iniciar sesión" | Los campos de usuario y contraseña están vacíos (se vacían al ingresar y al cerrar sesión) |  |
+| LOG-14 | US07 · RNF02 | Preceptor | Sesión de `preceptor1` con texto escrito en Objetos (búsqueda), Publicar (título, dato reservado, categoría y sector elegidos), Consultas y el buscador de Préstamo, y un programa elegido | 1) "Cerrar sesión"; 2) ingresar de nuevo como `preceptor1`; 3) revisar cada pantalla | Todos los campos de texto y de búsqueda están vacíos, la categoría del filtro dice "Todas las categorías", el programa "Todos los programas" y los combos de Publicar "Elegí…" |  |
+| LOG-15 | US07 · RF13 | Alumno | Base demo (SQLite o MySQL) | 1) Usuario `Alumno1` (con A mayúscula) y contraseña `1234`; 2) ingresar con contraseña `1234 ` (con un espacio al final) | El primero ingresa. El segundo **no**: la contraseña se compara por su hash y distingue espacios y mayúsculas |  |
+
+## 3. Acceso: crear cuenta — página 1, pestaña "Crear cuenta"
+
+Datos válidos de ejemplo: nombre `Lucía Gómez`, usuario `lucia`, contraseña `abcd`, DNI `41000111`, correo `lucia@correo.com`, teléfono `1144445555`.
+
+| ID | Cubre | Rol | Precondición | Pasos | Resultado esperado | Resultado |
+|---|---|---|---|---|---|---|
+| REG-01 | US07 (7.3) | Sin sesión | Pestaña "Crear cuenta" recién abierta | 1) Mirar el formulario | "Crear cuenta" está deshabilitado. Año, división, especialidad y PIN están deshabilitados | |
+| REG-02 | US07 (7.3) | Sin sesión | REG-01 | 1) Elegir el rol "Alumno" | Se habilitan año, división y especialidad; el PIN sigue deshabilitado; el botón sigue deshabilitado | |
+| REG-03 | US07 (7.3) | Sin sesión | REG-02 | 1) Elegir año, división y especialidad (de a uno) | El botón se habilita recién cuando los **tres** están elegidos | |
+| REG-04 | US07 (7.4) | Sin sesión | REG-01 | 1) Elegir el rol "Profesor" | Se habilita el PIN; año, división y especialidad quedan deshabilitados; el botón se habilita | |
+| REG-05 | US07 (7.1, 7.5) | Alumno | Datos válidos | 1) Completar todo, rol Alumno y un curso; 2) "Crear cuenta" | "Cuenta creada. Ya podés iniciar sesión." Pasa a la pestaña "Iniciar sesión" y el formulario queda vacío. Se puede ingresar con `lucia`/`abcd` y en "Mi cuenta" figura el curso elegido. Auditoría: "Registro de usuario · Exitoso · Se creó la cuenta lucia" | |
+| REG-06 | US07 (7.4) | Profesor | Datos válidos con otro usuario, DNI y correo | 1) Rol Profesor y el PIN correcto; 2) "Crear cuenta" | Cuenta creada. Al ingresar, el chip dice "… · Profesor" | |
+| REG-07 | US07 (7.4) | Profesor | Datos válidos | 1) Rol Profesor con PIN incorrecto, y otra vez con PIN vacío | "El PIN de personal es incorrecto." No se crea la cuenta | |
+| REG-08 | US07 (7.1) | Alumno | Datos válidos | 1) Nombre `Lucia` (sin espacio) | "Escribí tu nombre y apellido separados por un espacio." | |
+| REG-09 | US07 (7.1) | Alumno | Datos válidos | 1) Usuario `ab` | "El usuario tiene que tener al menos 3 caracteres." | |
+| REG-10 | US07 (7.1) | Alumno | Datos válidos | 1) Contraseña `abc` | "La contraseña tiene que tener al menos 4 caracteres." | |
+| REG-11 | US07 (7.1) | Alumno | Datos válidos | 1) DNI `123456` (6 dígitos); 2) `123456789` (9); 3) `1234567a` | En los tres: "El DNI tiene que tener 7 u 8 números, sin puntos." | |
+| REG-12 | US07 (7.1) | Alumno | Datos válidos | 1) Correo `luciacorreo.com`; 2) `lucia@correo` | En ambos: "El correo tiene que llevar un @ y un punto." | |
+| REG-13 | US07 (7.1) | Alumno | Datos válidos | 1) Teléfono `1234567` (7); 2) `1234567890123456` (16); 3) `11-4444-5555` | En los tres: "El teléfono tiene que tener entre 8 y 15 números." | |
+| REG-14 | US07 (7.2) | Alumno | Datos válidos | 1) Usuario `alumno1`; 2) usuario `ALUMNO1` | En ambos: "Ese usuario ya existe, probá con otro." | |
+| REG-15 | US07 (7.2) | Alumno | Datos válidos | 1) DNI de `alumno1` (`[COMPLETAR: confirmar en la base; el CONTEXTO §8 indica 40000001]`) | "Ya hay una cuenta con ese DNI." | |
+| REG-16 | US07 (7.2) | Alumno | Datos válidos | 1) Correo de `alumno1` (formato `…@iqual.demo`; `[COMPLETAR: correo exacto]`) | "Ya hay una cuenta con ese correo." | |
+| REG-17 | US07 | Alumno | Datos con **dos** errores (nombre sin espacio y usuario corto) | 1) "Crear cuenta" | Se muestra **un solo** aviso por vez: el del nombre. Al corregirlo, aparece el del usuario | |
+| REG-18 | US07 (7.5) | Alumno | Datos válidos | 1) En el último campo (teléfono) apretar Enter | Equivale a "Crear cuenta" cuando el botón está habilitado. Con el botón deshabilitado, no pasa nada | |
+| REG-19 | US07 (7.3) | Alumno | Datos válidos | 1) Elegir una combinación año/división/especialidad que ningún alumno tenga; 2) crear | Se crea la cuenta y la combinación (curso nuevo). En "Mi cuenta" aparece ese curso | |
+| REG-20 | RF18 (11.3) | Sin sesión | Cualquier caso de error anterior | 1) Revisar la Auditoría con `preceptor1` | Cada error de validación quedó como "Registro de usuario · Fallido" con el mensaje mostrado | |
+| REG-21 | US07 (7.2) | Alumno | Datos válidos; ya existe una cuenta con correo `ana@correo.com` | 1) Crear otra cuenta con correo `Ana@correo.com` | Con MySQL: "Ya hay una cuenta con ese correo." (la comparación no distingue mayúsculas). Con SQLite de respaldo: se crea la cuenta (ERR-15, solo en ese modo) |  |
+| REG-22 | US07 (7.1) | Alumno | Datos válidos | 1) Usuario `ju an`, o contraseña de cuatro espacios, o correo `a@.`; 2) "Crear cuenta" | Debería avisar y no crear la cuenta *(hoy se acepta: ERR-14)* |  |
+| REG-23 | US07 (7.1) | Alumno | Pestaña "Crear cuenta" | 1) Completar con valores **justo en el límite válido**: usuario de 3 caracteres, contraseña de 4, DNI de 7 números, teléfono de 8 números, correo `a@b.c`; 2) "Crear cuenta" | Se crea la cuenta: "Cuenta creada. Ya podés iniciar sesión." (los mínimos de cada campo son válidos). Repetido con un valor **un caracter por debajo** (usuario de 2, contraseña de 3, DNI de 6, teléfono de 7) se rechaza con el aviso de ese campo |  |
+
+## 4. Inicio (dashboard) — página 2
+
+| ID | Cubre | Rol | Precondición | Pasos | Resultado esperado | Resultado |
+|---|---|---|---|---|---|---|
+| DAS-01 | US07 (7.6, 7.7) | Alumno | Base demo | 1) Ingresar como `alumno1` | "Hola, Alumno". Tarjetas de resumen: "Tus reclamos de objetos" (1), "Tus reservas en la tienda" (reservas en estado Reservada), "Préstamos activos a tu nombre" (1). Módulos: Objetos, Higiene, Tienda, Préstamo, Sectores y Educación Física | |
+| DAS-02 | US07 (7.6, 7.7) | Preceptor | Base demo | 1) Ingresar como `preceptor1` | "Reclamos de objetos pendientes" (2), "Reservas de sectores pendientes" (1; solo cuentan las de hoy en adelante), "Reportes de higiene pendientes" (1). **Sin** el módulo Educación Física | |
+| DAS-03 | US07 (7.6, 7.7) | Profesor | Base demo | 1) Ingresar como `profe1` | "Tus reservas de sectores", "Reportes de higiene pendientes", "Préstamos activos en el colegio". Sin Educación Física | |
+| DAS-04 | US07 (7.6, 7.7) | Maestranza | Base demo | 1) Ingresar como `maestranza1` | "Reportes de higiene pendientes", "Equipos fuera de servicio" (1), "Préstamos activos en el colegio". Sin Educación Física | |
+| DAS-05 | RNF04 | Cualquiera | Sesión iniciada | 1) Clic en cada tarjeta de módulo | Se abre la página correspondiente, la barra superior muestra su título y el botón de la barra lateral queda marcado | |
+| DAS-06 | RNF04 | Cualquiera | Sesión iniciada | 1) Usar "Inicio", "Mi cuenta" y las demás opciones de la barra lateral | Cada una abre su página; "Inicio" vuelve al panel | |
+| DAS-07 | US07 (7.7) | Alumno | `alumno1` con C4-05 activo | 1) Ir a Préstamo de equipos y devolver C4-05; 2) volver a "Inicio" | "Préstamos activos a tu nombre" muestra 0: los tres números se recalculan cada vez que se entra al Inicio |  |
+| DAS-08 | US07 (7.7) | Profesor | `profe1` con una reserva de sector futura aprobada y otra cancelada `[COMPLETAR: preparar el dato]` | 1) Mirar "Tus reservas de sectores" | Cuenta solo las pendientes y aprobadas con fecha de hoy en adelante (la fecha de hoy se pasa por parámetro a la consulta); la cancelada y las de días anteriores no suman |  |
+| DAS-09 | RNF01 | Cualquiera | Sesión iniciada | 1) Clic en "Tema oscuro" / "Tema claro" en la barra superior | Cambia todo el aspecto y el botón cambia de texto | |
+| DAS-10 | RNF01 | Cualquiera | Sesión iniciada | 1) Achicar la ventana al mínimo | Las tarjetas de módulos se ven completas *(en las capturas los nombres largos aparecen cortados; ver `ERRORES_ACCESO_OBJETOS_PRESTAMO.md`, tabla 4b)* |  |
+| DAS-11 | US07 (7.7) | Alumno | `alumno2` con 0 reclamos sobre la campera | 1) Reclamar la campera; 2) tocar "Inicio" en la barra lateral | "Tus reclamos de objetos" subió en 1 sin cerrar sesión |  |
+| DAS-12 | US07 (7.7) | Preceptor | Base demo (2 reclamos pendientes) | 1) Aprobar un reclamo en Objetos → Reclamos; 2) tocar "Inicio" | "Reclamos de objetos pendientes" dice 0 (el otro reclamo de las llaves se rechaza al aprobar) |  |
+| DAS-13 | US07 (7.7) | Alumno | `alumno1` con 1 préstamo activo | 1) "Cerrar sesión"; 2) ingresar como `alumno2`; 3) mirar el Inicio | Los tres números son los de `alumno2` (no quedan los de `alumno1`) |  |
+
+## 5. Objetos perdidos — pestaña "Objetos" (lista y reclamo) — página 3
+
+| ID | Cubre | Rol | Precondición | Pasos | Resultado esperado | Resultado |
+|---|---|---|---|---|---|---|
+| OBJ-01 | US01 (1.2, 1.7) · RF02 | Alumno | Base demo | 1) Ingresar como `alumno1`; 2) abrir Objetos perdidos | Pestañas visibles: **solo** "Objetos" y "Consultas". Resumen "Objetos para reclamar: 2 · Ya devueltos: 1". Cada tarjeta muestra título, "Categoría · Sector" y "Estado · (N reclamos)". Los Disponibles van en verde y el devuelto en gris con "Ya devuelto". El alumno ve solo la cantidad de reclamos, nunca el contenido |  |
+| OBJ-02 | RF02 | Alumno | OBJ-01 | 1) Escribir `camp` en el buscador; 2) borrarlo | Con `camp` queda solo "Campera azul" y el resumen se recalcula. Al borrar vuelven los tres | |
+| OBJ-03 | RF02 | Alumno | OBJ-01 | 1) Elegir la categoría "Ropa"; 2) escribir `llaves` | Con la categoría solo queda la campera. Al sumar el texto no queda ninguna y la lista dice "No hay objetos que coincidan con la búsqueda." | |
+| OBJ-04 | US01 (1.2, 1.5) · RF02 | Alumno | `alumno2` | 1) Elegir "Campera azul"; 2) escribir `Tiene una etiqueta cosida` en el campo; 3) "Reclamar objeto" | "Reclamo enviado. El preceptor lo va a revisar." El campo se vacía y la campera sigue **Disponible**, ahora con "(1 reclamo)". El objeto no desaparece de la lista |  |
+| OBJ-05 | US01 (1.2) | Alumno | `alumno2`, campera elegida | 1) Escribir `corto` (menos de 10); 2) "Reclamar objeto" | "Contanos un poco más: el detalle necesita 10 caracteres o más." No se crea el reclamo | |
+| OBJ-06 | US01 | Alumno | `alumno2` | 1) Sin elegir ninguna tarjeta, escribir un detalle válido; 2) "Reclamar objeto" | "Elegí un objeto de la lista." | |
+| OBJ-07 | US01 (1.5) · RF02 | Alumno | `alumno1` (ya reclamó las Llaves) | 1) Elegir "Llaves con llavero rojo"; 2) detalle válido; 3) "Reclamar objeto" | "Ya reclamaste este objeto. Solo se puede reclamar una vez." El contador de reclamos no cambia | |
+| OBJ-08 | US01 (1.2) | Alumno | `alumno2` | 1) Elegir "Calculadora científica" (Ya devuelto); 2) detalle válido; 3) "Reclamar objeto" | "Este objeto ya no se puede reclamar: se devolvió o se archivó." | |
+| OBJ-09 | RNF01 (H7) | Alumno | `alumno2`, objeto elegido | 1) Escribir un detalle válido y apretar Enter en el campo | Equivale a "Reclamar objeto" | |
+| OBJ-10 | US01 (1.6) | Profesor | Base demo | 1) Ingresar como `profe1`; 2) abrir Objetos | Ve las tarjetas y los contadores, y la pestaña "Consultas". **No** ve la tarjeta "Reclamar el objeto elegido" ni las pestañas Reclamos, Publicar y Auditoría. No ve el dato reservado en ningún lado | |
+| OBJ-11 | US01 (1.6) | Maestranza | Base demo | 1) Ingresar como `maestranza1`; 2) abrir Objetos | Igual que OBJ-10 | |
+| OBJ-12 | US01 (1.3, 1.4) | Preceptor | Base demo | 1) Ingresar como `preceptor1`; 2) abrir Objetos | Ve las cinco pestañas (Objetos, "Reclamos (2)", Consultas, Publicar, Auditoría), el botón "Archivar objeto" y el resumen "… · Reclamos pendientes: 2". **No** ve la tarjeta de reclamar | |
+| OBJ-13 | US01 (1.4) | Preceptor | "Campera azul" sin reclamos | 1) Elegir la campera; 2) "Archivar objeto"; 3) "Sí" | La campera sale de la lista. Repetido con "No": no cambia nada | |
+| OBJ-14 | US01 (1.4) | Preceptor | "Llaves" con reclamos pendientes | 1) Elegir las llaves; 2) "Archivar objeto" | "Ese objeto tiene reclamos pendientes. Resolvelos antes de archivarlo." No pide confirmación | |
+| OBJ-15 | US01 | Preceptor | Base demo | 1) Clic en "Archivar objeto" sin elegir tarjeta | "Elegí un objeto de la lista." | |
+| OBJ-16 | RNF01 | Cualquiera | Objetos abierto | 1) Cambiar de tema con la lista visible | Los colores de los estados se recalculan (verde/gris legibles en los dos temas) y la lista no pierde la selección | |
+| OBJ-17 | RNF01 (H6) | Preceptor | Todos los objetos archivados `[COMPLETAR: preparar el dato]` | 1) Abrir Objetos | La lista dice "Todavía no hay objetos publicados." | |
+| OBJ-18 | RNF01 | Alumno | Objeto elegido | 1) Reclamar; 2) mirar la lista | Tras reclamar, la misma tarjeta sigue seleccionada | |
+| OBJ-19 | US01 (1.2) · RF02 | Alumno | Base demo | 1) Como `alumno1`, elegir "Campera azul"; 2) "Cerrar sesión"; 3) ingresar como `alumno2`; 4) abrir Objetos | Ninguna tarjeta queda elegida *(hoy falla: ERR-11)* |  |
+| OBJ-20 | US01 · RF02 | Alumno | Base demo | 1) Mirar el resumen; 2) escribir `camp` en el buscador | "Objetos para reclamar" no cambia al buscar (cuenta el total) *(hoy falla: ERR-12, baja a 1)* |  |
+| OBJ-21 | US01 (1.1, 1.7) · RF01 | Preceptor, Alumno | Objeto publicado solo con título, categoría y sector (sin foto ni descripción) | 1) Como `preceptor1`, publicarlo; 2) mirar su tarjeta; 3) doble clic en la tarjeta | La tarjeta se ve con la miniatura vacía y no rompe la lista. El detalle dice "Sin descripción." y "Este objeto no tiene foto."; si el que mira es el preceptor, el dato reservado dice "Ninguno cargado." |  |
+
+## 6. Objetos perdidos — pestaña "Reclamos" (solo Preceptor)
+
+| ID | Cubre | Rol | Precondición | Pasos | Resultado esperado | Resultado |
+|---|---|---|---|---|---|---|
+| RCL-01 | US01 (1.3) · RF02 | Preceptor | Base demo | 1) Abrir la pestaña "Reclamos (2)" | Lista los dos reclamos de "Llaves con llavero rojo", uno debajo del otro, cada uno con "lo reclama …", "Su detalle: …" y "Dato reservado: …" | |
+| RCL-02 | US01 (1.6) | Alumno, Profesor, Maestranza | Base demo | 1) Ingresar con cada rol; 2) buscar la pestaña | La pestaña "Reclamos" no existe para ellos | |
+| RCL-03 | US01 (1.3) | Preceptor | Base demo | 1) Elegir el reclamo de Alumno Uno; 2) "Aprobar reclamo"; 3) "Sí" | "Reclamo aprobado. El objeto figura como Devuelto y los otros reclamos se rechazaron." Las llaves pasan a "Ya devuelto"; la pestaña dice "Reclamos (0)" y la lista "No hay reclamos pendientes. Cuando un alumno reclame un objeto, aparece acá." En la base, el reclamo de Alumno Dos queda Rechazado. Auditoría: "Resolución de reclamo · Exitoso" | |
+| RCL-04 | US01 (1.3) | Preceptor | Base demo | 1) Elegir un reclamo; 2) "Aprobar reclamo"; 3) "No" | No cambia nada | |
+| RCL-05 | US01 (1.3) | Preceptor | Base demo | 1) Elegir el reclamo de Alumno Dos; 2) "Rechazar reclamo"; 3) "Sí" | "Reclamo rechazado. El objeto sigue en la lista." Las llaves siguen Disponibles, con "(2 reclamos)"; el otro reclamo sigue pendiente y la pestaña dice "Reclamos (1)" | |
+| RCL-06 | US01 (1.3) | Preceptor | Base demo | 1) Elegir un reclamo; 2) "Rechazar reclamo"; 3) "No" | No cambia nada | |
+| RCL-07 | US01 | Preceptor | Base demo | 1) Sin elegir ningún reclamo, "Aprobar reclamo" y luego "Rechazar reclamo" | En ambos: "Elegí un reclamo de la lista." | |
+| RCL-08 | US01 (1.5) | Alumno | Tras RCL-05 (rechazado el de `alumno2`) | 1) Ingresar como `alumno2`; 2) reclamar de nuevo las Llaves | "Ya reclamaste este objeto. Solo se puede reclamar una vez." (un reclamo rechazado no se puede reiterar) | |
+| RCL-09 | US01 | Preceptor | Un objeto publicado sin dato reservado y con un reclamo | 1) Mirar su reclamo | Dice "Dato reservado: ninguno cargado" | |
+| RCL-10 | US01 (1.3) · US07 (7.7) | Preceptor | Base demo | 1) Aprobar o rechazar un reclamo; 2) volver a "Inicio" | La tarjeta "Reclamos de objetos pendientes" refleja el cambio (de 2 a 1 si resolviste uno) |  |
+| RCL-11 | US01 (1.3) · RF02 | Preceptor | Objeto con **un solo** reclamo pendiente `[COMPLETAR: preparar el dato; por ejemplo, el reclamo de alumno2 sobre la campera]` | 1) Elegir ese reclamo; 2) "Aprobar reclamo"; 3) "Sí" | El objeto pasa a "Ya devuelto" y la lista de reclamos queda con "No hay reclamos pendientes. Cuando un alumno reclame un objeto, aparece acá." y la pestaña dice "Reclamos (0)". No hay otros reclamos que rechazar y no aparece ningún error |  |
+
+## 7. Objetos perdidos — pestaña "Consultas"
+
+| ID | Cubre | Rol | Precondición | Pasos | Resultado esperado | Resultado |
+|---|---|---|---|---|---|---|
+| CON-01 | US08 (8.2) · RF14 | Alumno | Base demo | 1) Abrir "Consultas" | Lista las dos consultas, cada una con nombre, teléfono, fecha y texto (por ejemplo "Alumno Dos · tel. 1155550002 · 23/10" y debajo la descripción) |  |
+| CON-02 | US08 (8.1, 8.2) | Alumno | `alumno1` | 1) Escribir `Perdí una regla de 30 cm en el aula`; 2) "Publicar consulta" (o Enter) | Aparece primera en la lista con el nombre, el teléfono y la **fecha de hoy** (día/mes) de quien la publicó; el campo se vacía |  |
+| CON-03 | US08 (8.1) | Profesor, Maestranza, Preceptor | Sesión del rol | 1) Publicar una consulta válida | Se publica igual: cualquier rol puede | |
+| CON-04 | US08 (8.1) | Alumno | Consultas abierto | 1) Escribir `corto`; 2) "Publicar consulta" | "Describí mejor lo que buscás (10 caracteres o más)." | |
+| CON-05 | US08 (8.1) | Alumno | Consultas abierto | 1) Dejar el campo vacío; 2) "Publicar consulta" | El mismo aviso que CON-04 | |
+| CON-06 | US08 (8.3) | Alumno | `alumno1`, consulta propia | 1) Elegir su consulta; 2) "Borrar consulta"; 3) "Sí" | Pide confirmación "¿Querés borrar esta consulta? No se puede deshacer." y la borra. Con "No" no cambia nada | |
+| CON-07 | US08 (8.3) | Alumno | `alumno1` | 1) Elegir la consulta de Alumno Dos; 2) "Borrar consulta" | "Solo podés borrar tus propias consultas." No pide confirmación | |
+| CON-08 | US08 (8.3) | Preceptor | Base demo | 1) Elegir la consulta de un alumno; 2) "Borrar consulta"; 3) "Sí" | La borra: el preceptor puede borrar cualquiera | |
+| CON-09 | US08 | Alumno | Base demo | 1) "Borrar consulta" sin elegir | "Elegí una consulta de la lista." | |
+| CON-10 | RNF01 (H6) | Preceptor | Todas las consultas borradas | 1) Abrir "Consultas" | La lista dice "Todavía no hay consultas. ¿Perdiste algo? Publicá la primera." | |
+| CON-11 | US08 (8.2) · US10 | Alumno | `alumno1` con consulta propia | 1) Mi cuenta → cambiar teléfono a `1166667777`; 2) volver a "Consultas" | La consulta muestra el teléfono nuevo | |
+| CON-12 | RNF01 (H4) | Alumno | Base demo | 1) Abrir "Consultas" | La fecha de cada consulta se escribe como día/mes ("23/10"), igual que en Auditoría y Préstamo |  |
+| CON-13 | US08 (8.1) | Alumno | `alumno1`, Consultas abierto | 1) Escribir un texto de **9** caracteres (por ejemplo `123456789`) y publicar; 2) escribir uno de **10** caracteres (`1234567890`) y publicar | Con 9: "Describí mejor lo que buscás (10 caracteres o más)." Con 10 se publica (el límite exacto es válido) |  |
+
+## 8. Objetos perdidos — pestaña "Publicar" (solo Preceptor)
+
+| ID | Cubre | Rol | Precondición | Pasos | Resultado esperado | Resultado |
+|---|---|---|---|---|---|---|
+| PUB-01 | US01 (1.1) · RF01 | Alumno, Profesor, Maestranza | Base demo | 1) Ingresar con cada rol | No tienen la pestaña "Publicar" | |
+| PUB-02 | US01 (1.1) · RF01 | Preceptor | Base demo | 1) Escribir el título `Buzo azul`; 2) elegir categoría y sector a propósito; 3) "Publicar objeto" | "Objeto publicado." Aparece primero en la lista, "Disponible · (0 reclamos)". Los campos de texto y la vista previa quedan vacíos y la categoría y el sector vuelven a "Elegí una categoría" / "Elegí un sector". Auditoría: "Publicación de objeto · Exitoso" |  |
+| PUB-03 | US01 (1.1) | Preceptor | Pestaña Publicar | 1) Dejar el título vacío; 2) "Publicar objeto" | "Escribí un título para el objeto." | |
+| PUB-04 | US01 (1.1) | Preceptor | Una imagen PNG o JPG | 1) "Elegir foto (opcional)" y elegirla; 2) "Publicar objeto" | La vista previa muestra la foto. Al publicar, la tarjeta muestra la miniatura y la imagen se copia a la carpeta `imagenes_objetos`, junto al ejecutable | |
+| PUB-05 | US01 | Preceptor | Un archivo `.png` que en realidad no es una imagen | 1) "Elegir foto" y elegirlo | "No se pudo abrir esa imagen. Probá con otra foto PNG o JPG." La vista previa no cambia | |
+| PUB-06 | US01 | Preceptor | Pestaña Publicar | 1) "Elegir foto" y cancelar el diálogo | No cambia nada | |
+| PUB-07 | US01 · RF02 | Preceptor | Pestaña Publicar | 1) Intentar escribir 201 caracteres en "Dato reservado"; 2) publicar un objeto con dato reservado | El campo no deja pasar de 200 caracteres. El dato lo ve el Preceptor en el detalle del objeto y en "Reclamos"; los demás roles nunca | |
+| PUB-08 | RNF01 (H7) | Preceptor | Formulario con título | 1) Apretar Enter en "Dato reservado" | Equivale a "Publicar objeto" | |
+| PUB-09 | US01 (1.1) | Preceptor | Pestaña Publicar recién abierta | 1) Escribir solo el título; 2) "Publicar objeto" sin tocar categoría ni sector | Los combos dicen "Elegí una categoría" y "Elegí un sector". Aviso "Elegí la categoría del objeto."; al elegirla y repetir, "Elegí el sector donde lo encontraron." No se publica nada hasta elegir los dos |  |
+| PUB-10 | US01 | Preceptor | Después de publicar con foto | 1) Mirar la vista previa; 2) publicar otro objeto sin elegir foto | La vista previa volvió a "Sin foto" y el objeto nuevo no lleva la foto anterior | |
+| PUB-11 | US01 | Preceptor | Formulario a medio llenar con foto, categoría y sector elegidos | 1) "Cerrar sesión"; 2) ingresar de nuevo como `preceptor1` | El formulario y la vista previa están vacíos y los combos vuelven a "Elegí…" |  |
+| PUB-12 | RNF01 (H7) | Preceptor | Pestaña Publicar | 1) Recorrer el formulario con Tab | El orden es: título, descripción, categoría, sector, dato reservado, "Elegir foto", "Publicar objeto" | |
+| PUB-13 | US01 (1.1) | Preceptor | Pestaña Publicar | 1) Título `Buzo`, elegir solo la categoría; 2) "Publicar objeto" | "Elegí el sector donde lo encontraron." No se publica |  |
+| PUB-14 | US01 (1.1) | Preceptor | Se acaba de publicar un objeto con categoría "Ropa" y sector "Patio" | 1) Escribir otro título; 2) "Publicar objeto" sin tocar los combos | Los combos ya dicen "Elegí una categoría" / "Elegí un sector" y la app avisa "Elegí la categoría del objeto." No se publica nada hasta elegir los dos |  |
+
+## 9. Objetos perdidos — pestaña "Auditoría" (solo Preceptor)
+
+| ID | Cubre | Rol | Precondición | Pasos | Resultado esperado | Resultado |
+|---|---|---|---|---|---|---|
+| AUD-01 | US11 · RF18 | Preceptor | Base demo | 1) Abrir "Auditoría" | Lista hasta 50 registros, del más nuevo al más viejo, con "fecha · usuario · evento · resultado" y el detalle debajo | |
+| AUD-02 | US11 (11.2) | Alumno, Profesor, Maestranza | Base demo | 1) Ingresar con cada rol | No existe la pestaña | |
+| AUD-03 | US11 (11.3) | Preceptor | Registros Fallido y Exitoso | 1) Filtrar "Fallido"; 2) "Exitoso"; 3) "Todos" | "Fallido": solo filas en rojo. "Exitoso": ninguna en rojo. "Todos": las dos | |
+| AUD-04 | US11 (11.3) | Preceptor | Base demo | 1) Como `alumno1`, reclamar de nuevo las Llaves; 2) como `preceptor1`, abrir Auditoría | Aparece "Reclamo de objeto · Fallido" con el mensaje "Ya reclamaste este objeto…" | |
+| AUD-05 | US11 (11.1) | Preceptor | Base demo | 1) Aprobar un reclamo; 2) abrir Auditoría | Aparece "Resolución de reclamo · Exitoso · Reclamo N: Aprobado" | |
+| AUD-06 | US11 (11.2) | Preceptor | Base demo | 1) Hacer un login con usuario inexistente; 2) abrir Auditoría | La fila Fallido muestra "desconocido" como usuario y el detalle "Intento fallido con un usuario inexistente" |  |
+| AUD-07 | RNF01 (H6) | Preceptor | Base sin registros Fallido `[COMPLETAR: borrar esos registros con DB Browser]` | 1) Filtrar "Fallido" | "No hay registros para este filtro." | |
+| AUD-08 | RNF01 | Preceptor | Auditoría abierta | 1) Cambiar de tema | Los registros Fallido siguen en rojo legible en ambos temas | |
+| AUD-09 | US11 (11.3) | Preceptor | Base demo | 1) Como `alumno1`, "Reclamar objeto" sin elegir tarjeta; 2) como `preceptor1`, abrir Auditoría | No se agrega ninguna fila Fallido por no elegir nada *(hoy se agrega "Reclamo de objeto · Fallido · Elegí un objeto de la lista.": ERR-10)* |  |
+
+## 10. Ventana de detalle del objeto (`VentanaDetalle`)
+
+| ID | Cubre | Rol | Precondición | Pasos | Resultado esperado | Resultado |
+|---|---|---|---|---|---|---|
+| DET-01 | US01 · RF01 | Alumno | Base demo | 1) Doble clic en "Campera azul" | Se abre el detalle con el título, la descripción (o "Sin descripción.") y "Este objeto no tiene foto." No hay tarjeta de dato reservado | |
+| DET-02 | US01 · RF02 | Preceptor | Base demo | 1) Doble clic en "Llaves con llavero rojo" | Aparece la tarjeta "Dato reservado (solo lo ve el preceptor)" con el texto cargado | |
+| DET-03 | US01 | Preceptor | Objeto sin dato reservado | 1) Doble clic en él | La tarjeta dice "Ninguno cargado." | |
+| DET-04 | US01 | Profesor, Maestranza | Base demo | 1) Doble clic en un objeto con dato reservado | No se ve la tarjeta del dato reservado | |
+| DET-05 | US01 | Cualquiera | Objeto con foto `[COMPLETAR: publicar uno con foto]` | 1) Doble clic en él | La foto se ve completa, con proporción original, dentro de la tarjeta | |
+| DET-06 | RNF01 (H7) | Cualquiera | Detalle abierto | 1) Cerrar con el botón "Cerrar"; 2) reabrir y cerrar con Enter; 3) reabrir y cerrar con Esc | Las tres formas cierran el detalle | |
+| DET-07 | RNF01 | Cualquiera | Detalle abierto | 1) Intentar hacer clic en la ventana principal | No responde hasta cerrar el detalle (es modal) | |
+| DET-08 | RNF01 | Cualquiera | Lista con el mensaje de estado vacío `[COMPLETAR: lista vacía]` | 1) Doble clic sobre el mensaje | No se abre ningún detalle | |
+| DET-09 | RNF01 | Cualquiera | Detalle abierto | 1) Cambiar de tema y reabrir | El detalle se ve legible en tema claro y oscuro | |
+| DET-10 | US01 (1.7) | Cualquiera | Objeto con foto cuya imagen se borró de `imagenes_objetos` | 1) Doble clic en el objeto | El detalle dice que no se encontró la foto, distinto de "Este objeto no tiene foto." *(hoy dice lo mismo en los dos casos: ERR-17)* |  |
+
+## 11. Préstamo de equipos — página 6
+
+| ID | Cubre | Rol | Precondición | Pasos | Resultado esperado | Resultado |
+|---|---|---|---|---|---|---|
+| PRE-01 | US04 · RF07 | Cualquiera | Base demo | 1) Abrir Préstamo de equipos | Franja de resumen "Disponibles: 28 · Prestados: 1 · Fuera de servicio: 1". "Equipos disponibles" muestra "C4-01 · Computadora", etc.; **C4-05 no aparece** (está prestado) | |
+| PRE-02 | US04 (4.4) | Cualquiera | PRE-01 | 1) Escribir `C5`; 2) escribir `tab` | `C5` deja solo los equipos del carro C5. `tab` deja solo los tableros ("Tablero 01"…); el filtro corre mientras se escribe | |
+| PRE-03 | US04 (4.4) | Cualquiera | PRE-01 | 1) Escribir `C4-05` | En "Equipos disponibles": "No hay equipos disponibles con ese filtro." En "Préstamos": aparece el préstamo activo de C4-05 | |
+| PRE-04 | US13 (13.1) · RF20 | Cualquiera | Programas cargados `[COMPLETAR: ver sección 0]` | 1) Elegir un programa en el desplegable "Todos los programas" | Quedan solo los equipos disponibles que tienen ese programa (los tableros desaparecen). Al sumar el texto `C5` quedan los que cumplen **ambos** filtros. "Todos los programas" restaura la lista |  |
+| PRE-05 | US13 (13.1) · RF20 | Cualquiera | Programas cargados | 1) Elegir un equipo con programas; 2) elegir un tablero o un equipo sin programas | Con programas: "Programas instalados: …" en orden alfabético. Sin programas: "Programas instalados: todavía no hay ninguno registrado." Sin selección: "Programas instalados: elegí un equipo de la lista." |  |
+| PRE-06 | US04 (4.1, 4.2) · RF07 | Alumno | `alumno2` (sin préstamo activo) | 1) Elegir C4-01; 2) mirar el desplegable de alumno; 3) "Registrar préstamo" | El desplegable muestra a `alumno2` y está deshabilitado. "Préstamo registrado." La franja pasa a "Disponibles: 27 · Prestados: 2". Aparece el préstamo en verde, "En préstamo". C4-01 sale de la lista. Auditoría: "Préstamo de recurso · Exitoso" | |
+| PRE-07 | US04 (4.2) | Alumno | `alumno1` (tiene C4-05) | 1) Elegir C4-02; 2) "Registrar préstamo" | "Ya tenés un equipo prestado. Devolvelo antes de retirar otro." No se presta | |
+| PRE-08 | US04 (4.1) · RF07 | Profesor | `profe1` | 1) Elegir un equipo y el alumno `alumno2`; 2) "Registrar préstamo" | "Préstamo registrado." La línea del préstamo dice "Autorizó Profesor Uno" |  |
+| PRE-09 | US04 (4.1) | Profesor, Preceptor | Base demo | 1) Elegir un equipo y dejar el alumno en "Elegí el alumno"; 2) "Registrar préstamo" | "Elegí quién se lleva el equipo." | |
+| PRE-10 | US04 (4.2) | Profesor | Base demo | 1) Elegir un equipo y el alumno `alumno1` (ya tiene uno); 2) "Registrar préstamo" | "Ese alumno ya tiene un equipo prestado. Tiene que devolverlo antes de retirar otro." | |
+| PRE-11 | US04 (4.1) | Alumno, Profesor, Preceptor | Base demo | 1) Sin elegir equipo, "Registrar préstamo" | "Elegí un equipo de la lista de disponibles." | |
+| PRE-12 | US04 (4.3) | Alumno | `alumno1` (C4-05 activo) | 1) Elegir su préstamo; 2) dejar "Funciona"; 3) "Devolver equipo" | "Devolución registrada." El préstamo pasa a gris, "Devuelto HH:MM"; C4-05 vuelve a "Equipos disponibles". Auditoría: "Devolución de recurso · Exitoso" | |
+| PRE-13 | US04 (4.3) | Alumno | Un préstamo activo | 1) Elegir "No funciona"; 2) "Devolver equipo"; 3) "Sí" | Pide confirmación "Vas a devolver el equipo como que NO funciona…". Con "Sí": devolución registrada y el equipo pasa a "Fuera de servicio". Con "No": no cambia nada y el préstamo sigue activo | |
+| PRE-14 | US04 (4.3) | Alumno | `alumno1` | 1) Elegir un préstamo ya devuelto (C5-02); 2) "Devolver equipo" | "Ese préstamo ya fue devuelto." | |
+| PRE-15 | US04 (4.3) | Alumno | `profe1` prestó un equipo a `alumno2` | 1) Como `alumno1`, elegir ese préstamo; 2) "Devolver equipo" | "Solo podés devolver tus propios préstamos." | |
+| PRE-16 | US04 | Alumno, Profesor, Preceptor | Base demo | 1) "Devolver equipo" sin elegir préstamo | "Elegí un préstamo de la lista." | |
+| PRE-17 | US04 (4.3) · RF07 | Profesor | Préstamo activo con observación al pedir | 1) Prestar con la observación `rayón en la tapa`; 2) devolver con la observación `ya no está el rayón` | En la base, `observaciones` queda "rayón en la tapa / Devolución: ya no está el rayón". Si no había observación al prestar, queda solo el texto de la devolución, sin prefijo (limitación vigente por la decisión U11) |  |
+| PRE-18 | US04 | Preceptor | Base demo | 1) Ingresar como `preceptor1`; 2) abrir Préstamo | Ve "Pedir un equipo", la fila de devolución y "Fuera de servicio" con "Tablero 07 · Tablero de dibujo" en rojo | |
+| PRE-19 | US04 (4.5) · RF21 | Maestranza | Base demo | 1) Ingresar como `maestranza1`; 2) abrir Préstamo | **No** ve "Pedir un equipo" ni "¿Cómo vuelve el equipo?" / "Devolver equipo". Sí ve la lista de préstamos (todos, solo lectura) y "Fuera de servicio" |  |
+| PRE-20 | US13 (13.2) · RF21 | Alumno, Profesor | Base demo | 1) Ingresar con cada rol | No ven la tarjeta "Fuera de servicio" |  |
+| PRE-21 | US13 (13.2) · RF22 | Preceptor, Maestranza | Tablero 07 fuera de servicio | 1) Elegir el Tablero 07; 2) "Marcar reparado" | "Equipo reparado. Ya se puede prestar." Pasa a "Equipos disponibles"; "Fuera de servicio" dice "No hay equipos fuera de servicio." |  |
+| PRE-22 | US13 (13.2) · RF22 | Preceptor, Maestranza | Base demo | 1) "Marcar reparado" sin elegir | "Elegí un equipo de la lista de fuera de servicio." |  |
+| PRE-23 | US04 | Cualquiera | Filtro con texto sin coincidencias | 1) Escribir `zzz` | "No hay equipos disponibles con ese filtro.", "No hay equipos fuera de servicio." y "No hay préstamos de ese equipo." | |
+| PRE-24 | US04 | Cualquiera | Filtros usados | 1) "Cerrar sesión"; 2) ingresar de nuevo | El texto de búsqueda y el programa vuelven a "Todos los programas" | |
+| PRE-25 | RNF01 | Cualquiera | Lista con préstamos | 1) Cambiar de tema | Los préstamos activos (verde), devueltos (gris) y fuera de servicio (rojo) siguen legibles | |
+| PRE-26 | US04 · RF21 | Alumno | Base demo | 1) Ingresar como `alumno1`; 2) mirar "Préstamos" | Se ve **solo** su préstamo (C4-05, "En préstamo", en verde); el préstamo de `alumno2` no aparece. Las franjas de resumen de arriba (Disponibles / Prestados / Fuera de servicio) siguen siendo las de todo el colegio |  |
+| PRE-27 | RNF01 (H7) | Profesor | Pestaña de préstamos | 1) Recorrer con Tab | Orden: buscador, programa, equipos disponibles, alumno, observaciones, "Registrar préstamo", préstamos, estado al devolver, "Devolver equipo", fuera de servicio, "Marcar reparado" | |
+| PRE-28 | US04 · RF21 | Alumno | Alumno recién registrado, sin préstamos | 1) Ingresar con esa cuenta; 2) abrir Préstamo de equipos | "Préstamos" muestra "Todavía no tenés préstamos registrados." |  |
+| PRE-29 | US04 · RF21 | Profesor, Preceptor, Maestranza | Base demo | 1) Ingresar con cada rol; 2) mirar "Préstamos" | Ven todos los préstamos (el activo de `alumno1` y el devuelto de `alumno2`), con "Autorizó …" |  |
+| PRE-30 | US04 (4.4) · RF21 | Alumno | `alumno1` | 1) Escribir `C5-02` en el buscador | "No hay préstamos de ese equipo." (el préstamo de `alumno2` sobre C5-02 no se ve) |  |
+| PRE-31 | US04 (4.3) · RNF01 | Cualquiera | Con MySQL y préstamos cargados `[COMPLETAR: probar con MySQL]` | 1) Mirar las horas de "Retiró" y "Devuelto" | Se ven como `HH:mm` ("14:10"), sin segundos *(a verificar: ERR-21, si la columna es TIME)* |  |
+| PRE-32 | US04 (4.3) | Alumno | Un préstamo activo | 1) Dejar "Funciona"; 2) "Devolver equipo" | Devuelve **sin** pedir confirmación y el equipo vuelve a Disponible (solo "No funciona" confirma: decisión vigente) |  |
+| PRE-33 | US04 (4.3) · RF07 | Alumno, Profesor, Preceptor | Préstamo activo | 1) Con "Funciona", escribir una observación en el campo de arriba; 2) "Devolver equipo"; 3) mirar el campo | Se guarda la observación y el campo se vacía; con "No funciona" y "No" en la confirmación, el campo **no** se vacía |  |
+| PRE-34 | US04 (4.1, 4.3) · RF07 | Profesor, Alumno | Base demo; `alumno2` sin préstamo activo | 1) Como `profe1`, prestar C4-01 a `alumno2`; 2) escribir `C4-01` en el buscador; 3) devolver ese préstamo con "Funciona"; 4) volver a escribir `C4-01`; 5) prestar C4-01 otra vez | Tras el paso 1, C4-01 **ya no está** entre los disponibles ("No hay equipos disponibles con ese filtro.") y aparece como "En préstamo" (un mismo equipo no se puede prestar dos veces a la vez). Tras devolverlo (paso 3) vuelve a la lista y se puede prestar de nuevo; el alumno puede pedir otro equipo porque ya no tiene uno activo |  |
+
+---
+
+
+---
+
+# Tabla 2 — Arce Thiago y Cabrera Ulises (Higiene, Reserva de sectores, Mi cuenta)
+
+## 1. Higiene y mantenimiento (página 4)
+
+| ID | Historia / requisito | Rol | Precondición | Pasos | Resultado esperado | Resultado |
+|---|---|---|---|---|---|---|
+| HIG-01 | US02 2.1, 2.2, 2.4 · RF03 · RF18 | Alumno (`alumno1`) | Base demo | 1. Menú **Higiene**. 2. ¿Dónde?: "Baño planta alta". 3. ¿Qué tipo de problema?: "Rotura". 4. ¿Qué pasó?: "La canilla pierde agua". 5. **Reportar**. | Aviso "Reporte enviado. Gracias por avisar." El campo ¿Qué pasó? queda vacío. El reporte aparece **primero** en la lista, en rojo: "Pendiente · Baño planta alta · Rotura" / "dd/MM HH:mm · Reportó Alumno Uno" / "La canilla pierde agua". El chip pasa de "1 reporte pendiente de resolver" a "2 reportes pendientes de resolver". En `log_auditoria` hay una fila nueva: evento "Reporte de higiene", entidad `reporte_higiene`, resultado Exitoso. |  |
+| HIG-02 | US02 2.2 · RF03 · RF18 | Alumno | Base demo | Dejar ¿Qué pasó? vacío y hacer clic en **Reportar**. | Aviso "Contanos qué pasa para poder resolverlo." El foco queda en ¿Qué pasó?. No se crea ningún reporte (el chip sigue en 1). En `log_auditoria` queda una fila "Reporte de higiene" con resultado **Fallido**. |  |
+| HIG-03 | US02 2.2 | Alumno | Base demo | Escribir solo espacios ("   ") en ¿Qué pasó? y presionar **Enter**. | Igual que HIG-02 (el texto se recorta con `trimmed()`: no cuenta como observación). |  |
+| HIG-04 | RNF01 (Enter) · US02 2.2 | Alumno | Base demo | Escribir "Falta jabón" en ¿Qué pasó? y presionar **Enter** (sin hacer clic en Reportar). | Se envía el reporte: mismo resultado que HIG-01 (aviso "Reporte enviado. Gracias por avisar." y reporte nuevo arriba). |  |
+| HIG-05 | RF03 (cualquier rol reporta) | Profesor, Preceptor, Maestranza | Base demo | Con cada cuenta (`profe1`, `preceptor1`, `maestranza1`): reportar "Patio" · "Limpieza" · "Hay vidrios". | Con los tres roles aparece "Reporte enviado. Gracias por avisar." y el reporte figura como "Reportó <nombre del usuario>". |  |
+| HIG-06 | US02 2.3 · RF04 | Cualquiera | Base demo | 1. En ¿Dónde? elegir **Aula**. 2. Mirar "Último mantenimiento". 3. Elegir **Patio**. | Con Aula: "20/10 08:45 — Maestranza Uno". Con Patio: "Todavía no hay ninguno". El dato cambia al cambiar el sector, sin hacer clic en nada más. |  |
+| HIG-07 | US02 (lista) | Cualquiera | Base demo | Cambiar **Ver:** a "Pendientes", luego a "Resueltos", luego a "Todos". | Pendientes: solo el de Baño planta baja. Resueltos: solo el de Aula. Todos: primero el pendiente (rojo) y después el resuelto (verde). Cada cambio de filtro actualiza la lista al instante. El chip de pendientes no cambia con el filtro (siempre cuenta todos los pendientes). |  |
+| HIG-08 | US02 2.4 · RF04 · RF18 | Preceptor (`preceptor1`) | Base demo | 1. Elegir ¿Dónde?: "Baño planta baja". 2. En la lista, seleccionar el reporte "Pendiente · Baño planta baja". 3. **Marcar resuelto**. | No hay aviso ni confirmación. El reporte pasa a verde: "Resuelto · Baño planta baja · Limpieza" / "… · Reportó Alumno Uno · Resuelto dd/MM HH:mm por Preceptor Uno". Sube después de los pendientes. El chip dice "No hay reportes pendientes. ¡Todo en orden!". "Último mantenimiento" (con Baño planta baja elegido) muestra la fecha y hora de ahora y "Preceptor Uno". Fila "Resolución de reporte" Exitoso en `log_auditoria`. |  |
+| HIG-09 | US02 2.4 · RF18 | Preceptor | Base demo | Sin seleccionar nada en la lista, hacer clic en **Marcar resuelto**. | Aviso "Elegí un reporte de la lista." Fila "Resolución de reporte" **Fallido** en `log_auditoria`. |  |
+| HIG-10 | US02 2.4 | Maestranza | Base demo | Seleccionar el reporte **Resuelto · Aula** y hacer clic en **Marcar resuelto**. | Aviso "Ese reporte ya está resuelto." No cambia la fecha ni el resolutor del reporte. |  |
+| HIG-11 | US02 2.4 · Permisos (requerimientos §3) | Los 4 roles | Base demo | Ingresar con `alumno1`, `profe1`, `preceptor1` y `maestranza1` y mirar la página Higiene. | `alumno1` **no ve** el botón "Marcar resuelto". `profe1`, `preceptor1` y `maestranza1` **sí**. Todos ven el formulario "Reportar un problema". |  |
+| HIG-12 | Estados vacíos (DISENO §4.6) | Preceptor | Base sin reportes pendientes (resolver el demo, HIG-08) | Poner **Ver:** en "Pendientes". | La lista muestra "No hay reportes pendientes." (en gris) y el chip "No hay reportes pendientes. ¡Todo en orden!". El texto de la lista no se puede seleccionar. |  |
+| HIG-13 | Estados vacíos | Preceptor | Base sin reportes (por ejemplo, base nueva con datos reales y un primer preceptor registrado) | Entrar a Higiene con **Ver:** en "Todos"; luego en "Resueltos". | Todos: "Todavía no hay reportes. Si ves algo roto o sucio, avisanos desde el formulario." Resueltos: "Todavía no hay reportes resueltos." |  |
+| HIG-14 | Regla "tope de 20 resueltos" · E4-07 (abierto) | Preceptor | Base con 21 reportes resueltos y 1 pendiente (cargarlos por SQL o reportando y resolviendo) | **Ver:** "Todos". Contar los ítems. | Se muestran el pendiente y **solo 20** resueltos (los de número de reporte más alto). El reporte resuelto más viejo no aparece y la pantalla no avisa que hay más. |  |
+| HIG-15 | Cambio de tema | Preceptor | Base demo, un reporte seleccionado | Hacer clic en **Tema oscuro** y luego en **Tema claro**. | Los colores de estado cambian al verde y rojo propios de cada tema (en oscuro, más claros) y los textos siguen diciendo "Pendiente" / "Resuelto". La lista se recarga y se **pierde la selección**. Los chips y los campos cambian de tema. |  |
+| HIG-16 | US02 (ayuda) · RNF01 | Cualquiera | Base demo | Pasar el mouse sobre un reporte de la lista y sobre cada botón. | Cada reporte muestra un cuadro con su texto completo. El campo ¿Qué pasó? muestra "Contá qué pasa (ej: falta papel)" mientras está vacío. |  |
+| HIG-17 | RNF01 (tabulación) | Preceptor | Base demo | Presionar **Tab** repetidamente desde el filtro. | Orden: Ver → lista → Marcar resuelto → ¿Dónde? → ¿Qué tipo de problema? → ¿Qué pasó? → Reportar. |  |
+| HIG-18 | Sesión | Alumno | Base demo | 1. Escribir "texto de prueba" en ¿Qué pasó? y poner **Ver:** en "Pendientes". 2. **Cerrar sesión**. 3. Ingresar de nuevo. | El campo ¿Qué pasó? está vacío y **Ver:** vuelve a "Todos". |  |
+| HIG-19 | Caso borde (observación larga) · E4-03 (corregido) | Alumno | Base demo | 1. Pegar en ¿Qué pasó? un texto de **250 caracteres**. 2. Mirar cuántos quedan. 3. **Reportar**. 4. Pasar el mouse sobre el reporte nuevo. | El campo **no deja pasar de 200 caracteres**: al pegar, queda recortado en 200. Se envía con el aviso "Reporte enviado. Gracias por avisar." y no hay error de base de datos. El cuadro del reporte muestra los 200 caracteres completos. |  |
+| HIG-20 | E4-01 (corregido) · RF03 · RF04 | Preceptor (`preceptor1`) | Base demo | 1. Ingresar. En **Inicio**, anotar el número de la tarjeta "Reportes de higiene pendientes" (en la demo: 1). 2. Ir a **Higiene** y reportar "Patio" · "Limpieza" · "Hay vidrios". 3. Volver a **Inicio** desde el menú. 4. Ir a Higiene, marcar resuelto el reporte nuevo y volver a **Inicio**. | En el paso 3 la tarjeta muestra **2** (sin cerrar sesión). En el paso 4 vuelve a **1**. Lo mismo con `profe1` (tarjeta "Reportes de higiene pendientes") y con `maestranza1` (es su primera tarjeta). El Alumno no tiene esa tarjeta. |  |
+| HIG-21 | E4-03 (corregido) · RNF02 | Alumno | Base demo | Escribir un texto de **exactamente 200 caracteres** en ¿Qué pasó? y **Reportar**. | Se acepta y se guarda completo. (Con MySQL, la columna es `VARCHAR(200)`: también se guarda sin error.) |  |
+| HIG-22 | E4-11 (corregido) | Profesor (`profe1`) | Base demo | 1. En Higiene elegir ¿Dónde?: "Patio", tipo "Limpieza" y **Ver:** "Resueltos"; escribir "borrador" en ¿Qué pasó?. 2. **Cerrar sesión**. 3. Ingresar con `alumno1` y abrir Higiene. | ¿Dónde? muestra el primer sector de la lista ("Aula"), el tipo muestra "Rotura", **Ver:** dice "Todos" y ¿Qué pasó? está vacío. |  |
+| HIG-23 | Caso borde (200 caracteres) · E4-03 · RNF02 | Alumno | Base demo | 1. Escribir en ¿Qué pasó? **199 letras y un espacio al final** (200 caracteres en total) y **Reportar**. 2. Escribir un texto de **200 caracteres con tildes y ñ** (por ejemplo, repetir "ñandú, canilla rota y baño sin papel ") y **Reportar**. | 1. El campo acepta los 200 caracteres; el reporte se guarda **sin el espacio final** (199 letras) y se ve completo en el cuadro del reporte. 2. Se guarda y se ve con las tildes y las ñ bien escritas. Con MySQL (`utf8mb4`, `VARCHAR(200)`) tiene que pasar lo mismo: `[COMPLETAR: resultado con MySQL]`. |  |
+
+---
+
+## 2. Reserva de sectores (página 7)
+
+| ID | Historia / requisito | Rol | Precondición | Pasos | Resultado esperado | Resultado |
+|---|---|---|---|---|---|---|
+| SEC-01 | US05 5.3 · RF09 · RF18 | Profesor (`profe1`) | Base demo | 1. Menú **Reserva de sectores**. 2. Lugar: Biblioteca. 3. Día: dentro de 3 días. 4. Desde 08:00, Hasta 09:00. 5. **Reservar**. | Aviso "Reserva enviada. Queda pendiente hasta que un preceptor la apruebe." En "Reservas próximas" aparece "Biblioteca - dd/MM 08:00 a 09:00" / "Pendiente de aprobación - Profesor Uno" (gris). En la ocupación de ese día: "Atención: 1 reserva pendiente de aprobación ese día." (negrita) y "08:00 a 09:00 - Pendiente de aprobación" / "Profesor Uno". Fila "Reserva de sector" Exitoso en `log_auditoria`. |  |
+| SEC-02 | US05 5.3 · RF09 | Preceptor (`preceptor1`) | Base demo | Igual que SEC-01 con SUM, día pasado mañana, 14:00 a 15:00. | Aviso "Reserva aprobada." Queda **Aprobada** (verde) con "Preceptor Uno" como persona. No hay aviso de pendientes en la ocupación. |  |
+| SEC-03 | US05 5.1 · RF09 (solo reservables) | Profesor | Base demo | Abrir la lista **Lugar**. | Solo aparecen Biblioteca, Laboratorio de química y SUM. No aparecen Aula, Patio, baños, Preceptoría ni Taller de computación. |  |
+| SEC-04 | US05 5.2 | Profesor | Base demo | Desde 10:00 y Hasta 10:00, **Reservar**. Repetir con Hasta 09:00. | Aviso "La hora de fin tiene que ser después de la de inicio." El foco queda en **Hasta**. No se crea la reserva. En `log_auditoria`: "Reserva de sector" Fallido. |  |
+| SEC-05 | US05 5.2 (límite 07:00–19:00) | Profesor | Base demo | 1. Con Desde en 07:00, intentar bajar con la flecha hacia abajo. 2. Con Hasta en 19:00, intentar subir. 3. Con Desde, intentar llegar a 19:00. 4. Reservar Biblioteca el día +4, Desde 07:00 y Hasta 19:00. | 1. Desde no baja de 07:00. 2. Hasta no sube de 19:00. 3. Desde llega como máximo a 18:59. 4. La reserva se acepta ("Reserva enviada…"). La validación en código ("El horario tiene que estar entre 07:00 y 19:00.") no se puede disparar desde la pantalla. |  |
+| SEC-06 | US05 5.2 · RF10 | Preceptor | Base demo | Reservar Biblioteca, **mañana**, 10:30 a 11:30. | Aviso "Ese horario está ocupado: Profesor Uno tiene el sector de 10:00 a 11:00. Probá con otro." No se crea la reserva (una **Pendiente** también ocupa). Fila "Reserva de sector" Fallido. |  |
+| SEC-07 | RF10 (bordes) | Preceptor | Base demo | Reservar Biblioteca, mañana, en tres pasadas: (a) 11:00 a 11:30; (b) 09:00 a 10:00; (c) 11:30 a 12:30. | Las tres se aceptan: (a) y (b) empiezan o terminan justo en el límite de la reserva de las 10:00–11:00, y (c) coincide con la reserva demo **Cancelada**, que no ocupa. |  |
+| SEC-08 | RF10 (otro sector) | Preceptor | Base demo | Reservar Laboratorio de química, mañana, 10:00 a 11:00. | Se acepta: la superposición se controla solo dentro del mismo sector y día. |  |
+| SEC-09 | US05 5.2 (hoy y hora pasada) | Profesor | Base demo; ejecutar después de las 07:01 | Día: hoy. Desde 07:00, Hasta 07:30. **Reservar**. | Aviso "Ese horario de inicio ya pasó. Elegí uno más tarde." El foco queda en **Desde**. No se crea la reserva. |  |
+| SEC-10 | US05 5.2 (fecha pasada) | Profesor | Base demo | Abrir el calendario del campo **Día** y buscar un día anterior a hoy. | El calendario no deja elegir días anteriores a hoy. |  |
+| SEC-11 | US05 5.3 · RF16 · RF18 | Preceptor | Base demo | 1. Lugar Biblioteca y día = mañana. 2. En "Reservas próximas" seleccionar "Biblioteca - dd/MM 10:00 a 11:00 / Pendiente de aprobación - Profesor Uno". 3. **Aprobar**. | La reserva pasa a "Aprobada - Profesor Uno" (verde). En la ocupación desaparece la línea "Atención…" y el horario figura "Aprobada". Fila "Reserva de sector" Exitoso con descripción "Reserva N: Aprobada". Sin aviso en pantalla. |  |
+| SEC-12 | US05 · RF16 · "No" de la confirmación | Preceptor | Base demo | 1. Seleccionar la reserva pendiente de Biblioteca. 2. **Rechazar**. 3. En la pregunta, **No**. 4. Repetir y elegir **Sí**. | Pregunta (título "Rechazar reserva"): "¿Querés rechazar la reserva de Biblioteca - dd/MM 10:00 a 11:00? El horario queda libre." Con **No** no cambia nada y sigue Pendiente. Con **Sí** pasa a "Rechazada - Profesor Uno" (rojo), el horario deja de figurar en la ocupación y se registra "Reserva de sector" Exitoso ("Reserva N: Rechazada"). |  |
+| SEC-13 | US05 5.4 · "No" de la confirmación | Profesor | Base demo | 1. Seleccionar su reserva de Laboratorio de química. 2. **Cancelar reserva**. 3. **No**. 4. Repetir y elegir **Sí**. | Pregunta (título "Cancelar reserva"): "¿Querés cancelar la reserva de Laboratorio de química - dd/MM 08:00 a 10:00? El horario queda libre para otros." **No**: queda igual. **Sí**: desaparece de "Reservas próximas" y de la ocupación del día (queda Cancelada). Sin aviso posterior. |  |
+| SEC-14 | US05 5.4 | Preceptor | Base demo | Seleccionar la reserva de `profe1` (Laboratorio) y **Cancelar reserva** → **Sí**. | El Preceptor puede cancelar reservas de otros: se cancela. |  |
+| SEC-15 | US05 5.4 · Permisos | Profesor | Base demo | Mirar "Reservas próximas" de `profe1` y luego la ocupación de SUM (mañana). | `profe1` ve **solo sus** reservas: Biblioteca (Pendiente) y Laboratorio (Aprobada); no ve la de SUM de `preceptor1` en su lista. Sí ve la de SUM en la **ocupación** del sector, con el nombre de quien reservó. |  |
+| SEC-16 | RF16 · RF18 | Preceptor | Base demo | Sin seleccionar nada, hacer clic en **Aprobar**, luego en **Rechazar** y luego en **Cancelar reserva**. | Los tres muestran "Elegí una reserva de la lista." Aprobar y Rechazar registran "Reserva de sector" Fallido; Cancelar no registra nada. No aparece la pregunta de confirmación. |  |
+| SEC-17 | RF16 (estados) | Preceptor | Base demo; haber hecho SEC-12 (Rechazada) | (a) Seleccionar "SUM … Aprobada" y hacer clic en **Aprobar**. (b) La misma, **Rechazar**. (c) Seleccionar la reserva Rechazada y **Cancelar reserva**. | (a) y (b): "Solo se pueden aprobar o rechazar reservas pendientes." (b) no hace la pregunta de confirmación porque no está pendiente. (c): "Esa reserva ya está rechazada o cancelada." |  |
+| SEC-18 | Permisos (requerimientos §3) | Los 4 roles | Base demo | Ingresar con cada rol y abrir Reserva de sectores. | `profe1`: ve el formulario con Desde/Hasta y Reservar, y **Cancelar reserva**, sin **Aprobar** ni **Rechazar**. `preceptor1`: ve los tres botones. `alumno1` y `maestranza1`: no ven Desde/Hasta/Reservar ni "Reservas próximas"; ven la franja "Solo profesores y preceptores pueden reservar. Acá podés ver cuándo está ocupado cada sector." y sí el lugar, el día y la ocupación. |  |
+| SEC-19 | Estados vacíos | Profesor / Preceptor | Base demo; para Profesor, cancelar sus dos reservas; para Preceptor, cancelar/rechazar todas | Mirar "Reservas próximas". | Profesor: "Todavía no tenés reservas próximas. Elegí un lugar, un día y un horario para reservar." Preceptor: "No hay reservas próximas." (Las Rechazadas siguen apareciendo en la lista hasta que pase su fecha.) |  |
+| SEC-20 | US05 5.1 | Cualquiera | Base demo | 1. Lugar Biblioteca, día mañana → mirar la ocupación. 2. Cambiar el lugar a Laboratorio de química. 3. Cambiar el día a pasado mañana. 4. Elegir un día sin reservas. | El título dice "Ocupación de <lugar> el dd/MM" y se actualiza solo. Biblioteca/mañana muestra "10:00 a 11:00 - Pendiente de aprobación / Profesor Uno" (y la línea "Atención…"); **no** muestra la reserva Cancelada de 11:30. Laboratorio/pasado muestra "08:00 a 10:00 - Aprobada / Profesor Uno". Un día sin reservas: "Sin reservas ese día: el sector está libre." (verde). |  |
+| SEC-21 | US05 5.1 (plural) | Profesor | Base demo | Reservar Biblioteca el mismo día (por ejemplo +5) dos veces: 08:00–09:00 y 09:00–10:00. | La ocupación de ese día muestra "Atención: 2 reservas pendientes de aprobación ese día." |  |
+| SEC-22 | Cambio de tema | Preceptor | Base demo | Alternar tema claro/oscuro. | Los colores de las tres listas cambian de paleta (verde/rojo/gris del tema); la lista de reservas se recarga y pierde la selección. |  |
+| SEC-23 | RNF01 (tabulación) | Preceptor | Base demo | **Tab** repetidamente. | Orden: Lugar → Día → Desde → Hasta → Reservar → ocupación → reservas → Aprobar → Rechazar → Cancelar reserva. |  |
+| SEC-24 | Caso borde (doble clic) | Profesor | Base demo | Reservar Biblioteca +4 de 15:00 a 16:00 y hacer **doble clic** en Reservar; cerrar el aviso y volver a hacer clic en Reservar. | Se crea **una** reserva. El segundo intento da "Ese horario está ocupado: Profesor Uno tiene el sector de 15:00 a 16:00. Probá con otro." |  |
+| SEC-25 | Auditoría de cancelación (observación) | Profesor | Base demo | Cancelar una reserva propia y revisar `log_auditoria`. | Hoy **no** queda ninguna fila nueva (RF18 solo audita reservar, aprobar y rechazar). Registrar el resultado para decidir si se quiere auditar. |  |
+| SEC-26 | E4-01 y E4-02 (corregidos) · RF16 | Profesor (`profe1`) y Preceptor (`preceptor1`) | Base demo | **Profesor:** 1. Ingresar: en **Inicio** la tarjeta "Tus reservas de sectores" dice **2** (Pendiente + Aprobada; la Cancelada de la demo no cuenta). 2. Reservar Biblioteca +3 de 08:00 a 09:00 y volver a **Inicio**. 3. Cancelar esa reserva (**Sí**) y volver a **Inicio**. **Preceptor:** 4. Ingresar: "Reservas de sectores pendientes" dice **1**. 5. Aprobar la pendiente de Biblioteca (mañana) y volver a **Inicio**. | 2. La tarjeta pasa a **3**, sin cerrar sesión. 3. Vuelve a **2**. 5. La tarjeta del Preceptor pasa a **0**. Una reserva **Rechazada** tampoco se cuenta, pero sí sigue figurando en "Reservas próximas" (la lista solo oculta las Canceladas). |  |
+| SEC-27 | E4-11 (corregido) | Profesor (`profe1`) | Base demo | 1. En Reserva de sectores elegir Lugar: SUM, Día: dentro de 3 días, Desde 14:00 y Hasta 15:00. 2. **Cerrar sesión**. 3. Ingresar de nuevo con `profe1` y abrir Reserva de sectores. | Lugar: "Biblioteca" (el primero), Día: hoy, Desde 08:00 y Hasta 09:00. La ocupación se muestra para Biblioteca y hoy. |  |
+| SEC-28 | Caso borde (reservas sin duración y de 1 minuto) · US05 5.2 | Profesor (`profe1`) | Base demo | 1. Lugar: Biblioteca; Día: dentro de 6 días; Desde 07:00 y Hasta 07:00 (**sin duración**) → **Reservar**. 2. Con el mismo día: Desde 07:00 y Hasta 07:01 → **Reservar**. 3. Desde 18:59 y Hasta 19:00 → **Reservar**. | 1. "La hora de fin tiene que ser después de la de inicio." y el foco en **Hasta**; no se crea nada. 2. y 3. Se aceptan con "Reserva enviada. Queda pendiente hasta que un preceptor la apruebe." (son los dos extremos del horario permitido). En la ocupación de ese día figuran "07:00 a 07:01" y "18:59 a 19:00". |  |
+| SEC-29 | Caso borde (volver a reservar un horario rechazado) · RF10 · RF16 | Preceptor (`preceptor1`) | Base demo; haber hecho SEC-12 con **Sí** (la reserva de Biblioteca de mañana, 10:00 a 11:00, quedó Rechazada) | Reservar Biblioteca, mañana, 10:00 a 11:00. | Se acepta con "Reserva aprobada.": una reserva **Rechazada** no ocupa el horario. En la ocupación aparece solo la nueva (Aprobada) y en "Reservas próximas" siguen la Rechazada (rojo) y la nueva (verde). |  |
+
+---
+
+## 3. Mi cuenta (página 9)
+
+| ID | Historia / requisito | Rol | Precondición | Pasos | Resultado esperado | Resultado |
+|---|---|---|---|---|---|---|
+| CUE-01 | US10 10.1 · RF17 | Alumno (`alumno1`) | Base demo | Menú **Mi cuenta**. | "Mis datos": Nombre completo Alumno Uno · Usuario alumno1 · DNI 40000001 · Correo alumno1@iqual.demo · Teléfono 1155550001 · Rol Alumno · Curso 4° 1° Computación. Se ven las tarjetas "Cambiar mi curso", "Cambiar contraseña" y "Cambiar teléfono". Los tres combos de curso muestran 4°, 1° y Computación. |  |
+| CUE-02 | US10 10.2 · Permisos | Profesor, Preceptor, Maestranza | Base demo | Abrir Mi cuenta con cada cuenta. | Se ven los datos **sin** la fila "Curso", y **no** aparece la tarjeta "Cambiar mi curso". Sí aparecen "Cambiar contraseña" y "Cambiar teléfono". |  |
+| CUE-03 | US10 10.2 · RF17 | Alumno (`alumno1`) | Base demo | Elegir 4°, 2°, Computación y **Guardar curso**. | Aviso "Cambiaste tu curso." "Curso" dice "4° 2° Computación". |  |
+| CUE-04 | US10 10.2 · RF12 (sin choque) | Alumno (`alumno2`) | Base demo (inscripto en Handball lunes 08:00–10:00) | 1. Elegir 4°, 1°, Computación. 2. **Guardar curso**. 3. Ir a **Educación Física**. | Aviso "Cambiaste tu curso." (sin pregunta, porque Handball lunes 08:00–10:00 no choca con las clases de 4° 1° Computación, que empiezan a las 13:00). La inscripción a Handball sigue vigente. |  |
+| CUE-05 | US10 10.2 · RF12 · confirmación "Sí" | Alumno (`alumno2`) | Base demo, pero `alumno2` canceló Handball y se inscribió en **Vóley martes 14:00–16:00** (su curso 5° 2° no tiene horario cargado, por eso puede) | 1. Mi cuenta → 4°, 1°, Computación. 2. **Guardar curso**. 3. En la pregunta, **Sí**. 4. Ir a Educación Física. | Pregunta (título "Cambiar de curso"): "Con ese curso, tu inscripción a Educación Física choca con Bases de Datos y se va a cancelar. ¿Querés cambiar de curso igual?" Con **Sí**: aviso "Cambiaste tu curso. Se canceló tu inscripción a Educación Física porque choca con Bases de Datos en tu nuevo horario." "Curso" = 4° 1° Computación. En Ed. Física ya no hay inscripción. En `log_auditoria`: "Inscripción a Ed. Física" Exitoso, "Inscripción a la oferta N cancelada por cambio de curso". |  |
+| CUE-06 | US10 10.2 · "No" de la confirmación · E4-06 (corregido) | Alumno (`alumno2`) | Igual que CUE-05 | Repetir CUE-05 pero elegir **No** en la pregunta. | No se cambia nada: "Curso" sigue en "5° 2° Óptica" y la inscripción a Vóley martes sigue. **Los combos de la tarjeta vuelven a mostrar 5°, 2°, Óptica** (el curso guardado). |  |
+| CUE-07 | US10 10.2 (validación) | Alumno | Base demo | Dejar un combo en el texto de ayuda ("Año", "División" o "Especialidad") y **Guardar curso**. Probar con cada combo. | Aviso "Elegí el año, la división y la especialidad." No cambia el curso. |  |
+| CUE-08 | RF13 (curso nuevo) / RF17 | Alumno | Base demo | Elegir 7°, 9°, Óptica y **Guardar curso**. | "Cambiaste tu curso." y "Curso" muestra "7° 9° Óptica" (la combinación no existía y se crea). Es una limitación documentada (CONTEXTO §19.3, E4-05). |  |
+| CUE-09 | Caso borde (mismo curso) · E4-04 (corregido) | Alumno (`alumno1`) | Base demo | Sin tocar los combos, **Guardar curso**. | Aviso **"Ese ya es tu curso."** (aparece en la ventana "Listo"). No se cambia nada: no hay `UPDATE` ni preguntas de Educación Física. |  |
+| CUE-10 | RF17 (ampliado, ver §14) · RNF02 | Cualquiera | Base demo | Dejar **Contraseña actual** vacía y hacer clic en **Cambiar contraseña**. | Aviso "Escribí tu contraseña actual." El foco queda en Contraseña actual. |  |
+| CUE-11 | RF17 (ampliado) · RNF02 | Cualquiera | Base demo | Actual: "9999"; nueva y repetida: "abcd". | Aviso "La contraseña actual no es correcta." Foco en Contraseña actual. La contraseña no cambia. |  |
+| CUE-12 | RF17 (ampliado) | Cualquiera | Base demo | Actual "1234"; nueva "abc"; repetida "abc". | Aviso "La contraseña nueva necesita 4 caracteres o más." Foco en Contraseña nueva. |  |
+| CUE-13 | RF17 (ampliado) | Cualquiera | Base demo | Actual "1234"; nueva "abcd"; repetida "abce". | Aviso "Las contraseñas nuevas no son iguales." Foco en Repetí la contraseña nueva. |  |
+| CUE-14 | RF17 (ampliado) | Cualquiera | Base demo | Actual "1234"; nueva "1234"; repetida "1234". | Aviso "Elegí una contraseña distinta de la actual." Foco en Contraseña nueva. |  |
+| CUE-15 | RF17 (ampliado) · RNF02 · US07 7.5 | Cualquiera | Base demo | 1. Actual "1234"; nueva "abcd"; repetida "abcd"; **Enter** en el último campo. 2. **Cerrar sesión**. 3. Ingresar con "1234". 4. Ingresar con "abcd". | 1. Aviso "Contraseña cambiada. Usala la próxima vez que ingreses." y los tres campos quedan vacíos. 3. "Usuario o contraseña incorrectos. Intentos restantes: 4." 4. Entra normalmente. *(Después, cambiarla de nuevo a "1234" o recargar la base demo.)* |  |
+| CUE-16 | RF17 (ampliado) | Cualquiera | Base demo | Dejar **Nuevo teléfono** vacío y **Guardar teléfono**. | Aviso "Escribí el teléfono nuevo." Foco en el campo. |  |
+| CUE-17 | RF13 (teléfono 8 a 15 dígitos) | Cualquiera | Base demo | Probar de a uno: "11 5555 0001", "abc12345", "1234567" (7 dígitos), "1234567890123456" (16 dígitos). | Los cuatro dan "Escribí el teléfono solo con números (entre 8 y 15), sin espacios ni guiones." Foco en el campo. El teléfono no cambia. |  |
+| CUE-18 | RF17 (ampliado) · RF13 | Cualquiera | Base demo | 1. Escribir " 1166667777 " (con espacios a los lados) y presionar **Enter**. 2. Repetir con "00112233" (8 dígitos, con ceros al principio). 3. Repetir con "123456789012345" (15 dígitos). | Los tres se aceptan con el aviso "Teléfono actualizado." y el campo queda vacío. "Teléfono" en "Mis datos" muestra cada número tal cual, **sin perder los ceros del principio**. |  |
+| CUE-19 | RF17 (efecto en otras pantallas) | Alumno (`alumno1`) | CUE-18 hecho | Ir a **Objetos perdidos → Consultas** y a **Tienda** (donde se muestra "Tu contacto"). | Esos lugares muestran el teléfono nuevo en lugar del anterior. |  |
+| CUE-20 | Permisos | Los 4 roles | Base demo | Cambiar el teléfono con `alumno1`, `profe1`, `preceptor1` y `maestranza1`. | Los cuatro roles logran cambiar teléfono y contraseña. |  |
+| CUE-21 | Cambio de tema | Alumno | Base demo | Alternar claro/oscuro. | La pantalla cambia de paleta; los datos y lo escrito en los campos no se pierden. |  |
+| CUE-22 | RNF01 (tabulación) | Alumno | Base demo | **Tab** repetidamente. | Orden: Año → División → Especialidad → Guardar curso → Contraseña actual → Contraseña nueva → Repetí… → Cambiar contraseña → Nuevo teléfono → Guardar teléfono. |  |
+| CUE-23 | Sesión | Alumno | Base demo | 1. Escribir algo en los campos de contraseña y teléfono sin guardar. 2. **Cerrar sesión**. 3. Ingresar con otra cuenta y abrir Mi cuenta. | Los cuatro campos están vacíos y "Mis datos" muestra los datos de la nueva cuenta. |  |
+| CUE-24 | E4-11 (corregido) · RNF01 | Alumno (`alumno1`) | Base demo | 1. En Mi cuenta elegir 7°, 9°, Óptica (sin guardar) y escribir algo en los campos de contraseña. 2. **Cerrar sesión**. 3. Ingresar con `alumno1` y abrir Mi cuenta. | Los combos vuelven a mostrar el curso guardado (4°, 1°, Computación) y los campos de contraseña y teléfono están vacíos. |  |
+| CUE-25 | Caso borde ("No" y luego el mismo curso) · E4-04 · E4-06 | Alumno (`alumno2`) | Igual que CUE-05 (inscripto en Vóley martes 14:00–16:00) | 1. Elegir 4°, 1°, Computación y **Guardar curso**; responder **No**. 2. Sin tocar nada más, hacer clic de nuevo en **Guardar curso**. | 1. No cambia el curso y los combos vuelven a 5°, 2°, Óptica. 2. Como los combos ya muestran el curso guardado, aparece **"Ese ya es tu curso."**: no se repite la pregunta de Educación Física y no se cancela nada. |  |
+| CUE-26 | Caso borde (contraseña actual mal varias veces) · RNF02 · US07 7.5 | Cualquiera | Base demo | 1. En Cambiar contraseña, escribir como actual "9999" y como nueva y repetida "abcd" y hacer clic en **Cambiar contraseña**; repetirlo **6 veces seguidas**. 2. Escribir la actual correcta ("1234"), nueva "abcd" y repetida "abcd" (4 caracteres justos). 3. **Cerrar sesión** e ingresar con "abcd". | 1. Las seis veces aparece "La contraseña actual no es correcta." con el foco en Contraseña actual; **la aplicación no se bloquea** (el límite de 5 intentos es solo del inicio de sesión). 2. Se acepta (4 caracteres es el mínimo): "Contraseña cambiada. Usala la próxima vez que ingreses." 3. Entra normalmente y el contador de intentos del ingreso no se vio afectado. *(Después, volver a "1234" o recargar la base demo.)* |  |
+
+---
+
+
+---
+
+# Tabla 3 — Arce Thiago y Cabrera Ulises (Tienda de alumnos, Educación Física)
+
+
+## Tienda — pestaña 0: Productos
+
+| ID | Historia / requisito | Rol | Precondición | Pasos | Resultado esperado | Resultado |
+|---|---|---|---|---|---|---|
+| TIE-P0-01 | US03 (3.5) / RF05 | Alumno | Sesión iniciada con un usuario alumno de demo (ver script de datos). Pestaña Productos. | 1. Entrar a Tienda. 2. Mirar la lista. | Se ven los productos con miniatura (o el ícono de la tienda si no tienen foto), nombre, precio y categoría, y «Stock N · vendedor». El contador de arriba dice la cantidad (ej. «3 productos»). El botón Reservar y el selector de cantidad están deshabilitados. |  |
+| TIE-P0-02 | US03 (3.5) / RF05 | Alumno | Hay productos de varias categorías. | 1. Elegir una categoría en el combo «Categoría». | La lista muestra sólo esa categoría. |  |
+| TIE-P0-03 | US03 (3.5) / RF05 | Alumno | Hay productos cargados. | 1. Escribir parte de un nombre de producto o de vendedor en «Buscar». | La lista se achica a los que contienen el texto en el nombre del producto o del vendedor; al borrar el texto vuelve la lista completa. |  |
+| TIE-P0-04 | US03 (3.5) / RF05 | Alumno | Filtros sin coincidencias. | 1. Escribir un texto que no exista (ej. «zzzz»). | Aparece el aviso «No hay productos con esos filtros. Probá con otra categoría o borrá la búsqueda.» |  |
+| TIE-P0-05 | US03 (3.5) / RF05 | Alumno | Hay productos publicados por alumnos. | 1. En el combo «Ver» dejar «Productos sueltos de alumnos». 2. Elegir un grupo de la lista y volver. | Con «Productos sueltos de alumnos» se ven solo los productos sin grupo; al elegir un grupo se ven solo los de ese grupo y aparece la línea «Meta del grupo: $… · recaudado $… (…%)». |  |
+| TIE-P0-06 | US03 (3.2) / RF05 | Alumno | Un producto de otro vendedor con stock >= 1. | 1. Seleccionarlo. 2. Poner cantidad 1. 3. Tocar Reservar. | Mensaje «Reserva hecha. Coordiná la entrega en persona con el vendedor.»; el stock baja en la cantidad reservada; aparece en Mis reservas. |  |
+| TIE-P0-07 | US03 (3.2) / RF05 | Alumno | Un producto propio publicado. | 1. Seleccionarlo. 2. Tocar Reservar. | Mensaje «No podés reservar tus propios productos.» y el stock no cambia. |  |
+| TIE-P0-08 | US03 (3.2) / RF05 | Alumno | Producto de otro vendedor con stock 2. | 1. Seleccionar el producto. 2. Subir la cantidad con las flechas del selector. | El selector no pasa de 2 (su máximo es el stock). El aviso «No hay stock suficiente: quedan N unidades.» solo aparece si el stock bajó desde otra sesión después de seleccionar, o con stock 0 (ver TIE-P0-12). |  |
+| TIE-P0-09 | US03 (3.2) / RF05 | Alumno | Sin selección en la lista. | 1. Entrar a Productos sin elegir nada. 2. Mirar el botón Reservar. | Reservar y el selector de cantidad están deshabilitados y la franja dice «Elegí un producto para reservarlo. Con doble clic ves la foto en grande.» |  |
+| TIE-P0-10 | US03 (3.1) / RF05 | Alumno | Producto con foto y otro sin foto. | 1. Seleccionar el producto. 2. Hacer doble clic. | Al seleccionar, la franja muestra nombre, precio, vendedor y su teléfono. Con doble clic se abre la ventana del producto con la foto grande; sin foto se ve el ícono de la tienda. |  |
+| TIE-P0-11 | US07 (7.6) / RF21 | Preceptor | Sesión de un usuario que no es alumno. | 1. Entrar a Tienda. 2. Mirar las pestañas. | Se ven Productos, Grupos y donaciones y Mis reservas; Publicar, Mis ventas y Mis productos no aparecen. |  |
+| TIE-P0-12 | US03 (3.5) / RF05 | Alumno | Producto propio o de otro con stock 0. | 1. Buscarlo en Productos. 2. Seleccionarlo. 3. Tocar Reservar. | Se lista en rojo con «SIN STOCK» y la franja agrega «· SIN STOCK». Reservar queda habilitado y, al tocarlo, avisa «No hay stock suficiente: quedan 0 unidades.» sin crear la reserva (ver E-06). |  |
+| TIE-P0-13 | US03 (3.2) / RF05, RF21 | Preceptor | Producto con stock de otro vendedor. | 1. Reservar 1 unidad. | La reserva se hace (todos los roles pueden reservar); queda en Mis reservas. |  |
+| TIE-P0-14 | US03 (3.5) / RF05 | Alumno | Productos de dos vendedores distintos. | 1. En el combo «Vendedor» elegir uno. | La lista muestra solo los productos de ese vendedor; «Todos los vendedores» vuelve a mostrar todos. |  |
+
+## Tienda — pestaña 1: Publicar (sólo Alumno)
+
+| ID | Historia / requisito | Rol | Precondición | Pasos | Resultado esperado | Resultado |
+|---|---|---|---|---|---|---|
+| TIE-P1-01 | US03 (3.1) / RF05 | Alumno | Pestaña Publicar. | 1. Completar nombre, categoría, precio entero, stock entero. 2. Tocar Publicar. | Mensaje «Producto publicado.»; aparece en Productos y en Mis productos; los campos se limpian. |  |
+| TIE-P1-02 | US03 (3.1) / RF05 | Alumno | Nombre vacío. | 1. Dejar el nombre en blanco. 2. Publicar. | Mensaje «Escribí el nombre del producto.» y no se publica. |  |
+| TIE-P1-03 | US03 (3.1) / RF05 | Alumno | Precio 0 / negativo / con letras / con coma. | 1. Probar cada valor. 2. Publicar. | Mensaje «Precio y stock: escribí números enteros mayores a 0.» y no se publica. |  |
+| TIE-P1-04 | US03 (3.1) / RF05 | Alumno | Stock 0 / negativo / con letras. | 1. Probar cada valor. 2. Publicar. | Mismo mensaje de precio y stock; no se publica. |  |
+| TIE-P1-05 | US03 (3.1) / RF05 | Alumno | Un archivo que no es imagen (ej. .txt renombrado a .png). | 1. Tocar Foto. 2. Elegirlo. | Mensaje «No se pudo abrir esa imagen. Probá con otro archivo .png o .jpg.» |  |
+| TIE-P1-06 | US03 (3.1) / RF05 | Alumno | Una imagen .png o .jpg válida. | 1. Tocar Foto y elegirla. 2. Completar datos y Publicar. | La foto se ve en la vista previa y en el detalle del producto; queda en la carpeta imagenes_productos junto al ejecutable. |  |
+| TIE-P1-07 | US03 (3.1) / RF05 | Alumno | Producto publicado por otro alumno con el mismo nombre. | 1. Publicar un producto con ese nombre. | [COMPLETAR: confirmar si se admite nombre repetido entre vendedores] |  |
+| TIE-P1-08 | US07 (7.6) / RF21 | Preceptor | Sesión de un usuario que no es alumno. | 1. Entrar a Tienda. | La pestaña Publicar no está disponible. |  |
+| TIE-P1-09 | US07 (7.5) / RF13 | Alumno | Campos de Publicar completados sin publicar (nombre, precio, stock) y una foto elegida. | 1. Cerrar sesión. 2. Entrar con otro alumno. 3. Ir a Tienda → Publicar. | Los campos de nombre, precio y stock están vacíos, la categoría vuelve a su primer valor y no queda foto elegida. |  |
+| TIE-P1-10 | US03 (3.1) / RF05 | Alumno | Alumno que no integra ningún grupo. | 1. Elegir un grupo en «Grupo» (si hay uno de otros alumnos no aparece). 2. Publicar. | El combo de grupo ofrece «Venta individual» y solo los grupos de los que el alumno es integrante; si el producto es de un grupo, tiene que ser integrante («Para vender en un grupo tenés que ser integrante.»). |  |
+| TIE-P1-11 | US03 (3.1) / RF05 | Alumno | Sin elegir categoría. | 1. Completar nombre, precio y stock. 2. Dejar la categoría sin elegir. 3. Publicar. | Mensaje «Elegí la categoría del producto.» y no se publica. [COMPLETAR: confirmar si el combo arranca con una opción «Elegí…» o con una categoría ya elegida] |  |
+
+## Tienda — pestaña 2: Grupos y donaciones
+
+| ID | Historia / requisito | Rol | Precondición | Pasos | Resultado esperado | Resultado |
+|---|---|---|---|---|---|---|
+| TIE-P2-01 | US09 (9.1) / RF15 | Alumno | Pestaña Grupos y donaciones. | 1. Completar nombre, meta en pesos y PIN de 4 o más caracteres. 2. Crear grupo. | Mensaje «Grupo creado. Ya sos integrante.»; el grupo aparece en la lista con su barra de progreso. |  |
+| TIE-P2-02 | US09 (9.1) / RF15 | Alumno | Nombre vacío. | 1. Crear grupo sin nombre. | Mensaje «Escribí el nombre del grupo.» |  |
+| TIE-P2-03 | US09 (9.1) / RF15 | Alumno | Meta 0, negativa, con letras o con centavos. | 1. Probar cada valor. | Mensaje «La meta es un monto en pesos, mayor a 0 y sin centavos.» |  |
+| TIE-P2-04 | US09 (9.1) / RF15 | Alumno | PIN de 3 caracteres. | 1. Crear grupo con ese PIN. | Mensaje «El PIN necesita 4 caracteres o más.» |  |
+| TIE-P2-05 | US09 (9.1) / RF15 | Alumno | Ya existe un grupo con el nombre. | 1. Crear otro grupo con el mismo nombre. | Mensaje «Ya existe un grupo con ese nombre.» y no se crea. |  |
+| TIE-P2-06 | US09 (9.2) / RF15 | Alumno | Alumno que no integra un grupo existente. | 1. Elegir el grupo. 2. Escribir un PIN incorrecto. 3. Unirse. | Mensaje «El PIN no coincide. Pedíselo a quien creó el grupo.» |  |
+| TIE-P2-07 | US09 (9.2) / RF15 | Alumno | Mismo caso con el PIN correcto (se obtiene de quien creó el grupo). | 1. Escribir el PIN correcto. 2. Unirse. | Mensaje «Ya sos parte del grupo.»; pasa a ser integrante. |  |
+| TIE-P2-08 | US09 (9.2) / RF15 | Alumno | Alumno que ya integra el grupo. | 1. Elegir el grupo. 2. Unirse. | Mensaje «Ya sos integrante de ese grupo.» |  |
+| TIE-P2-09 | US09 / RF15 | Alumno | Pestaña Grupos con la lista de grupos vacía. | 1. Entrar a la pestaña. | Aviso «Todavía no hay grupos de recaudación. Un alumno puede crear el primero.» |  |
+| TIE-P2-10 | US03 (3.3) / RF06 | Alumno | Un grupo elegido. | 1. Escribir un monto entero > 0. 2. Donar. | Mensaje «¡Gracias por tu donación!»; la donación aparece en el listado del grupo y el recaudado sube. |  |
+| TIE-P2-11 | US03 (3.3) / RF06 | Alumno | Un grupo elegido. | 1. Donar 0, negativo, con letras o con centavos. | Mensaje «Escribí un monto en pesos, mayor a 0 y sin centavos.»; no se registra. |  |
+| TIE-P2-12 | US03 (3.3) / RF06 | Alumno | No hay grupos. | 1. Entrar a Grupos y donaciones. 2. Tocar Donar. 3. Probar también Unirse. | Donar avisa «Todavía no hay grupos para donar.»; Unirse avisa «Todavía no hay grupos para unirse.» |  |
+| TIE-P2-13 | US09 (9.3) / RF15 | Alumno | Grupo sin donaciones. | 1. Elegirlo. | Aviso «Todavía no hay donaciones en este grupo.» (con grupos cargados) o «Todavía no hay grupos de recaudación. Un alumno puede crear el primero.» (sin grupos). |  |
+| TIE-P2-14 | US09 (9.3) / RF15 | Alumno | Grupo con una donación y una venta Entregada de un producto del grupo. | 1. Mirar el recaudado del grupo. | «Se recaudaron $X de $Y (Z%)»; X = donaciones + ventas Entregadas. Una reserva sin entregar no suma; al marcarla Entregada (TIE-P4-03), X sube. |  |
+| TIE-P2-15 | US07 (7.6) / RF21, RF06 | Preceptor | Sesión de un usuario que no es alumno. | 1. Entrar a Grupos y donaciones. 2. Donar un monto válido. | Puede donar y ver los grupos; los campos de crear grupo y unirse por PIN no se muestran. |  |
+| TIE-P2-16 | US07 (7.5) / RF13 | Alumno | Pestaña Crear grupo con nombre, meta y PIN escritos, sin crear. | 1. Cerrar sesión. 2. Entrar con otro alumno. 3. Mirar los campos de crear grupo y el PIN de unirse. | Todos los campos (nombre, meta, PIN de creación y PIN de unirse) están vacíos. |  |
+| TIE-P2-17 | US09 (9.3) / RF15 | Alumno | Un grupo con integrantes. | 1. Elegir el grupo en «Grupo» de donaciones. | Se ve «Se recaudaron $X de $Y (Z%)» y la lista de donaciones recientes con «<nombre> donó $N · fecha». |  |
+
+## Tienda — pestaña 3: Mis reservas (todos los roles)
+
+| ID | Historia / requisito | Rol | Precondición | Pasos | Resultado esperado | Resultado |
+|---|---|---|---|---|---|---|
+| TIE-P3-01 | US03 (3.2) / RF05, RF21 | Preceptor | Sesión de un usuario que no es alumno, con una reserva hecha. | 1. Entrar a Mis reservas. 2. Cancelar la reserva y responder Sí. | La pestaña Mis reservas es visible para todos los roles. Con Sí: «Reserva cancelada. El stock volvió al producto.» y el stock del producto sube. |  |
+| TIE-P3-02 | US03 (3.2) / RF05 | Alumno | Alumno sin reservas. | 1. Entrar a Mis reservas. | Aviso «Todavía no reservaste ningún producto. Elegí uno en la pestaña Productos.» |  |
+| TIE-P3-03 | US03 (3.2) / RF05 | Alumno | Alumno con una reserva activa. | 1. Entrar a Mis reservas. | La reserva aparece con estado, producto, cantidad, precio y «vende <nombre> (tel. …)». |  |
+| TIE-P3-04 | US03 (3.2) / RF05 | Alumno | Reserva activa. | 1. Seleccionarla. 2. Cancelar. 3. Responder Sí. | Mensaje «Reserva cancelada. El stock volvió al producto.»; el stock del producto sube en la cantidad reservada. |  |
+| TIE-P3-05 | US03 (3.2) / RF05 | Alumno | Reserva activa. | 1. Seleccionarla. 2. Cancelar. 3. Responder No (o Esc). | No cambia nada: la reserva sigue activa y el stock igual. |  |
+| TIE-P3-06 | US03 (3.2) / RF05 | Alumno | Sin selección. | 1. Tocar Cancelar. | Mensaje «Elegí una reserva de la lista.» |  |
+| TIE-P3-07 | US03 (3.2) / RF05 | Alumno | Reserva que el vendedor ya canceló o entregó (otra sesión). | 1. Seleccionarla desde una lista desactualizada. 2. Cancelar. | Mensaje «Esa reserva ya no está activa.» |  |
+
+## Tienda — pestaña 4: Mis ventas (sólo Alumno)
+
+| ID | Historia / requisito | Rol | Precondición | Pasos | Resultado esperado | Resultado |
+|---|---|---|---|---|---|---|
+| TIE-P4-01 | US12 (12.1) / RF19 | Alumno | Alumno sin ventas. | 1. Entrar a Mis ventas. | Aviso «Todavía nadie reservó tus productos.» |  |
+| TIE-P4-02 | US12 (12.1) / RF19 | Alumno | Otro usuario reservó un producto del alumno. | 1. Entrar a Mis ventas. | Aparece la reserva con estado, producto, cantidad, precio y «reservó <nombre> (tel. …)». |  |
+| TIE-P4-03 | US12 (12.1) / RF19 | Alumno | Reserva activa sobre un producto tuyo. | 1. Seleccionarla. 2. Entregar. | Mensaje «Entrega confirmada. La venta quedó como Entregada.» (sin pedir confirmación); suma al recaudado del grupo si el producto es de un grupo; en Auditoría no hay un evento propio de entrega. |  |
+| TIE-P4-04 | US12 (12.1) / RF19 | Alumno | Reserva activa sobre un producto tuyo. | 1. Seleccionarla. 2. Cancelar la venta. 3. Sí. | Mensaje «Reserva cancelada. El stock volvió a tu producto.»; el stock sube. |  |
+| TIE-P4-05 | US12 (12.1) / RF19 | Alumno | Idem. | 1. Cancelar la venta. 2. No. | No cambia nada. |  |
+| TIE-P4-06 | US12 (12.1) / RF19 | Alumno | Sin selección. | 1. Tocar Entregar o Cancelar. | Mensaje «Elegí una reserva de la lista.» |  |
+| TIE-P4-07 | US12 (12.1) / RF19 | Alumno | Venta ya entregada. | 1. Seleccionarla. 2. Entregar de nuevo. | Mensaje «Esa reserva ya no está activa.»; no se duplica nada. |  |
+
+## Tienda — pestaña 5: Mis productos (sólo Alumno)
+
+| ID | Historia / requisito | Rol | Precondición | Pasos | Resultado esperado | Resultado |
+|---|---|---|---|---|---|---|
+| TIE-P5-01 | US12 / RF19 | Alumno | Alumno sin productos publicados. | 1. Entrar a Mis productos. | Aviso «Todavía no publicaste productos. Hacelo en la pestaña Publicar.» |  |
+| TIE-P5-02 | US12 (12.2) / RF19 | Alumno | Producto propio con stock 5. | 1. Seleccionarlo. 2. Cantidad 3. 3. Reponer. | Mensaje «Sumaste 3 unidades. Ahora hay 8.» |  |
+| TIE-P5-03 | US12 (12.2) / RF19 | Alumno | Producto propio con stock 5. | 1. Cantidad 2. 2. Quitar. | Mensaje «Quitaste 2 unidades. Ahora quedan 3.» |  |
+| TIE-P5-04 | US12 (12.2) / RF19 | Alumno | Producto propio con stock 3. | 1. Cantidad 4. 2. Quitar. | Mensaje «No podés quitar más de lo que hay: el producto tiene 3 unidades.»; stock sin cambios. |  |
+| TIE-P5-05 | US12 / RF19 | Alumno | Sin selección. | 1. Tocar Reponer, Quitar o Eliminar. | Mensaje «Elegí un producto de tu lista.» |  |
+| TIE-P5-06 | US12 (12.3) / RF19 | Alumno | Producto propio sin reservas ni ventas. | 1. Eliminar. 2. Sí. | Mensaje «Producto eliminado.»; desaparece de todas las listas y se borra su foto. |  |
+| TIE-P5-07 | US12 (12.3) / RF19 | Alumno | Idem. | 1. Eliminar. 2. No (o Esc). | El producto sigue y su foto también. |  |
+| TIE-P5-08 | US12 (12.3) / RF19 | Alumno | Producto propio con una reserva activa. | 1. Eliminar. | Mensaje «Tiene reservas activas. Entregalas o cancelalas antes de eliminar el producto.»; no se elimina. |  |
+| TIE-P5-09 | US12 (12.3) / RF19 | Alumno | Producto propio con ventas Entregadas. | 1. Eliminar. | Mensaje «Este producto ya tuvo ventas, así que no se puede eliminar (se conserva el historial).» |  |
+| TIE-P5-10 | US12 / RF19 | Alumno | Producto propio con foto. | 1. Mirar las acciones de la pestaña Mis productos. | Solo hay Reponer, Quitar y Eliminar: la foto se elige al publicar y después no se puede cambiar (limitación; para cambiarla hay que eliminar el producto y publicarlo de nuevo, lo cual no se puede si ya tuvo ventas). |  |
+| TIE-P5-11 | US12 (12.4) / RF19, RF21 | Alumno | Dos alumnos con productos distintos. | 1. Entrar con cada uno a Mis productos. | Cada alumno ve sólo los suyos. |  |
+
+## Educación Física (sólo Alumno)
+
+| ID | Historia / requisito | Rol | Precondición | Pasos | Resultado esperado | Resultado |
+|---|---|---|---|---|---|---|
+| EDF-01 | US06 / RF11 | Alumno | Alumno con curso asignado. | 1. Entrar a Educación Física. | Se ven los combos Deporte, Día y Hora con la primera opción elegible preseleccionada, y la tarjeta «Tu inscripción» dice «Todavía no te inscribiste.» con «Elegí deporte, día y hora, y tocá Inscribirme.» |  |
+| EDF-02 | US07 (7.6) / RF21 | Preceptor | Sesión de un usuario que no es alumno. | 1. Mirar el menú. | El módulo Educación Física no está disponible. |  |
+| EDF-03 | US06 (6.2) / RF12 | Alumno | Un deporte elegido. | 1. Abrir el combo de días. | Los días sin clase del deporte aparecen en gris con «(sin clase)»; los días cuyas horas chocan todas con la cursada, en gris con «(choca con tu horario)». Ninguno de los grises se puede elegir. |  |
+| EDF-04 | US06 (6.2) / RF12 | Alumno | Un deporte y un día con clase. | 1. Abrir el combo de horas. | Las horas sin clase aparecen grises «(sin clase)»; las que chocan, grises «(choca con <materia>)»; ninguna se puede elegir. La hora preseleccionada es la primera elegible; si no hay ninguna, el combo queda sin selección y la franja dice «No hay clase de ese deporte en ese día y horario. Probá con otra combinación.» |  |
+| EDF-05 | US06 (6.3, 6.6) / RF11 | Alumno | Opción con cupo, sin choque y sin otra inscripción. | 1. Elegir deporte, día y hora. | Estado «Hay lugar. Cupos libres: X de Y.»; Inscribirme habilitado. |  |
+| EDF-06 | US06 (6.3, 6.6) / RF11 | Alumno | Opción con todos los cupos tomados. | 1. Elegirla. | Estado «No hay lugar: todos los cupos están ocupados.»; Inscribirme deshabilitado. |  |
+| EDF-07 | US06 (6.2, 6.6) / RF12 | Alumno | Opción que choca con una materia del curso. | 1. Abrir el combo de horas. 2. Intentar elegir una hora gris «(choca con <materia>)». | La hora gris no se puede elegir (no responde al clic ni al teclado). La frase «Choca con <materia> en tu horario.» de la franja de estado queda como defensa y no debería verse desde la pantalla. |  |
+| EDF-08 | US06 (6.6) / RF11 | Alumno | Un deporte y un día sin ninguna oferta elegible. | 1. Elegir el deporte. 2. Mirar los combos Día y Hora y la franja de estado. | Todos los días en gris, el combo Día y el combo Hora quedan sin selección, la franja dice «No hay clase de ese deporte en ese día y horario. Probá con otra combinación.» y Inscribirme está deshabilitado. |  |
+| EDF-09 | US06 (6.6) / RF11 | Alumno | Opción válida. | 1. Tocar Inscribirme. | Mensaje «¡Listo! Quedaste inscripto.»; la tarjeta «Tu inscripción» muestra el deporte y «<día> de HH:mm a HH:mm hs»; Cancelar inscripción se habilita, Inscribirme se deshabilita y el cupo libre baja en 1. |  |
+| EDF-10 | US06 (6.4, 6.6) / RF11 | Alumno | Alumno ya inscripto a la opción mostrada. | 1. Volver a elegirla. | La franja dice «Ya estás inscripto a esta opción.»; Inscribirme deshabilitado. |  |
+| EDF-11 | US06 (6.4, 6.6) / RF11 | Alumno | Alumno inscripto a otra opción. | 1. Elegir una distinta. | La franja dice «Hay lugar. Cupos libres: X de Y. Ya tenés otra inscripción: cancelala para elegir esta.»; Inscribirme deshabilitado. |  |
+| EDF-12 | US06 (6.4) / RF11 | Alumno | Alumno inscripto. | 1. Cancelar inscripción. 2. Sí. | Pregunta «¿Querés cancelar tu inscripción a <deporte>? Después vas a poder elegir otra opción.»; con Sí aparece «Inscripción cancelada.», el cupo vuelve a subir y la tarjeta dice «Todavía no te inscribiste.» |  |
+| EDF-13 | US06 (6.4) / RF11 | Alumno | Alumno inscripto. | 1. Cancelar inscripción. 2. No (o Esc). | La inscripción sigue vigente. |  |
+| EDF-14 | US06 (6.7), US10 (10.2) / RF23 | Alumno | Inscripto a una opción que choca con el horario del curso nuevo. | 1. Mi Cuenta. 2. Cambiar de curso. 3. Guardar. 4. Responder No. | Aparece el aviso «Con ese curso, tu inscripción a Educación Física choca con X y se va a cancelar. ¿Querés cambiar de curso igual?»; con No el curso y la inscripción no cambian y las listas de curso de Mi cuenta vuelven al curso anterior (app v3). |  |
+| EDF-15 | US06 (6.7), US10 (10.2) / RF23 | Alumno | Mismo caso. | 1. Repetir pero responder Sí. | Mensaje «Cambiaste tu curso. Se canceló tu inscripción a Educación Física porque choca con X en tu nuevo horario.»; queda registrado en la auditoría. |  |
+| EDF-16 | US06 (6.7), US10 (10.2) / RF23 | Alumno | Inscripto a una opción que NO choca con el curso nuevo. | 1. Cambiar de curso y guardar. | El curso cambia sin pedir confirmación extra («Cambiaste tu curso.») y la inscripción se mantiene. |  |
+| EDF-17 | US07 (7.5) / RF13 | Alumno | Alumno inscripto. | 1. Cerrar sesión. 2. Entrar con otro alumno. 3. Volver a Educación Física. | El segundo alumno ve su propio estado y no el del primero. |  |
+| EDF-18 | US06 (6.5) / RF12 | Alumno | Alumno de un curso sin horario cargado (en la demo, alumno2) y otro con horario (alumno1). | 1. Entrar con alumno2 y abrir los combos de día y hora de un deporte. 2. Repetir con alumno1. | Con alumno2 ninguna hora aparece como «(choca con …)» (no hay cruce sin horario cargado); con alumno1 sí aparecen choques. [COMPLETAR: confirmar contra la base cargada] |  |
+| EDF-19 | US11 (11.1) / RF18 | Preceptor | Un alumno se inscribió y canceló desde la pantalla. | 1. Entrar como preceptor. 2. Objetos → Auditoría. | Figuran «Inscripción a Ed. Física» con resultado Exitoso por la inscripción y por la cancelación por cambio de curso (si hubo). Desde la pantalla no se generan eventos Fallido de esta acción (ver E-12). |  |
+| EDF-20 | US06 (6.7), US10 (10.2) / RF23 | Alumno | Alumno inscripto a una opción. | 1. Mi Cuenta. 2. Dejar el mismo curso que ya tiene. 3. Guardar curso. | Aparece «Ese ya es tu curso.»; no cambia el curso ni la inscripción, y no queda registro de cancelación en la auditoría (app v3). |  |
+
+---
+
+## Desvíos
+- Las filas se copiaron tal cual salvo la clave de demostración (ver arriba) y 10 casos que decían «hoy falla» o describían el comportamiento anterior: DAS-07, DAS-08, RCL-10, CON-01, PUB-09, PRE-26, HIG-16, HIG-19, CUE-06 y CUE-09. Los ajusté a la app v3 según CONTEXTO §20 y el código, y los marqué con **[v3]**. No se cambió ningún ID.
+- **No recibí `docs_otros.zip` con los documentos revisados de Arce Thiago y Cabrera Ulises, 2 y 4.** Usé los casos de Arce Thiago y Cabrera Ulises y 4 que tenía de la etapa de cierre. Si ellos agregaron casos nuevos (por ejemplo, por ERR-20 a ERR-23), **faltan acá**: hay que volver a correr el script con sus archivos nuevos.
+- Los `[COMPLETAR]` que traen algunos casos (ver `INFORME_PRUEBAS.md`) siguen pendientes: piden datos que no estaban en los archivos.
+- Fuera de esos 10 casos, no revisé uno por uno los resultados esperados de Arce Thiago y Cabrera Ulises y 4 contra el código v3: el diff v2 a v3 solo toca lo que está en esos casos y lo de CONTEXTO §20.
+
+## Datos que faltan
+- Resultados de ejecución de los 299 casos: los carga quien pruebe.

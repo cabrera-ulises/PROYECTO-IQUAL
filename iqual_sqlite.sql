@@ -94,6 +94,16 @@ CREATE TABLE tipo_sector (
   nombre_tipo TEXT NOT NULL,
   CONSTRAINT uq_tipo_sector_nombre_tipo UNIQUE (nombre_tipo)
 );
+CREATE TABLE categoria_producto (
+  id_categoria_producto INTEGER PRIMARY KEY AUTOINCREMENT,
+  nombre_categoria TEXT NOT NULL,
+  CONSTRAINT uq_categoria_producto_nombre_categoria UNIQUE (nombre_categoria)
+);
+CREATE TABLE software (
+  id_software INTEGER PRIMARY KEY AUTOINCREMENT,
+  nombre_software TEXT NOT NULL,
+  CONSTRAINT uq_software_nombre_software UNIQUE (nombre_software)
+);
 CREATE TABLE anio (
   id_anio INTEGER PRIMARY KEY AUTOINCREMENT,
   numero_anio INTEGER NOT NULL,
@@ -183,6 +193,7 @@ CREATE TABLE objeto_perdido (
   id_categoria_objeto INTEGER NOT NULL,
   id_estado_objeto INTEGER NOT NULL,
   id_sector INTEGER NOT NULL,
+  detalle_reservado TEXT NULL,
   CONSTRAINT fk_objeto_perdido_id_usuario FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario),
   CONSTRAINT fk_objeto_perdido_id_categoria_objeto FOREIGN KEY (id_categoria_objeto) REFERENCES categoria_objeto (id_categoria_objeto),
   CONSTRAINT fk_objeto_perdido_id_estado_objeto FOREIGN KEY (id_estado_objeto) REFERENCES estado_objeto (id_estado_objeto),
@@ -199,6 +210,7 @@ CREATE TABLE reclamo_objeto (
   CONSTRAINT fk_reclamo_objeto_id_objeto FOREIGN KEY (id_objeto) REFERENCES objeto_perdido (id_objeto),
   CONSTRAINT fk_reclamo_objeto_id_estado_reclamo FOREIGN KEY (id_estado_reclamo) REFERENCES estado_reclamo (id_estado_reclamo)
 );
+CREATE UNIQUE INDEX ux_reclamo_usuario_objeto ON reclamo_objeto (id_usuario, id_objeto);
 CREATE TABLE consulta_objeto (
   id_consulta INTEGER PRIMARY KEY AUTOINCREMENT,
   fecha_publicacion TEXT NOT NULL,
@@ -244,8 +256,11 @@ CREATE TABLE producto_buffet (
   stock INTEGER NOT NULL,
   id_usuario INTEGER NOT NULL,
   id_grupo INTEGER NULL,
+  id_categoria_producto INTEGER NOT NULL DEFAULT 1,
+  ruta_foto TEXT NULL,
   CONSTRAINT fk_producto_buffet_id_usuario FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario),
   CONSTRAINT fk_producto_buffet_id_grupo FOREIGN KEY (id_grupo) REFERENCES grupo_buffet (id_grupo),
+  CONSTRAINT fk_producto_buffet_id_categoria_producto FOREIGN KEY (id_categoria_producto) REFERENCES categoria_producto (id_categoria_producto),
   CONSTRAINT ck_producto_precio CHECK (precio > 0),
   CONSTRAINT ck_producto_stock CHECK (stock >= 0)
 );
@@ -287,6 +302,14 @@ CREATE TABLE recursos_ct (
   CONSTRAINT fk_recursos_ct_id_tipo_recurso FOREIGN KEY (id_tipo_recurso) REFERENCES tipo_recurso (id_tipo_recurso),
   CONSTRAINT fk_recursos_ct_id_estado_recurso FOREIGN KEY (id_estado_recurso) REFERENCES estado_recurso (id_estado_recurso),
   CONSTRAINT uq_recursos_ct_id_tipo_recurso_id_carro_numero_equipo UNIQUE (id_tipo_recurso, id_carro, numero_equipo)
+);
+CREATE TABLE recurso_software (
+  id_recurso_software INTEGER PRIMARY KEY AUTOINCREMENT,
+  id_recurso INTEGER NOT NULL,
+  id_software INTEGER NOT NULL,
+  CONSTRAINT fk_recurso_software_id_recurso FOREIGN KEY (id_recurso) REFERENCES recursos_ct (id_recurso),
+  CONSTRAINT fk_recurso_software_id_software FOREIGN KEY (id_software) REFERENCES software (id_software),
+  CONSTRAINT uq_recurso_software_id_recurso_id_software UNIQUE (id_recurso, id_software)
 );
 CREATE TABLE prestamo_ct (
   id_prestamo INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -355,9 +378,6 @@ INSERT INTO rol (nombre_rol) VALUES ('Alumno');
 INSERT INTO rol (nombre_rol) VALUES ('Profesor');
 INSERT INTO rol (nombre_rol) VALUES ('Preceptor');
 INSERT INTO rol (nombre_rol) VALUES ('Maestranza');
-INSERT INTO especialidad (nombre_especialidad) VALUES ('Computación');
-INSERT INTO especialidad (nombre_especialidad) VALUES ('Electrónica');
-INSERT INTO especialidad (nombre_especialidad) VALUES ('Mecánica');
 INSERT INTO turno (nombre_turno) VALUES ('Mañana');
 INSERT INTO turno (nombre_turno) VALUES ('Tarde');
 INSERT INTO dia_semana (nombre_dia) VALUES ('Lunes');
@@ -394,15 +414,6 @@ INSERT INTO tipo_recurso (nombre_tipo) VALUES ('Tablero de dibujo');
 INSERT INTO estado_recurso (nombre_estado) VALUES ('Disponible');
 INSERT INTO estado_recurso (nombre_estado) VALUES ('Prestado');
 INSERT INTO estado_recurso (nombre_estado) VALUES ('Fuera de servicio');
-INSERT INTO carro (nombre_carro) VALUES ('C1');
-INSERT INTO carro (nombre_carro) VALUES ('C2');
-INSERT INTO carro (nombre_carro) VALUES ('C3');
-INSERT INTO carro (nombre_carro) VALUES ('C4');
-INSERT INTO carro (nombre_carro) VALUES ('C5');
-INSERT INTO deporte (nombre_deporte) VALUES ('Fútbol');
-INSERT INTO deporte (nombre_deporte) VALUES ('Vóley');
-INSERT INTO deporte (nombre_deporte) VALUES ('Básquet');
-INSERT INTO deporte (nombre_deporte) VALUES ('Handball');
 INSERT INTO tipo_log (nombre_evento) VALUES ('Inicio de sesión');
 INSERT INTO tipo_log (nombre_evento) VALUES ('Cierre de sesión');
 INSERT INTO tipo_log (nombre_evento) VALUES ('Registro de usuario');
@@ -433,6 +444,11 @@ INSERT INTO entidad_log (nombre_entidad) VALUES ('reserva_sector');
 INSERT INTO entidad_log (nombre_entidad) VALUES ('inscripcion_ed_fisica');
 INSERT INTO tipo_sector (nombre_tipo) VALUES ('Reservable');
 INSERT INTO tipo_sector (nombre_tipo) VALUES ('Uso común');
+INSERT INTO categoria_producto (nombre_categoria) VALUES ('Comida');
+INSERT INTO categoria_producto (nombre_categoria) VALUES ('Bebida');
+INSERT INTO categoria_producto (nombre_categoria) VALUES ('Accesorios');
+INSERT INTO categoria_producto (nombre_categoria) VALUES ('Ropa');
+INSERT INTO categoria_producto (nombre_categoria) VALUES ('Otros');
 INSERT INTO anio (numero_anio) VALUES (1);
 INSERT INTO anio (numero_anio) VALUES (2);
 INSERT INTO anio (numero_anio) VALUES (3);
@@ -449,6 +465,19 @@ INSERT INTO division (numero_division) VALUES (6);
 INSERT INTO division (numero_division) VALUES (7);
 INSERT INTO division (numero_division) VALUES (8);
 INSERT INTO division (numero_division) VALUES (9);
+-- DATOS DE EJEMPLO, REEMPLAZAR AL FINAL
+INSERT INTO especialidad (nombre_especialidad) VALUES ('Computación');
+INSERT INTO especialidad (nombre_especialidad) VALUES ('Óptica');
+INSERT INTO especialidad (nombre_especialidad) VALUES ('Geografía-Matemática');
+INSERT INTO carro (nombre_carro) VALUES ('C1');
+INSERT INTO carro (nombre_carro) VALUES ('C2');
+INSERT INTO carro (nombre_carro) VALUES ('C3');
+INSERT INTO carro (nombre_carro) VALUES ('C4');
+INSERT INTO carro (nombre_carro) VALUES ('C5');
+INSERT INTO deporte (nombre_deporte) VALUES ('Fútbol');
+INSERT INTO deporte (nombre_deporte) VALUES ('Vóley');
+INSERT INTO deporte (nombre_deporte) VALUES ('Básquet');
+INSERT INTO deporte (nombre_deporte) VALUES ('Handball');
 INSERT INTO franja_horaria (hora_inicio, hora_fin) VALUES ('08:00', '10:00');
 INSERT INTO franja_horaria (hora_inicio, hora_fin) VALUES ('10:00', '12:00');
 INSERT INTO franja_horaria (hora_inicio, hora_fin) VALUES ('12:00', '14:00');
@@ -456,9 +485,9 @@ INSERT INTO franja_horaria (hora_inicio, hora_fin) VALUES ('14:00', '16:00');
 INSERT INTO franja_horaria (hora_inicio, hora_fin) VALUES ('16:00', '18:00');
 INSERT INTO curso (id_anio, id_division, id_especialidad) VALUES ((SELECT id_anio FROM anio WHERE numero_anio = 4), (SELECT id_division FROM division WHERE numero_division = 1), (SELECT id_especialidad FROM especialidad WHERE nombre_especialidad = 'Computación'));
 INSERT INTO curso (id_anio, id_division, id_especialidad) VALUES ((SELECT id_anio FROM anio WHERE numero_anio = 4), (SELECT id_division FROM division WHERE numero_division = 2), (SELECT id_especialidad FROM especialidad WHERE nombre_especialidad = 'Computación'));
-INSERT INTO curso (id_anio, id_division, id_especialidad) VALUES ((SELECT id_anio FROM anio WHERE numero_anio = 5), (SELECT id_division FROM division WHERE numero_division = 2), (SELECT id_especialidad FROM especialidad WHERE nombre_especialidad = 'Electrónica'));
+INSERT INTO curso (id_anio, id_division, id_especialidad) VALUES ((SELECT id_anio FROM anio WHERE numero_anio = 5), (SELECT id_division FROM division WHERE numero_division = 2), (SELECT id_especialidad FROM especialidad WHERE nombre_especialidad = 'Óptica'));
 INSERT INTO usuario (dni, nombre_completo, usuario_nick, password_hash, email, contacto_telefono, id_rol, id_curso) VALUES (40000001, 'Alumno Uno', 'alumno1', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'alumno1@iqual.demo', '1155550001', (SELECT id_rol FROM rol WHERE nombre_rol = 'Alumno'), (SELECT id_curso FROM curso WHERE id_anio = (SELECT id_anio FROM anio WHERE numero_anio = 4) AND id_division = (SELECT id_division FROM division WHERE numero_division = 1) AND id_especialidad = (SELECT id_especialidad FROM especialidad WHERE nombre_especialidad = 'Computación')));
-INSERT INTO usuario (dni, nombre_completo, usuario_nick, password_hash, email, contacto_telefono, id_rol, id_curso) VALUES (40000002, 'Alumno Dos', 'alumno2', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'alumno2@iqual.demo', '1155550002', (SELECT id_rol FROM rol WHERE nombre_rol = 'Alumno'), (SELECT id_curso FROM curso WHERE id_anio = (SELECT id_anio FROM anio WHERE numero_anio = 5) AND id_division = (SELECT id_division FROM division WHERE numero_division = 2) AND id_especialidad = (SELECT id_especialidad FROM especialidad WHERE nombre_especialidad = 'Electrónica')));
+INSERT INTO usuario (dni, nombre_completo, usuario_nick, password_hash, email, contacto_telefono, id_rol, id_curso) VALUES (40000002, 'Alumno Dos', 'alumno2', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'alumno2@iqual.demo', '1155550002', (SELECT id_rol FROM rol WHERE nombre_rol = 'Alumno'), (SELECT id_curso FROM curso WHERE id_anio = (SELECT id_anio FROM anio WHERE numero_anio = 5) AND id_division = (SELECT id_division FROM division WHERE numero_division = 2) AND id_especialidad = (SELECT id_especialidad FROM especialidad WHERE nombre_especialidad = 'Óptica')));
 INSERT INTO usuario (dni, nombre_completo, usuario_nick, password_hash, email, contacto_telefono, id_rol, id_curso) VALUES (30000003, 'Profesor Uno', 'profe1', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'profe1@iqual.demo', '1155550003', (SELECT id_rol FROM rol WHERE nombre_rol = 'Profesor'), NULL);
 INSERT INTO usuario (dni, nombre_completo, usuario_nick, password_hash, email, contacto_telefono, id_rol, id_curso) VALUES (30000004, 'Preceptor Uno', 'preceptor1', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'preceptor1@iqual.demo', '1155550004', (SELECT id_rol FROM rol WHERE nombre_rol = 'Preceptor'), NULL);
 INSERT INTO usuario (dni, nombre_completo, usuario_nick, password_hash, email, contacto_telefono, id_rol, id_curso) VALUES (30000005, 'Maestranza Uno', 'maestranza1', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'maestranza1@iqual.demo', '1155550005', (SELECT id_rol FROM rol WHERE nombre_rol = 'Maestranza'), NULL);
@@ -490,11 +519,12 @@ INSERT INTO sector (nombre_sector, id_tipo_sector) VALUES ('Aula', (SELECT id_ti
 INSERT INTO sector (nombre_sector, id_tipo_sector) VALUES ('Patio', (SELECT id_tipo_sector FROM tipo_sector WHERE nombre_tipo = 'Uso común'));
 INSERT INTO sector (nombre_sector, id_tipo_sector) VALUES ('Preceptoría', (SELECT id_tipo_sector FROM tipo_sector WHERE nombre_tipo = 'Uso común'));
 INSERT INTO sector (nombre_sector, id_tipo_sector) VALUES ('Taller de computación', (SELECT id_tipo_sector FROM tipo_sector WHERE nombre_tipo = 'Uso común'));
-INSERT INTO objeto_perdido (titulo, descripcion, ruta_foto, fecha_registro, id_usuario, id_categoria_objeto, id_estado_objeto, id_sector) VALUES ('Campera azul', 'Campera azul de abrigo con capucha, talle M', NULL, '2026-10-19', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'preceptor1'), (SELECT id_categoria_objeto FROM categoria_objeto WHERE nombre_categoria = 'Ropa'), (SELECT id_estado_objeto FROM estado_objeto WHERE nombre_estado = 'Disponible'), (SELECT id_sector FROM sector WHERE nombre_sector = 'Patio'));
-INSERT INTO objeto_perdido (titulo, descripcion, ruta_foto, fecha_registro, id_usuario, id_categoria_objeto, id_estado_objeto, id_sector) VALUES ('Llaves con llavero rojo', 'Dos llaves con un llavero rojo de goma', NULL, '2026-10-20', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'preceptor1'), (SELECT id_categoria_objeto FROM categoria_objeto WHERE nombre_categoria = 'Llaves'), (SELECT id_estado_objeto FROM estado_objeto WHERE nombre_estado = 'En reclamo'), (SELECT id_sector FROM sector WHERE nombre_sector = 'Aula'));
-INSERT INTO objeto_perdido (titulo, descripcion, ruta_foto, fecha_registro, id_usuario, id_categoria_objeto, id_estado_objeto, id_sector) VALUES ('Calculadora científica', 'Calculadora científica negra con funda', NULL, '2026-10-15', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'preceptor1'), (SELECT id_categoria_objeto FROM categoria_objeto WHERE nombre_categoria = 'Electrónica'), (SELECT id_estado_objeto FROM estado_objeto WHERE nombre_estado = 'Devuelto'), (SELECT id_sector FROM sector WHERE nombre_sector = 'Biblioteca'));
+INSERT INTO objeto_perdido (titulo, descripcion, ruta_foto, fecha_registro, id_usuario, id_categoria_objeto, id_estado_objeto, id_sector, detalle_reservado) VALUES ('Campera azul', 'Campera azul de abrigo con capucha, talle M', NULL, '2026-10-19', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'preceptor1'), (SELECT id_categoria_objeto FROM categoria_objeto WHERE nombre_categoria = 'Ropa'), (SELECT id_estado_objeto FROM estado_objeto WHERE nombre_estado = 'Disponible'), (SELECT id_sector FROM sector WHERE nombre_sector = 'Patio'), 'Tiene las iniciales M.R. bordadas en el interior del cuello');
+INSERT INTO objeto_perdido (titulo, descripcion, ruta_foto, fecha_registro, id_usuario, id_categoria_objeto, id_estado_objeto, id_sector, detalle_reservado) VALUES ('Llaves con llavero rojo', 'Dos llaves con un llavero rojo de goma', NULL, '2026-10-20', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'preceptor1'), (SELECT id_categoria_objeto FROM categoria_objeto WHERE nombre_categoria = 'Llaves'), (SELECT id_estado_objeto FROM estado_objeto WHERE nombre_estado = 'Disponible'), (SELECT id_sector FROM sector WHERE nombre_sector = 'Aula'), 'Una de las dos llaves tiene cinta celeste en la cabeza');
+INSERT INTO objeto_perdido (titulo, descripcion, ruta_foto, fecha_registro, id_usuario, id_categoria_objeto, id_estado_objeto, id_sector, detalle_reservado) VALUES ('Calculadora científica', 'Calculadora científica negra con funda', NULL, '2026-10-15', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'preceptor1'), (SELECT id_categoria_objeto FROM categoria_objeto WHERE nombre_categoria = 'Electrónica'), (SELECT id_estado_objeto FROM estado_objeto WHERE nombre_estado = 'Devuelto'), (SELECT id_sector FROM sector WHERE nombre_sector = 'Biblioteca'), 'El número de serie termina en 4471');
 INSERT INTO reclamo_objeto (prueba_pertenencia, fecha_reclamo, id_usuario, id_objeto, id_estado_reclamo) VALUES ('El llavero tiene mi nombre grabado en la parte de atrás', '2026-10-21', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'alumno1'), (SELECT id_objeto FROM objeto_perdido WHERE titulo = 'Llaves con llavero rojo'), (SELECT id_estado_reclamo FROM estado_reclamo WHERE nombre_estado = 'Pendiente'));
 INSERT INTO reclamo_objeto (prueba_pertenencia, fecha_reclamo, id_usuario, id_objeto, id_estado_reclamo) VALUES ('Tiene mis iniciales escritas en la funda de la calculadora', '2026-10-16', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'alumno2'), (SELECT id_objeto FROM objeto_perdido WHERE titulo = 'Calculadora científica'), (SELECT id_estado_reclamo FROM estado_reclamo WHERE nombre_estado = 'Aprobado'));
+INSERT INTO reclamo_objeto (prueba_pertenencia, fecha_reclamo, id_usuario, id_objeto, id_estado_reclamo) VALUES ('Son las llaves de mi casillero y una tiene cinta celeste', '2026-10-22', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'alumno2'), (SELECT id_objeto FROM objeto_perdido WHERE titulo = 'Llaves con llavero rojo'), (SELECT id_estado_reclamo FROM estado_reclamo WHERE nombre_estado = 'Pendiente'));
 INSERT INTO consulta_objeto (fecha_publicacion, descripcion_busqueda, id_usuario) VALUES ('2026-10-22', 'Perdí un buzo gris en el patio, alguien lo vio?', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'alumno1'));
 INSERT INTO consulta_objeto (fecha_publicacion, descripcion_busqueda, id_usuario) VALUES ('2026-10-23', 'Busco una botella térmica verde que dejé en el aula', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'alumno2'));
 INSERT INTO reporte_higiene (fecha_hora, observaciones, id_usuario, id_sector, id_tipo_reporte, id_estado_reporte, fecha_hora_resolucion, id_usuario_resolutor) VALUES ('2026-10-21 09:15:00', 'Falta papel y hay que limpiar el piso', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'alumno1'), (SELECT id_sector FROM sector WHERE nombre_sector = 'Baño planta baja'), (SELECT id_tipo_reporte FROM tipo_reporte WHERE nombre_tipo = 'Limpieza'), (SELECT id_estado_reporte FROM estado_reporte WHERE nombre_estado = 'Pendiente'), NULL, NULL);
@@ -505,6 +535,10 @@ INSERT INTO integrante_grupo (id_usuario, id_grupo) VALUES ((SELECT id_usuario F
 INSERT INTO producto_buffet (nombre_producto, precio, stock, id_usuario, id_grupo) VALUES ('Alfajor de dulce de leche', 800, 18, (SELECT id_usuario FROM usuario WHERE usuario_nick = 'alumno1'), (SELECT id_grupo FROM grupo_buffet WHERE nombre_grupo = 'Viaje de Estudios 4to 1ra'));
 INSERT INTO producto_buffet (nombre_producto, precio, stock, id_usuario, id_grupo) VALUES ('Sándwich de miga', 1500, 9, (SELECT id_usuario FROM usuario WHERE usuario_nick = 'alumno1'), (SELECT id_grupo FROM grupo_buffet WHERE nombre_grupo = 'Viaje de Estudios 4to 1ra'));
 INSERT INTO producto_buffet (nombre_producto, precio, stock, id_usuario, id_grupo) VALUES ('Jugo en caja', 700, 15, (SELECT id_usuario FROM usuario WHERE usuario_nick = 'alumno2'), NULL);
+UPDATE producto_buffet SET id_categoria_producto = (SELECT id_categoria_producto FROM categoria_producto WHERE nombre_categoria = 'Comida') WHERE nombre_producto IN ('Alfajor de dulce de leche', 'Sándwich de miga');
+UPDATE producto_buffet SET id_categoria_producto = (SELECT id_categoria_producto FROM categoria_producto WHERE nombre_categoria = 'Bebida') WHERE nombre_producto = 'Jugo en caja';
+INSERT INTO producto_buffet (nombre_producto, precio, stock, id_usuario, id_grupo, id_categoria_producto, ruta_foto) VALUES ('Buzo de egresados', 12000, 4, (SELECT id_usuario FROM usuario WHERE usuario_nick = 'alumno2'), NULL, (SELECT id_categoria_producto FROM categoria_producto WHERE nombre_categoria = 'Ropa'), NULL);
+INSERT INTO producto_buffet (nombre_producto, precio, stock, id_usuario, id_grupo, id_categoria_producto, ruta_foto) VALUES ('Llavero artesanal', 1200, 10, (SELECT id_usuario FROM usuario WHERE usuario_nick = 'alumno1'), NULL, (SELECT id_categoria_producto FROM categoria_producto WHERE nombre_categoria = 'Accesorios'), NULL);
 INSERT INTO venta_buffet (fecha_hora, id_usuario, id_estado_venta) VALUES ('2026-10-22 10:20:00', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'preceptor1'), (SELECT id_estado_venta FROM estado_venta WHERE nombre_estado = 'Reservada'));
 INSERT INTO venta_buffet (fecha_hora, id_usuario, id_estado_venta) VALUES ('2026-10-22 11:05:00', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'profe1'), (SELECT id_estado_venta FROM estado_venta WHERE nombre_estado = 'Entregada'));
 INSERT INTO venta_buffet (fecha_hora, id_usuario, id_estado_venta) VALUES ('2026-10-23 09:40:00', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'alumno2'), (SELECT id_estado_venta FROM estado_venta WHERE nombre_estado = 'Cancelada'));
@@ -542,12 +576,22 @@ INSERT INTO recursos_ct (id_carro, numero_equipo, id_tipo_recurso, id_estado_rec
 INSERT INTO recursos_ct (id_carro, numero_equipo, id_tipo_recurso, id_estado_recurso) VALUES (NULL, 8, (SELECT id_tipo_recurso FROM tipo_recurso WHERE nombre_tipo = 'Tablero de dibujo'), (SELECT id_estado_recurso FROM estado_recurso WHERE nombre_estado = 'Disponible'));
 INSERT INTO recursos_ct (id_carro, numero_equipo, id_tipo_recurso, id_estado_recurso) VALUES (NULL, 9, (SELECT id_tipo_recurso FROM tipo_recurso WHERE nombre_tipo = 'Tablero de dibujo'), (SELECT id_estado_recurso FROM estado_recurso WHERE nombre_estado = 'Disponible'));
 INSERT INTO recursos_ct (id_carro, numero_equipo, id_tipo_recurso, id_estado_recurso) VALUES (NULL, 10, (SELECT id_tipo_recurso FROM tipo_recurso WHERE nombre_tipo = 'Tablero de dibujo'), (SELECT id_estado_recurso FROM estado_recurso WHERE nombre_estado = 'Disponible'));
+INSERT INTO software (nombre_software) VALUES ('Qt Creator');
+INSERT INTO software (nombre_software) VALUES ('Visual Studio Code');
+INSERT INTO software (nombre_software) VALUES ('Microsoft Office');
+INSERT INTO software (nombre_software) VALUES ('SQL Server 2005');
+INSERT INTO software (nombre_software) VALUES ('DB Browser for SQLite');
+INSERT INTO software (nombre_software) VALUES ('AutoCAD');
+INSERT INTO recurso_software (id_recurso, id_software) SELECT r.id_recurso, s.id_software FROM recursos_ct r JOIN carro c ON c.id_carro = r.id_carro JOIN software s ON s.nombre_software IN ('Qt Creator', 'Visual Studio Code', 'Microsoft Office') WHERE c.nombre_carro = 'C4';
+INSERT INTO recurso_software (id_recurso, id_software) SELECT r.id_recurso, s.id_software FROM recursos_ct r JOIN carro c ON c.id_carro = r.id_carro JOIN software s ON s.nombre_software = 'SQL Server 2005' WHERE c.nombre_carro = 'C4' AND r.numero_equipo <= 5;
+INSERT INTO recurso_software (id_recurso, id_software) SELECT r.id_recurso, s.id_software FROM recursos_ct r JOIN carro c ON c.id_carro = r.id_carro JOIN software s ON s.nombre_software = 'DB Browser for SQLite' WHERE c.nombre_carro = 'C4' AND r.numero_equipo > 5;
+INSERT INTO recurso_software (id_recurso, id_software) SELECT r.id_recurso, s.id_software FROM recursos_ct r JOIN carro c ON c.id_carro = r.id_carro JOIN software s ON s.nombre_software IN ('AutoCAD', 'Visual Studio Code', 'Microsoft Office') WHERE c.nombre_carro = 'C5';
 INSERT INTO prestamo_ct (fecha_prestamo, hora_prestamo, hora_devolucion, observaciones, id_usuario_solicitante, id_usuario_autorizador, id_recurso) VALUES ('2026-10-23', '14:10', NULL, NULL, (SELECT id_usuario FROM usuario WHERE usuario_nick = 'alumno1'), (SELECT id_usuario FROM usuario WHERE usuario_nick = 'profe1'), (SELECT id_recurso FROM recursos_ct WHERE id_tipo_recurso = (SELECT id_tipo_recurso FROM tipo_recurso WHERE nombre_tipo = 'Computadora') AND id_carro = (SELECT id_carro FROM carro WHERE nombre_carro = 'C4') AND numero_equipo = 5));
 INSERT INTO prestamo_ct (fecha_prestamo, hora_prestamo, hora_devolucion, observaciones, id_usuario_solicitante, id_usuario_autorizador, id_recurso) VALUES ('2026-10-22', '13:30', '15:10', 'Funciona', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'alumno2'), (SELECT id_usuario FROM usuario WHERE usuario_nick = 'preceptor1'), (SELECT id_recurso FROM recursos_ct WHERE id_tipo_recurso = (SELECT id_tipo_recurso FROM tipo_recurso WHERE nombre_tipo = 'Computadora') AND id_carro = (SELECT id_carro FROM carro WHERE nombre_carro = 'C5') AND numero_equipo = 2));
-INSERT INTO reserva_sector (fecha_reserva, hora_inicio, hora_fin, id_usuario, id_sector, id_estado_reserva, id_usuario_autorizador) VALUES ('2026-11-05', '10:00', '11:00', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'profe1'), (SELECT id_sector FROM sector WHERE nombre_sector = 'Biblioteca'), (SELECT id_estado_reserva FROM estado_reserva WHERE nombre_estado = 'Pendiente'), NULL);
-INSERT INTO reserva_sector (fecha_reserva, hora_inicio, hora_fin, id_usuario, id_sector, id_estado_reserva, id_usuario_autorizador) VALUES ('2026-11-05', '09:00', '11:00', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'preceptor1'), (SELECT id_sector FROM sector WHERE nombre_sector = 'SUM'), (SELECT id_estado_reserva FROM estado_reserva WHERE nombre_estado = 'Aprobada'), (SELECT id_usuario FROM usuario WHERE usuario_nick = 'preceptor1'));
-INSERT INTO reserva_sector (fecha_reserva, hora_inicio, hora_fin, id_usuario, id_sector, id_estado_reserva, id_usuario_autorizador) VALUES ('2026-11-05', '11:30', '12:30', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'profe1'), (SELECT id_sector FROM sector WHERE nombre_sector = 'Biblioteca'), (SELECT id_estado_reserva FROM estado_reserva WHERE nombre_estado = 'Cancelada'), NULL);
-INSERT INTO reserva_sector (fecha_reserva, hora_inicio, hora_fin, id_usuario, id_sector, id_estado_reserva, id_usuario_autorizador) VALUES ('2026-11-06', '08:00', '10:00', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'profe1'), (SELECT id_sector FROM sector WHERE nombre_sector = 'Laboratorio de química'), (SELECT id_estado_reserva FROM estado_reserva WHERE nombre_estado = 'Aprobada'), (SELECT id_usuario FROM usuario WHERE usuario_nick = 'preceptor1'));
+INSERT INTO reserva_sector (fecha_reserva, hora_inicio, hora_fin, id_usuario, id_sector, id_estado_reserva, id_usuario_autorizador) VALUES (date('now','localtime','+1 day'), '10:00', '11:00', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'profe1'), (SELECT id_sector FROM sector WHERE nombre_sector = 'Biblioteca'), (SELECT id_estado_reserva FROM estado_reserva WHERE nombre_estado = 'Pendiente'), NULL);
+INSERT INTO reserva_sector (fecha_reserva, hora_inicio, hora_fin, id_usuario, id_sector, id_estado_reserva, id_usuario_autorizador) VALUES (date('now','localtime','+1 day'), '09:00', '11:00', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'preceptor1'), (SELECT id_sector FROM sector WHERE nombre_sector = 'SUM'), (SELECT id_estado_reserva FROM estado_reserva WHERE nombre_estado = 'Aprobada'), (SELECT id_usuario FROM usuario WHERE usuario_nick = 'preceptor1'));
+INSERT INTO reserva_sector (fecha_reserva, hora_inicio, hora_fin, id_usuario, id_sector, id_estado_reserva, id_usuario_autorizador) VALUES (date('now','localtime','+1 day'), '11:30', '12:30', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'profe1'), (SELECT id_sector FROM sector WHERE nombre_sector = 'Biblioteca'), (SELECT id_estado_reserva FROM estado_reserva WHERE nombre_estado = 'Cancelada'), NULL);
+INSERT INTO reserva_sector (fecha_reserva, hora_inicio, hora_fin, id_usuario, id_sector, id_estado_reserva, id_usuario_autorizador) VALUES (date('now','localtime','+2 day'), '08:00', '10:00', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'profe1'), (SELECT id_sector FROM sector WHERE nombre_sector = 'Laboratorio de química'), (SELECT id_estado_reserva FROM estado_reserva WHERE nombre_estado = 'Aprobada'), (SELECT id_usuario FROM usuario WHERE usuario_nick = 'preceptor1'));
 INSERT INTO oferta_deporte (id_deporte, id_dia, id_franja, cupo_maximo) VALUES ((SELECT id_deporte FROM deporte WHERE nombre_deporte = 'Fútbol'), (SELECT id_dia FROM dia_semana WHERE nombre_dia = 'Lunes'), (SELECT id_franja FROM franja_horaria WHERE hora_inicio = '10:00' AND hora_fin = '12:00'), 20);
 INSERT INTO oferta_deporte (id_deporte, id_dia, id_franja, cupo_maximo) VALUES ((SELECT id_deporte FROM deporte WHERE nombre_deporte = 'Fútbol'), (SELECT id_dia FROM dia_semana WHERE nombre_dia = 'Martes'), (SELECT id_franja FROM franja_horaria WHERE hora_inicio = '08:00' AND hora_fin = '10:00'), 20);
 INSERT INTO oferta_deporte (id_deporte, id_dia, id_franja, cupo_maximo) VALUES ((SELECT id_deporte FROM deporte WHERE nombre_deporte = 'Fútbol'), (SELECT id_dia FROM dia_semana WHERE nombre_dia = 'Miércoles'), (SELECT id_franja FROM franja_horaria WHERE hora_inicio = '16:00' AND hora_fin = '18:00'), 20);
