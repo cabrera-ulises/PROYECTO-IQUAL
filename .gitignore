@@ -3,3 +3,7 @@ build-*/
 *.user
 iqual.db
 imagenes_objetos/
+*.user.*
+.qtcreator/
+.qtc_clangd/
+iqual.ini

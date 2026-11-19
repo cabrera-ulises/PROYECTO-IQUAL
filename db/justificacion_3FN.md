@@ -1,18 +1,23 @@
 # justificacion_3FN.md — PROYECTO IQUAL (SGE)
 
-Base: CONTEXTO_IQUAL v2.3, sección 5 (44 tablas = 22 catálogos + 22 entidades). Criterio de 3FN del profesor Linares (sección 11): 1FN (sin grupos repetitivos ni valores no atómicos), 2FN (cada atributo no clave depende de toda la clave), 3FN (sin dependencias transitivas) y **los datos derivados se calculan con una consulta, no se guardan**.
+Base: CONTEXTO_IQUAL v3.1 (secciones 5, 15 y 21). **47 tablas = 24 catálogos + 23 entidades/relaciones** (las 44 originales más `categoria_producto`, `software` y `recurso_software`). Criterio de 3FN del profesor Linares (sección 11): 1FN (sin grupos repetitivos ni valores no atómicos), 2FN (cada atributo no clave depende de toda la clave), 3FN (sin dependencias transitivas) y **los datos derivados se calculan con una consulta, no se guardan**.
 
 ## 1. Cómo se aplicó la regla 7 (catálogo vs. multivalorado)
 
 Todo dato categorizable (estados, tipos, categorías, años, divisiones, días, turnos, deportes, franjas, carros, eventos de log) tiene un conjunto cerrado de valores. Para no repetir texto en cada fila (1FN y 2FN limpias) y poder cambiar el valor en un solo lugar, se resuelve así:
 
-- **En el Chen (conceptual):** `anio` y `division` son **atributos multivaluados** de CURSO (doble elipse), porque son valores simples (1 a 7 y 1 a 9) sin otros datos. Los otros 20 catálogos son **entidades independientes / tablas maestras** (rectángulos), como pide el profesor.
+- **En el Chen (conceptual):** `anio` y `division` son **atributos multivaluados** de CURSO (doble elipse), porque son valores simples (1 a 7 y 1 a 9) sin otros datos. Los otros 22 catálogos (los 20 de antes más `categoria_producto` y `software`) son **entidades independientes / tablas maestras** (rectángulos), como pide el profesor.
 - **En el Codd (lógico):** un atributo multivaluado no puede quedar como columna, así que `anio` y `division` pasan a tablas catálogo (`id_anio`, `numero_anio` con CHECK 1–7; `id_division`, `numero_division` con CHECK 1–9) y CURSO guarda solo las claves foráneas. Los demás catálogos pasan igual (1 entidad → 1 tabla).
 - **Dato derivado:** `recaudado` (grupo) se dibuja en el Chen como elipse punteada (derivado) y **no existe** como columna; `monto_total` de la venta se eliminó; los cupos usados y el «último mantenimiento» se calculan (ver `consultas_verificacion.sql`).
 
-## 2. Las 44 tablas: Chen → Codd → SQL
 
-Los nombres de tabla y de columna son idénticos en los 3 scripts (`iqual_sqlite.sql`, `iqual_sqlserver.sql`, `iqual_mysql.sql`) y coinciden con la sección 5.
+## 1 bis. Schemas (ronda BBDD)
+
+Las 47 tablas se agrupan en 7 schemas (`seguridad`, `academico`, `objetos`, `instalaciones`, `tienda`, `equipos`, `deportes`; mapa en `SCHEMAS.md`). Agrupar no cambia la normalización: ninguna columna, clave ni dependencia se modificó, así que el análisis de 1FN, 2FN y 3FN de abajo vale igual. En SQL Server los schemas son reales; en MySQL queda una sola base y el mapa está documentado.
+
+## 2. Las 47 tablas: Chen → Codd → SQL
+
+Los nombres de tabla y de columna son idénticos en los 3 scripts (`iqual_sqlite.sql`, `03_ModeloSQL_Grupo00_sqlserver.sql`, `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql`) y coinciden con la sección 5 y con el contrato de la sección 15 del CONTEXTO.
 
 | # | Tabla (Codd = SQL) | En el Chen | Tipo |
 |---|---|---|---|
@@ -38,32 +43,35 @@ Los nombres de tabla y de columna son idénticos en los 3 scripts (`iqual_sqlite
 | 20 | `anio` | Atributo multivaluado `anio` (doble elipse) de CURSO | Catálogo |
 | 21 | `division` | Atributo multivaluado `division` (doble elipse) de CURSO | Catálogo |
 | 22 | `franja_horaria` | Entidad FRANJA_HORARIA | Catálogo |
-| 23 | `curso` | Entidad CURSO | Entidad / relación |
-| 24 | `usuario` | Entidad USUARIO | Entidad / relación |
-| 25 | `materia` | Entidad MATERIA | Entidad / relación |
-| 26 | `horario_escolar` | Entidad HORARIO_ESCOLAR | Entidad / relación |
-| 27 | `horario_dia` | Relación N:M «se dicta los» (HORARIO_ESCOLAR – DIA_SEMANA) | Entidad / relación |
-| 28 | `sector` | Entidad SECTOR | Entidad / relación |
-| 29 | `objeto_perdido` | Entidad OBJETO_PERDIDO | Entidad / relación |
-| 30 | `reclamo_objeto` | Entidad RECLAMO_OBJETO | Entidad / relación |
-| 31 | `consulta_objeto` | Entidad CONSULTA_OBJETO | Entidad / relación |
-| 32 | `reporte_higiene` | Entidad REPORTE_HIGIENE | Entidad / relación |
-| 33 | `grupo_buffet` | Entidad GRUPO_BUFFET | Entidad / relación |
-| 34 | `integrante_grupo` | Relación N:M «integra» (USUARIO – GRUPO_BUFFET) | Entidad / relación |
-| 35 | `producto_buffet` | Entidad PRODUCTO_BUFFET | Entidad / relación |
-| 36 | `venta_buffet` | Entidad VENTA_BUFFET | Entidad / relación |
-| 37 | `detalle_venta` | Relación N:M «detalla» (VENTA_BUFFET – PRODUCTO_BUFFET) con atributos cantidad y precio_unitario | Entidad / relación |
-| 38 | `donacion_buffet` | Entidad DONACION_BUFFET | Entidad / relación |
-| 39 | `recursos_ct` | Entidad RECURSOS_CT | Entidad / relación |
-| 40 | `prestamo_ct` | Entidad PRESTAMO_CT | Entidad / relación |
-| 41 | `reserva_sector` | Entidad RESERVA_SECTOR | Entidad / relación |
-| 42 | `oferta_deporte` | Entidad OFERTA_DEPORTE | Entidad / relación |
-| 43 | `inscripcion_ed_fisica` | Entidad INSCRIPCION_ED_FISICA | Entidad / relación |
-| 44 | `log_auditoria` | Entidad LOG_AUDITORIA | Entidad / relación |
+| 23 | `categoria_producto` | Entidad CATEGORIA_PRODUCTO (nueva) | Catálogo |
+| 24 | `software` | Entidad SOFTWARE (nueva) | Catálogo |
+| 25 | `curso` | Entidad CURSO | Entidad / relación |
+| 26 | `usuario` | Entidad USUARIO | Entidad / relación |
+| 27 | `materia` | Entidad MATERIA | Entidad / relación |
+| 28 | `horario_escolar` | Entidad HORARIO_ESCOLAR | Entidad / relación |
+| 29 | `horario_dia` | Relación N:M «se dicta los» (HORARIO_ESCOLAR – DIA_SEMANA) | Entidad / relación |
+| 30 | `sector` | Entidad SECTOR | Entidad / relación |
+| 31 | `objeto_perdido` | Entidad OBJETO_PERDIDO | Entidad / relación |
+| 32 | `reclamo_objeto` | Entidad RECLAMO_OBJETO | Entidad / relación |
+| 33 | `consulta_objeto` | Entidad CONSULTA_OBJETO | Entidad / relación |
+| 34 | `reporte_higiene` | Entidad REPORTE_HIGIENE | Entidad / relación |
+| 35 | `grupo_buffet` | Entidad GRUPO_BUFFET | Entidad / relación |
+| 36 | `integrante_grupo` | Relación N:M «integra» (USUARIO – GRUPO_BUFFET) | Entidad / relación |
+| 37 | `producto_buffet` | Entidad PRODUCTO_BUFFET | Entidad / relación |
+| 38 | `venta_buffet` | Entidad VENTA_BUFFET | Entidad / relación |
+| 39 | `detalle_venta` | Relación N:M «detalla» (VENTA_BUFFET – PRODUCTO_BUFFET) con atributos cantidad y precio_unitario | Entidad / relación |
+| 40 | `donacion_buffet` | Entidad DONACION_BUFFET | Entidad / relación |
+| 41 | `recursos_ct` | Entidad RECURSOS_CT | Entidad / relación |
+| 42 | `recurso_software` | Relación N:M «tiene instalado» (RECURSOS_CT – SOFTWARE) | Entidad / relación |
+| 43 | `prestamo_ct` | Entidad PRESTAMO_CT | Entidad / relación |
+| 44 | `reserva_sector` | Entidad RESERVA_SECTOR | Entidad / relación |
+| 45 | `oferta_deporte` | Entidad OFERTA_DEPORTE | Entidad / relación |
+| 46 | `inscripcion_ed_fisica` | Entidad INSCRIPCION_ED_FISICA | Entidad / relación |
+| 47 | `log_auditoria` | Entidad LOG_AUDITORIA | Entidad / relación |
 
-Resumen: 39 entidades en el Chen (20 catálogos + 19 entidades de negocio). Las otras 5 tablas no son entidad: **2 atributos multivaluados** (`anio`, `division`) y **3 relaciones N:M** (`horario_dia`, `integrante_grupo`, `detalle_venta`). 39 + 5 = 44.
+Resumen: **41 entidades** en el Chen (22 catálogos + 19 entidades de negocio). Las otras 6 tablas no son entidad: **2 atributos multivaluados** (`anio`, `division`) y **4 relaciones N:M** (`horario_dia`, `integrante_grupo`, `detalle_venta`, `recurso_software`). 41 + 6 = 47.
 
-## 3. Catálogos (22): PK, dependencias y por qué están en 3FN
+## 3. Catálogos (24): PK, dependencias y por qué están en 3FN
 
 Todos tienen la misma forma: clave `id_*` y un único atributo no clave. No hay grupos repetitivos (1FN), la clave es simple (2FN no aplica) y con un solo atributo no clave no puede haber dependencia transitiva (3FN).
 
@@ -88,11 +96,13 @@ Todos tienen la misma forma: clave `id_*` y un único atributo no clave. No hay 
 | `resultado_log` | `id_resultado` | id_resultado → nombre_resultado (y nombre_resultado → id_resultado por ser UQ) | ver §5 |
 | `entidad_log` | `id_entidad` | id_entidad → nombre_entidad (y nombre_entidad → id_entidad por ser UQ) | ver §5 |
 | `tipo_sector` | `id_tipo_sector` | id_tipo_sector → nombre_tipo (y nombre_tipo → id_tipo_sector por ser UQ) | ver §5 |
+| `categoria_producto` | `id_categoria_producto` | id_categoria_producto → nombre_categoria (y nombre_categoria → id_categoria_producto por ser UQ) | Comida, Bebida, Accesorios, Ropa, Otros |
+| `software` | `id_software` | id_software → nombre_software (y nombre_software → id_software por ser UQ) | lista de programas (datos reales) |
 | `anio` | `id_anio` | id_anio → numero_anio (y numero_anio → id_anio por ser UQ) | 1 a 7 |
 | `division` | `id_division` | id_division → numero_division (y numero_division → id_division por ser UQ) | 1 a 9 |
 | `franja_horaria` | `id_franja` | id_franja → hora_inicio, hora_fin (UQ no se declara: una franja = un par de horas, CHECK fin > inicio) | 5 franjas de 2 h (08:00 a 18:00) |
 
-## 4. Entidades y relaciones (22): PK, dependencias y justificación
+## 4. Entidades y relaciones (23): PK, dependencias y justificación
 
 | Tabla | PK | Dependencias funcionales | 1FN / 2FN / 3FN |
 |---|---|---|---|
@@ -102,17 +112,18 @@ Todos tienen la misma forma: clave `id_*` y un único atributo no clave. No hay 
 | `horario_escolar` | `id_bloque` | id_bloque → hora_inicio, hora_fin, id_materia, id_curso, id_usuario, id_turno. Ver duda D1 (id_turno). | 1FN: todos los valores son atómicos. 2FN: no hay atributos no clave dependientes de una parte de la clave. 3FN: lo categorizable está en catálogos (FK) y lo derivado no se guarda, así que no hay dependencias entre atributos no clave. |
 | `horario_dia` | `id_bloque, id_dia` | Clave compuesta (id_bloque, id_dia) sin atributos no clave: no puede haber dependencia parcial ni transitiva. | 1FN: todos los valores son atómicos. 2FN: no hay atributos no clave. 3FN: lo categorizable está en catálogos (FK) y lo derivado no se guarda, así que no hay dependencias entre atributos no clave. |
 | `sector` | `id_sector` | id_sector → nombre_sector, id_tipo_sector. nombre_sector (UQ) → id_sector. | 1FN: todos los valores son atómicos. 2FN: no hay atributos no clave dependientes de una parte de la clave. 3FN: lo categorizable está en catálogos (FK) y lo derivado no se guarda, así que no hay dependencias entre atributos no clave. |
-| `objeto_perdido` | `id_objeto` | id_objeto → titulo, descripcion, ruta_foto, fecha_registro, id_usuario (publicó), id_categoria_objeto, id_estado_objeto, id_sector. | 1FN: todos los valores son atómicos. 2FN: no hay atributos no clave dependientes de una parte de la clave. 3FN: lo categorizable está en catálogos (FK) y lo derivado no se guarda, así que no hay dependencias entre atributos no clave. |
+| `objeto_perdido` | `id_objeto` | id_objeto → titulo, descripcion, ruta_foto, detalle_reservado, fecha_registro, id_usuario (publicó), id_categoria_objeto, id_estado_objeto, id_sector. | 1FN: todos los valores son atómicos. 2FN: no hay atributos no clave dependientes de una parte de la clave. 3FN: lo categorizable está en catálogos (FK) y lo derivado no se guarda, así que no hay dependencias entre atributos no clave. |
 | `reclamo_objeto` | `id_reclamo` | id_reclamo → prueba_pertenencia, fecha_reclamo, id_usuario, id_objeto, id_estado_reclamo. | 1FN: todos los valores son atómicos. 2FN: no hay atributos no clave dependientes de una parte de la clave. 3FN: lo categorizable está en catálogos (FK) y lo derivado no se guarda, así que no hay dependencias entre atributos no clave. |
 | `consulta_objeto` | `id_consulta` | id_consulta → fecha_publicacion, descripcion_busqueda, id_usuario. | 1FN: todos los valores son atómicos. 2FN: no hay atributos no clave dependientes de una parte de la clave. 3FN: lo categorizable está en catálogos (FK) y lo derivado no se guarda, así que no hay dependencias entre atributos no clave. |
 | `reporte_higiene` | `id_reporte` | id_reporte → fecha_hora, observaciones, id_usuario, id_sector, id_tipo_reporte, id_estado_reporte, fecha_hora_resolucion, id_usuario_resolutor. Ver duda D7. | 1FN: todos los valores son atómicos. 2FN: no hay atributos no clave dependientes de una parte de la clave. 3FN: lo categorizable está en catálogos (FK) y lo derivado no se guarda, así que no hay dependencias entre atributos no clave. |
 | `grupo_buffet` | `id_grupo` | id_grupo → nombre_grupo, pin_acceso, meta_monto. nombre_grupo (UQ) → id_grupo. «recaudado» NO existe: se calcula. | 1FN: todos los valores son atómicos. 2FN: no hay atributos no clave dependientes de una parte de la clave. 3FN: lo categorizable está en catálogos (FK) y lo derivado no se guarda, así que no hay dependencias entre atributos no clave. |
 | `integrante_grupo` | `id_usuario, id_grupo` | Clave compuesta (id_usuario, id_grupo) sin atributos no clave. | 1FN: todos los valores son atómicos. 2FN: no hay atributos no clave. 3FN: lo categorizable está en catálogos (FK) y lo derivado no se guarda, así que no hay dependencias entre atributos no clave. |
-| `producto_buffet` | `id_producto` | id_producto → nombre_producto, precio, stock, id_usuario (vendedor), id_grupo. El contacto del vendedor sale de usuario. | 1FN: todos los valores son atómicos. 2FN: no hay atributos no clave dependientes de una parte de la clave. 3FN: lo categorizable está en catálogos (FK) y lo derivado no se guarda, así que no hay dependencias entre atributos no clave. |
+| `producto_buffet` | `id_producto` | id_producto → nombre_producto, precio, stock, ruta_foto, id_usuario (vendedor), id_grupo, id_categoria_producto. El contacto del vendedor sale de usuario. | 1FN: todos los valores son atómicos. 2FN: no hay atributos no clave dependientes de una parte de la clave. 3FN: lo categorizable está en catálogos (FK) y lo derivado no se guarda, así que no hay dependencias entre atributos no clave. |
 | `venta_buffet` | `id_venta` | id_venta → fecha_hora, id_usuario (comprador), id_estado_venta. «monto_total» NO existe: se calcula con SUM(cantidad*precio_unitario). | 1FN: todos los valores son atómicos. 2FN: no hay atributos no clave dependientes de una parte de la clave. 3FN: lo categorizable está en catálogos (FK) y lo derivado no se guarda, así que no hay dependencias entre atributos no clave. |
 | `detalle_venta` | `id_venta, id_producto` | (id_venta, id_producto) → cantidad, precio_unitario (dependen de la clave completa). Ver duda D2. | 1FN: valores atómicos. 2FN: cantidad y precio_unitario dependen de (id_venta, id_producto) completa, no de una sola. 3FN: lo categorizable está en catálogos (FK) y lo derivado no se guarda, así que no hay dependencias entre atributos no clave. (con la salvedad de la duda D2). |
 | `donacion_buffet` | `id_donacion` | id_donacion → monto, fecha_hora, id_usuario, id_grupo. | 1FN: todos los valores son atómicos. 2FN: no hay atributos no clave dependientes de una parte de la clave. 3FN: lo categorizable está en catálogos (FK) y lo derivado no se guarda, así que no hay dependencias entre atributos no clave. |
 | `recursos_ct` | `id_recurso` | id_recurso → id_carro, numero_equipo, id_tipo_recurso, id_estado_recurso. Clave candidata (id_tipo_recurso, id_carro, numero_equipo). Ver duda D3. | 1FN: todos los valores son atómicos. 2FN: no hay atributos no clave dependientes de una parte de la clave. 3FN: lo categorizable está en catálogos (FK) y lo derivado no se guarda, así que no hay dependencias entre atributos no clave. |
+| `recurso_software` | `id_recurso_software` | id_recurso_software → id_recurso, id_software. Clave candidata UQ(id_recurso, id_software): un programa se instala una sola vez por equipo. Ver duda D12. | 1FN: valores atómicos (un programa por fila, no una lista dentro de recursos_ct). 2FN: la clave sustituta es simple. 3FN: no hay atributos no clave aparte de las dos FK. |
 | `prestamo_ct` | `id_prestamo` | id_prestamo → fecha_prestamo, hora_prestamo, hora_devolucion, observaciones, id_usuario_solicitante, id_usuario_autorizador, id_recurso. | 1FN: todos los valores son atómicos. 2FN: no hay atributos no clave dependientes de una parte de la clave. 3FN: lo categorizable está en catálogos (FK) y lo derivado no se guarda, así que no hay dependencias entre atributos no clave. |
 | `reserva_sector` | `id_reserva` | id_reserva → fecha_reserva, hora_inicio, hora_fin, id_usuario, id_sector, id_estado_reserva, id_usuario_autorizador. | 1FN: todos los valores son atómicos. 2FN: no hay atributos no clave dependientes de una parte de la clave. 3FN: lo categorizable está en catálogos (FK) y lo derivado no se guarda, así que no hay dependencias entre atributos no clave. |
 | `oferta_deporte` | `id_oferta` | id_oferta → id_deporte, id_dia, id_franja, cupo_maximo. Clave candidata (id_deporte, id_dia, id_franja). Los cupos usados se cuentan, no se guardan. | 1FN: todos los valores son atómicos. 2FN: no hay atributos no clave dependientes de una parte de la clave. 3FN: lo categorizable está en catálogos (FK) y lo derivado no se guarda, así que no hay dependencias entre atributos no clave. |
@@ -134,8 +145,30 @@ Cada punto se dejó **como está en el contrato (sección 5)**. Si el profesor o
 - **D9 — `log_auditoria.direccion_ip`.** Guarda el nombre del equipo (D15), pero el nombre de la columna se mantiene como en el diagrama aprobado.
 - **D10 — nulabilidad en el Codd.** Siguiendo la sección 12, el diagrama no usa símbolos de «cero o uno»: las FK opcionales (marcadas con `?` en la sección 5) se dibujan igual que las obligatorias. Qué columnas admiten NULL se ve en los scripts SQL.
 
+- **D11 — `producto_buffet.id_categoria_producto` con DEFAULT 1.** La categoría del producto es una FK a un catálogo (no un texto repetido). El `DEFAULT 1` (Comida) existe solo para que la columna pueda ser NOT NULL aunque un script viejo no la nombre; la app siempre la elige. Si cambia el orden de carga del catálogo, el DEFAULT apunta a otra categoría: por eso `categoria_producto` se carga antes que los productos.
+- **D12 — `recurso_software`: N:M con clave sustituta.** Un equipo tiene muchos programas y un programa está en muchos equipos, así que va en una tabla intermedia (si fuera una columna de texto con la lista, rompería la 1FN). Se le dio `id_recurso_software` propio y UQ(id_recurso, id_software) en vez de clave compuesta, igual que el contrato de la sección 15. Es equivalente en 3FN.
+- **D13 — `objeto_perdido.detalle_reservado` y quién lo ve.** Es un atributo más del objeto (depende solo de `id_objeto`). Que solo lo vea el Preceptor es una regla de la app, no de la base.
+- **D14 — `ux_reclamo_usuario_objeto`.** Índice único (id_usuario, id_objeto) en `reclamo_objeto`: una persona reclama un objeto una sola vez. No es de 3FN sino integridad; en SQL Server 2005 y MySQL se crea con `CREATE UNIQUE INDEX`.
+- **D15 — `recaudado` y la regla de «Entregada».** Sigue siendo derivado (no existe como columna). Desde la v2.5 se calcula como donaciones + ventas **Entregadas** (no «no canceladas»); las consultas están actualizadas.
+- **D16 — Collation de MySQL.** Los scripts de MySQL no nombran `COLLATE`; se usa la del servidor (MySQL 8: `utf8mb4_0900_ai_ci`, no distingue mayúsculas ni tildes). No es una cuestión de 3FN sino de comparación de textos: `UNIQUE` de nombres de catálogo, de `usuario_nick` y de `email` rechazan valores que solo difieren en mayúsculas o tildes, y el login ya normaliza el nick a minúsculas en la app. Se dejó como está; las opciones y el efecto en cada lugar están en `REVISION_ESTATICA_MYSQL.md` (sección 2).
+
 ## 6. Dónde está cada cosa en SQL
 
-- Tipos: ids `INTEGER PRIMARY KEY AUTOINCREMENT` (SQLite), `INT IDENTITY(1,1)` (SQL Server 2005), `INT AUTO_INCREMENT` (MySQL 8). Textos con tildes: `NVARCHAR` en SQL Server. Fechas: `TEXT` `yyyy-MM-dd` (SQLite), `DATETIME` (SQL Server), `DATE` (MySQL); horas `HH:mm` como texto de largo 5 en los tres.
-- Restricciones: PK, UQ, FK con nombre, CHECK (año 1–7, división 1–9, DNI de 7 a 8 dígitos, hora_fin > hora_inicio, precio > 0, stock >= 0, cantidad > 0, monto > 0, meta_monto > 0, cupo_maximo > 0).
-- `iqual_sqlite.sql`: sin triggers, sin BEGIN...END, sin comentarios y sin «;» dentro de textos (la app lo parte por «;»).
+- Tipos: ids `INTEGER PRIMARY KEY AUTOINCREMENT` (SQLite), `INT IDENTITY(1,1)` (SQL Server 2005), `INT AUTO_INCREMENT` (MySQL 8). Textos con tildes: `NVARCHAR` en SQL Server; en MySQL `utf8mb4` con motor InnoDB. Fechas: `TEXT` `yyyy-MM-dd` (SQLite), `DATETIME` (SQL Server), `DATE` (MySQL); horas `HH:mm` como texto de largo 5 en los tres.
+- Restricciones: PK, UQ, FK con nombre, CHECK (año 1–7, división 1–9, DNI de 7 a 8 dígitos, hora_fin > hora_inicio, precio > 0, stock >= 0, cantidad > 0, monto > 0, meta_monto > 0, cupo_maximo > 0). Nota para MySQL: los CHECK se aplican desde MySQL 8.0.16 y desde MariaDB 10.2.1; en versiones anteriores se aceptan pero se ignoran.
+- Datos de ejemplo: todo lo que está debajo de la línea `-- DATOS DE EJEMPLO, REEMPLAZAR AL FINAL`. Las reservas de sectores usan fechas relativas a hoy (`date('now','localtime','+n day')` en SQLite, `DATE_ADD(CURDATE(), INTERVAL n DAY)` en MySQL, `DATEADD(day, n, DATEADD(day, DATEDIFF(day, 0, GETDATE()), 0))` en SQL Server 2005, que deja la fecha a medianoche).
+- `iqual_sqlite.sql` y `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql`: sin triggers, sin BEGIN...END, sin `DELIMITER` y sin «;» dentro de textos o comentarios (la app los parte por «;»). Los procedimientos almacenados van aparte en `05_Backend_Grupo00.sql`.
+- **Qué se ejecutó y qué no.** SQLite: se ejecutó siempre. MySQL: `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql` (47 tablas, 5 usuarios), `05_Backend_Grupo00.sql`, `consultas_demo.sql` y `consultas_verificacion_mysql.sql` corrieron **en MariaDB 10.11** con `ONLY_FULL_GROUP_BY`, sin errores y con los valores esperados (dato del 10/11/2026). **No se ejecutó:** MySQL 8 de Oracle, SQL Server 2005 (solo revisión de lectura: `REVISION_ESTATICA_SQLSERVER.md`) ni nada en Windows.
+
+## Desvíos
+
+- Respecto de la versión anterior: cabecera pasada a v2.9; nota de `CHECK` corregida (MariaDB los aplica desde 10.2.1); la expresión de fechas relativas de SQL Server ahora es la que usa el script; se reescribió el punto «qué no se pudo ejecutar» y se agregó D16 (collation). El resto del texto no cambió.
+- La ejecución en MariaDB 10.11 es un dato que me pasaron (10/11/2026); no la repetí.
+- Esta ronda: cabecera pasada a v3.1 y agregada la sección «1 bis. Schemas». El análisis de normalización no cambió.
+- No se tocó ningún script.
+
+## Datos que faltan
+
+- [COMPLETAR: resultado de correr los scripts en MySQL 8 de Oracle y en SQL Server 2005, si alguno es el motor de la defensa]
+- [COMPLETAR: qué opción de la duda D16 prefiere el profesor, si pregunta]
+

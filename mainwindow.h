@@ -3,16 +3,21 @@
 
 #include <QMainWindow>
 #include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSettings>
 #include <QString>
 #include <QStringList>
 #include <QDate>
 #include <QList>
 #include <QWidget>
+#include <QColor>
+#include <QPixmap>
 
-class QMenu;
 class QComboBox;
 class QPushButton;
 class QListWidget;
+class QListWidgetItem;
+class QLabel;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -57,10 +62,14 @@ private slots:
     void on_btnMenuSectores_clicked();
     void on_btnMenuEdFisica_clicked();
     void on_btnObjReclamar_clicked();
+    void on_listPlanillas_currentRowChanged(int fila);
+    void on_cbPlanillasPrograma_currentIndexChanged(int indice);
+    void on_cbHigieneFiltro_currentIndexChanged(int indice);
     void on_btnReclamoAprobar_clicked();
     void on_btnReclamoRechazar_clicked();
     void on_btnObjArchivar_clicked();
     void on_btnObjFoto_clicked();
+    void on_listObjetos_itemDoubleClicked(QListWidgetItem *item);
     void on_btnObjPublicar_clicked();
     void on_btnConsultaPublicar_clicked();
     void on_btnConsultaBorrar_clicked();
@@ -70,15 +79,35 @@ private slots:
     void on_leHigieneObs_returnPressed();
     void on_cbHigieneSector_currentIndexChanged(int indice);
     void on_cbBuffetVista_currentIndexChanged(int indice);
+    void on_cbBuffetCategoria_currentIndexChanged(int indice);
+    void on_listBuffet_itemDoubleClicked(QListWidgetItem *item);
+    void on_btnProdFoto_clicked();
+    void on_cbBuffetVendedor_currentIndexChanged(int indice);
+    void on_leBuffetBuscar_textChanged(const QString &texto);
+    void on_cbDonarGrupo_currentIndexChanged(int indice);
+    void on_listBuffet_currentRowChanged(int fila);
+    void on_btnProdFotoQuitar_clicked();
+    void on_leObjBuscar_textChanged(const QString &texto);
+    void on_cbObjFiltroCategoria_currentIndexChanged(int indice);
+    void on_leObjPrueba_returnPressed();
+    void on_leObjReservado_returnPressed();
     void on_btnBuffetReservar_clicked();
     void on_btnBuffetCancelar_clicked();
     void on_btnBuffetDonar_clicked();
     void on_btnBuffetUnirse_clicked();
+    void on_btnBuffetEntregar_clicked();
+    void on_btnBuffetCancelarVenta_clicked();
+    void on_btnProdReponer_clicked();
+    void on_btnProdQuitar_clicked();
+    void on_btnProdEliminar_clicked();
     void on_leBuffetMonto_returnPressed();
+    void on_leBuffetPin_returnPressed();
+    void on_leGrupoPin_returnPressed();
     void on_btnProdPublicar_clicked();
     void on_btnGrupoCrear_clicked();
     void on_btnPlanillasPrestar_clicked();
     void on_btnPlanillasDevolver_clicked();
+    void on_btnPlanillasReparar_clicked();
     void on_leFiltroPlanillas_textChanged(const QString &texto);
     void on_leFiltroPlanillas_returnPressed();
     void on_btnSectoresReservar_clicked();
@@ -89,8 +118,27 @@ private slots:
     void on_deSectoresDia_dateChanged(const QDate &fecha);
     void on_btnEdFisicaInscribir_clicked();
     void on_btnEdFisicaCancelar_clicked();
+    void on_cbEdFisicaDeporte_currentIndexChanged(int indice);
+    void on_cbEdFisicaDia_currentIndexChanged(int indice);
+    void on_cbEdFisicaHora_currentIndexChanged(int indice);
     void on_btnCuentaGuardar_clicked();
-    void mostrarMenu();
+    void on_btnCuentaClave_clicked();
+    void on_btnCuentaTelefono_clicked();
+    void on_leCuentaClaveRepetir_returnPressed();
+    void on_leCuentaTelefono_returnPressed();
+    void on_cbAuditoriaResultado_currentIndexChanged(int indice);
+    void on_tabObjetos_currentChanged(int indice);
+    void on_stackedWidget_currentChanged(int pagina);
+    void on_btnNavInicio_clicked();
+    void on_btnNavObjetos_clicked();
+    void on_btnNavHigiene_clicked();
+    void on_btnNavBuffet_clicked();
+    void on_btnNavPlanillas_clicked();
+    void on_btnNavSectores_clicked();
+    void on_btnNavEdFisica_clicked();
+    void on_btnNavCuenta_clicked();
+    void on_btnNavSalir_clicked();
+    void on_btnTema_clicked();
     void irAlInicio();
     void irAlMenu();
     void irACuenta();
@@ -98,16 +146,28 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    QMenu *menuUsuario;
+    bool temaOscuro;
     QSqlDatabase db;
     int idActual;
+    int intentosFallidos;
     QString fotoElegida;
+    QString fotoProducto;
 
     bool abrirBase();
+    bool abrirMySql(QSettings &cfg, QString &error);
+    bool abrirSqlite();
+    int ultimoId(QSqlQuery &q);
+    QString valorUnicoHoy(const QString &sql, int id);
+    QVariant valorAhora();
+    QVariant valorFecha(const QDate &fecha);
+    QString nombreDriverOdbc(QSettings &cfg);
     void cargarCatalogos();
+    void aplicarTema(bool oscuro);
+    void cargarResumen();
+    void mostrarProgramas();
     void cargarTodo();
     void aplicarPermisos();
-    void ponerIcono(QPushButton *boton, const QString &archivo);
+    void ponerIcono(QPushButton *boton, const QString &ruta, int tamano);
 
     int idPorNombre(const QString &tabla, const QString &columnaId, const QString &columnaNombre, const QString &valor);
     int idEstado(const QString &tabla, const QString &nombre);
@@ -118,6 +178,7 @@ private:
     bool exigir(const QString &roles, const QString &evento, const QString &entidad);
     void aviso(const QString &texto);
     void info(const QString &texto);
+    bool confirmar(const QString &titulo, const QString &pregunta);
     void fallar(const QString &evento, const QString &entidad, const QString &mensaje);
     void registrarLog(const QString &evento, const QString &descripcion, const QString &entidad, const QString &resultado);
     QString hashClave(const QString &clave);
@@ -141,20 +202,47 @@ private:
     void cargarObjetos();
     void cargarReclamos();
     void cargarConsultas();
-    void resolverReclamo(const QString &estadoReclamo, const QString &estadoObjeto, const QString &evento);
+    void resolverReclamo(const QString &estadoReclamo, const QString &evento);
     void cargarHigiene();
     void actualizarUltimoMantenimiento();
     void cargarGrupos();
     void cargarBuffet();
     void cargarMisReservas();
     int recaudado(int grupo);
+    bool cancelarReserva(int venta);
+    bool ventaEsMia(int venta);
+    bool productoEsMio(int producto);
+    void cargarMisVentas();
+    void cargarMisProductos();
     void cargarPlanillas();
+    void cargarFueraServicio();
+    void cargarAuditoria();
     void cargarPrestamos();
     void cargarOcupacion();
     void cargarReservasSector();
     void resolverReservaSector(const QString &estado, const QString &evento);
     void cargarEdFisica();
-    bool chocaHorario(int oferta, int curso, QString &materia);
+    QString chocaHorario(int oferta, int curso);
+    QString chocaFranja(int dia, int franja, int curso);
+    int ofertaElegida();
+    void cargarFranjas();
+    void cargarDiasEdFisica();
+    void actualizarPendientesHigiene();
+    void actualizarResumenPlanillas();
+    QColor colorToken(const QString &nombre);
+    void elegirPorId(QComboBox *combo, int id);
+    QString plural(int cantidad, const QString &uno, const QString &varios);
+    void alternarVacio(QListWidget *lista, QLabel *vacio);
+    void pintarEstadoVenta(QListWidgetItem *item, const QString &estado);
+    void pintarUltimo(QListWidget *lista, const QString &tono);
+    void agregarVacio(QListWidget *lista, const QString &texto);
+    void ponerDato(QComboBox *combo, int dato);
+    QPixmap miniaturaProducto(const QString &ruta);
+    void cargarVendedores();
+    void mostrarSeleccionBuffet();
+    void cargarDonaciones();
+    void mostrarFotoProducto();
+    void mostrarEstadoEdFisica();
 };
 
 #endif

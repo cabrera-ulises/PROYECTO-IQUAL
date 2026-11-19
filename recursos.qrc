@@ -1,5 +1,37 @@
 <RCC>
     <qresource prefix="/imagenes">
         <file>iqual_sqlite.sql</file>
+        <file alias="logo_iqual.png">recursos/imagenes/logo_iqual.png</file>
+        <file alias="splash_escritorio.gif">recursos/imagenes/splash_escritorio.gif</file>
+    </qresource>
+    <qresource prefix="/tema">
+        <file alias="claro.qss">recursos/tema/claro.qss</file>
+        <file alias="oscuro.qss">recursos/tema/oscuro.qss</file>
+    </qresource>
+    <qresource prefix="/iconos">
+        <file alias="barra_claro_chevron_abajo.png">recursos/iconos/barra_claro_chevron_abajo.png</file>
+        <file alias="barra_claro_chevron_arriba.png">recursos/iconos/barra_claro_chevron_arriba.png</file>
+        <file alias="barra_claro_luna.png">recursos/iconos/barra_claro_luna.png</file>
+        <file alias="barra_claro_sol.png">recursos/iconos/barra_claro_sol.png</file>
+        <file alias="barra_oscuro_chevron_abajo.png">recursos/iconos/barra_oscuro_chevron_abajo.png</file>
+        <file alias="barra_oscuro_chevron_arriba.png">recursos/iconos/barra_oscuro_chevron_arriba.png</file>
+        <file alias="barra_oscuro_luna.png">recursos/iconos/barra_oscuro_luna.png</file>
+        <file alias="barra_oscuro_sol.png">recursos/iconos/barra_oscuro_sol.png</file>
+        <file alias="nav_cuenta.png">recursos/iconos/nav_cuenta.png</file>
+        <file alias="nav_edfisica.png">recursos/iconos/nav_edfisica.png</file>
+        <file alias="nav_equipos.png">recursos/iconos/nav_equipos.png</file>
+        <file alias="nav_higiene.png">recursos/iconos/nav_higiene.png</file>
+        <file alias="nav_inicio.png">recursos/iconos/nav_inicio.png</file>
+        <file alias="nav_objetos.png">recursos/iconos/nav_objetos.png</file>
+        <file alias="nav_salir.png">recursos/iconos/nav_salir.png</file>
+        <file alias="nav_sectores.png">recursos/iconos/nav_sectores.png</file>
+        <file alias="nav_tienda.png">recursos/iconos/nav_tienda.png</file>
+        <file alias="tarj_cuenta.png">recursos/iconos/tarj_cuenta.png</file>
+        <file alias="tarj_edfisica.png">recursos/iconos/tarj_edfisica.png</file>
+        <file alias="tarj_equipos.png">recursos/iconos/tarj_equipos.png</file>
+        <file alias="tarj_higiene.png">recursos/iconos/tarj_higiene.png</file>
+        <file alias="tarj_objetos.png">recursos/iconos/tarj_objetos.png</file>
+        <file alias="tarj_sectores.png">recursos/iconos/tarj_sectores.png</file>
+        <file alias="tarj_tienda.png">recursos/iconos/tarj_tienda.png</file>
     </qresource>
 </RCC>
