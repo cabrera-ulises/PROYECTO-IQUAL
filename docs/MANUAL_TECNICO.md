@@ -116,7 +116,7 @@ Toda acción relevante (alta, baja, cambio de estado, intento fallido) termina e
 **Importante:** la app **no crea las tablas en MySQL**. Si la base `iqual` existe pero está vacía, la app avisa que hay que cargar `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql` desde DBeaver.
 
 ### 3.3 Procedimientos almacenados
-`sp_recaudado_grupo`, `sp_reservas_sector`, `sp_prestamos_activos`, `sp_reportes_higiene_pendientes`, `sp_cupos_ed_fisica`. Se cargan con `05_Backend_Grupo00.sql` (pasos en `GUIA_INSTALACION_MYSQL.md`, sección 5). La aplicación Qt **no los llama**: las consultas que usa están escritas en `mainwindow.cpp`; los procedimientos son parte de la entrega de base de datos. `[COMPLETAR: confirmar con el equipo si esto es lo que se quiere mostrar en la defensa; busqué `CALL` y `sp_` en `mainwindow.cpp` y no hay ninguno]`
+`05_Backend_Grupo00.sql` crea 27 rutinas: 15 SP de funcionalidades (registrar log y usuario, objetos y reclamos, préstamo y devolución de equipos, reservas de sectores, higiene, compras y donaciones, inscripciones de Educación Física), 8 reportes, 1 de auditoría con rango de fechas y 2 versiones tuneadas, más el auxiliar `sp_aux_solo_digitos`. Cada SP devuelve un único resultado: `estado = 'OK'` con los ids, o `estado = 'ERROR'` con `codigo_sql` y `descripcion_error`. Fichas en `db/SP_*.md`, pruebas en `db/06_PruebasSQL.xlsx` y tuning medido en `db/TUNING_REPORTES.md`. De todos ellos la app Qt solo llama a `sp_registrar_log` (para el log de auditoría en MySQL, con respaldo al INSERT); el resto de las consultas de la app están escritas en `mainwindow.cpp`.
 
 ### 3.4 Diferencias entre MySQL y SQLite
 | Tema | MySQL | SQLite (respaldo) |
@@ -240,11 +240,11 @@ Fuente: CONTEXTO §19.1 y §20.
 - Si MySQL falla, la app sigue con SQLite: puede pasar sin que el usuario lo note si no mira el título de la ventana. Los datos de un motor no pasan al otro.
 - El PIN de un grupo de recaudación se guarda en texto plano (`grupo_buffet.pin_acceso`); la clave de usuario se guarda con hash SHA-256 (sin sal). Para el alcance escolar se declara como limitación (RNF02).
 - Las comparaciones no distinguen mayúsculas ni tildes en MySQL (`utf8mb4_0900_ai_ci`) y sí lo hacen distinto en SQLite.
-- Hay errores abiertos de baja gravedad documentados por módulo (ver `ERRORES_ACCESO_OBJETOS_PRESTAMO/3/4.md` y `ERRORES_Y_PENDIENTES.md`).
+- Hay errores abiertos de baja gravedad documentados por módulo (ver `ERRORES_ACCESO_OBJETOS_PRESTAMO/3/4.md`).
 - Rendimiento con muchos datos: no se midió (RNF03).
 - Sin pagos reales: las reservas de la Tienda se coordinan y se pagan en persona (CONTEXTO §9).
 - El cruce de horarios de Educación Física solo funciona para los cursos con horario cargado (CONTEXTO §9).
-- Sin notificaciones en pantalla (CONTEXTO §9). La auditoría **sí tiene pantalla** (pestaña «Auditoría» de Objetos perdidos, solo para el Preceptor); CONTEXTO §9 todavía dice que no (ver `ERRORES_Y_PENDIENTES.md`).
+- Sin notificaciones en pantalla (CONTEXTO §9). La auditoría **sí tiene pantalla** (pestaña «Auditoría» de Objetos perdidos, solo para el Preceptor); CONTEXTO §9 todavía dice que no (ver los documentos de `docs/pruebas`).
 - Es una aplicación de escritorio: no hay versión web ni para celular.
 
 ### 8.2 Decisiones por defecto (CONTEXTO §19.3)
@@ -278,7 +278,7 @@ Los usuarios, claves y PIN de demostración **no se escriben acá**: están en e
 - Dejé las instrucciones del driver en `GUIA_CONEXION_APP_MYSQL.md` (como se pidió) y no inventé pasos.
 - No incluí usuarios, claves ni PIN.
 - **Ronda final:** actualicé las métricas y el estado del código a la app v3 (los números los recontó con comandos sobre el zip recibido), agregué las limitaciones de CONTEXTO §9 que faltaban y corregí lo que había dicho de las fechas de las reservas de sectores y de `alumno2`, comparando con `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql`.
-- CONTEXTO §8 y §9 tienen datos viejos frente al script y a la v3 (ver sección 9 y `ERRORES_Y_PENDIENTES.md`); en este manual valen el script y el código.
+- CONTEXTO §8 y §9 tienen datos viejos frente al script y a la v3 (ver sección 9); en este manual valen el script y el código.
 - Los procedimientos almacenados no los llama la app (ver 3.3); lo dejé marcado como duda y no como error.
 - El plan de aprendizaje dice «C/Qt»; el proyecto es C++17 con Qt: lo describí como C++17.
 
