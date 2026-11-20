@@ -132,11 +132,11 @@ ORDER BY dep.nombre_deporte, ds.id_dia, f.hora_inicio
 LIMIT 5;
 ```
 
-Las consultas usan solo sintaxis común a SQLite y MySQL, pero **no se corrieron en MySQL**: si en tu servidor dan otra cosa, avisá. Además, `consultas_verificacion_mysql.sql` tiene los controles de integridad completos (son 21).
+Las consultas están escritas para MySQL, pero **no se corrieron en MySQL**: si en tu servidor dan otra cosa, avisá. Además, `consultas_verificacion_mysql.sql` tiene los controles de integridad completos (son 21).
 
 ## 5. Y la app
 
-La app elige el motor con `iqual.ini` (ver `GUIA_DRIVER_WINDOWS.md` y `GUIA_CONEXION_APP_MYSQL.md`). Si cargaste en la base `iqual`, no cambia nada. Si usaste otro nombre de base, `nombre` en `iqual.ini` tiene que ser ese. Si la app no puede conectar, cae a SQLite con un aviso, y ese SQLite es otro archivo con sus propios datos. Con estos pasos **no queda ninguna cuenta de usuario**: la primera se registra desde la app con el PIN de personal.
+La app lee los datos de conexión en `iqual.ini` (ver `GUIA_DRIVER_WINDOWS.md` y `GUIA_CONEXION_APP_MYSQL.md`). Si cargaste en la base `iqual`, no cambia nada. Si usaste otro nombre de base, `nombre` en `iqual.ini` tiene que ser ese. Si la app no puede conectar, avisa el motivo y no abre. Con estos pasos **no queda ninguna cuenta de usuario**: la primera se registra desde la app con el PIN de personal.
 
 ## Desvíos
 

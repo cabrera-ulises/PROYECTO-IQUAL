@@ -1,7 +1,7 @@
 # Manual de usuario — Acceso, Inicio, Objetos perdidos y Préstamo de equipos
 
 **Sistema:** PROYECTO IQUAL® (Sistema de Gestión Escolar)
-**Versión:** ronda final, actualizada a la **app v3** (CONTEXTO v3.0, §20) y revisada en la ronda de cierre (19/11/2026) contra los datos nuevos de MySQL. Reemplaza a la anterior.
+**Versión:** ronda final, actualizada a la **app v3** (CONTEXTO v3.0, §20) y revisada en la ronda de cierre (19/11/2026) contra los datos nuevos de MySQL y ajustada en la ronda sin SQLite (19/11/2026, CONTEXTO v3.3, §23). Reemplaza a la anterior.
 
 Los marcadores `[CAPTURA: capturas/nombre.png]` son imágenes que ya existen en la carpeta `capturas`. Los marcadores `[CAPTURA: nombre]` (sin carpeta) son imágenes que todavía hay que sacar a mano.
 
@@ -24,7 +24,7 @@ Lo que tu rol no puede usar **no aparece** en pantalla. Si buscás un botón y n
 
 ### 1.1 Abrir la aplicación
 1. Abrí IQUAL. Vas a ver la pantalla de inicio con dos botones: **Iniciar sesión** y **Crear cuenta**.
-2. En la barra del título de la ventana podés ver con qué base de datos trabaja la aplicación (termina en "· MySQL" si usa MySQL). Si al abrir aparece un aviso que dice **"No se pudo usar MySQL"**, la aplicación sigue funcionando con una base local; avisá al responsable del sistema `[COMPLETAR: quién es el responsable del sistema en el colegio]`.
+2. Cuando la aplicación se conecta a la base de datos, la barra del título de la ventana termina en "· MySQL". Si al abrir aparece un aviso que dice **"No se pudo usar MySQL"** (y después otro, "No se pudo abrir la base de datos"), la aplicación no se puede usar: los botones de la pantalla de inicio no responden. Cerrala y avisá al responsable del sistema, que tiene que revisar que el servidor de la base de datos esté encendido `[COMPLETAR: quién es el responsable del sistema en el colegio]`.
 
 `[CAPTURA: inicio_portada]`
 
@@ -276,7 +276,7 @@ Mensajes comunes:
 | No encuentro un botón | Es posible que tu rol no pueda usarlo |
 | Aparece un aviso | Leelo: dice qué corregir |
 | Un botón no hace nada | Fijate si tenés que elegir antes un elemento de la lista; si no, la aplicación te lo avisa al apretarlo |
-| Aparece "No se pudo usar MySQL" al abrir | La aplicación sigue con una base local; avisá al responsable del sistema `[COMPLETAR: quién es el responsable del sistema]` |
+| Aparece "No se pudo usar MySQL" al abrir | La aplicación no se puede usar hasta que se arregle la conexión con la base de datos: cerrala y avisá al responsable del sistema `[COMPLETAR: quién es el responsable del sistema]` |
 | Bloqueo por intentos de contraseña | Cerrá y abrí la aplicación |
 | Olvidé mi contraseña | No se recupera desde la aplicación (ver 1.3) |
 
@@ -286,6 +286,7 @@ Mensajes comunes:
 
 - El manual describe la app v3 (CONTEXTO v3.0, §19 y §20). Donde una decisión por defecto puede cambiar (bloqueo por intentos, un solo campo de observaciones, "Funciona" elegido al devolver, pantalla de inicio), hay que revisar los pasos 1.1, 1.3, 4.2 y 4.4.
 - Ronda de cierre: con los datos de MySQL el manual cambió en 5 puntos (carros C1 a C5, objetos "En reclamo", qué cuenta el resumen de Objetos, auditoría que arranca vacía y lista de alumnos ordenada). Los ejemplos del manual ("Disponible · (2 reclamos)", "23/10", "C4-01", "C4-05", "Tablero 03") existen en los datos de MySQL. El manual no repite cantidades, así que no depende de cuántos registros haya.
+- Ronda sin SQLite (19/11/2026): la aplicación ya no tiene una base local de respaldo. Cambié los pasos 1.1 (punto 2) y la fila "No se pudo usar MySQL" de la sección 5: ahora dicen que, si no hay conexión, la aplicación no se puede usar y hay que avisar al responsable. Lo leí del código (`abrirBase` y el constructor de `MainWindow`); no ejecuté la app. No cambió ningún otro paso ni ejemplo.
 - Cambios de la v3 reflejados: la fecha de las consultas se ve día/mes, categoría y sector vuelven a "Elegí…" después de publicar, y el Alumno ve solo sus préstamos.
 - Usé las capturas de `capturas/` solo donde coinciden con lo que se explica (son las de la etapa de cierre; esta ronda no trajo capturas nuevas). Las de la portada, el login, el registro, el detalle del objeto y los programas instalados todavía no existen.
 - No incluí el PIN de personal: es un dato interno que entrega el colegio.

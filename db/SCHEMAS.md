@@ -18,7 +18,6 @@ Total: 6 + 10 + 6 + 7 + 8 + 7 + 3 = 47.
 
 - **SQL Server 2005:** schemas reales. `03_ModeloSQL_Grupo00_sqlserver.sql` crea los 7 con `CREATE SCHEMA` y cada tabla vive en el suyo (`seguridad.usuario`). Las claves foráneas entre schemas llevan el nombre completo. Las consultas `_sqlserver` ya traen los nombres calificados.
 - **MySQL 8 / MariaDB 10.11:** una sola base, `iqual`, con las 47 tablas sin prefijo. El mapa está como comentario al principio de `03_ModeloSQL_Grupo00.sql`.
-- **SQLite:** igual que MySQL (no tiene schemas).
 
 ## Por qué MySQL queda con una sola base
 

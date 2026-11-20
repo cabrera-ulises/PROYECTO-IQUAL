@@ -6,6 +6,8 @@
 
 *Ronda de cierre (19/11/2026): revisado contra los datos nuevos de MySQL. Las instrucciones no cambian; se ajustaron las listas de ejemplo para que valgan con cualquier cantidad de lugares y de reservas.*
 
+*Ronda sin SQLite (19/11/2026): la aplicación usa solo MySQL. Este manual no mencionaba SQLite y las instrucciones no cambian; solo se ajustó la nota sobre las capturas (sección «Datos que faltan»).*
+
 > Esta sección explica tres pantallas de la aplicación. Cada punto dice quién puede hacerlo y cómo, paso a paso. Donde ves **[CAPTURA: capturas/nombre.png]** ya existe la imagen en la carpeta `capturas/` del proyecto; donde ves **[CAPTURA: nombre]** (sin carpeta) hay que sacarla a mano con la aplicación abierta y guardarla con ese nombre.
 
 ## Antes de empezar
@@ -240,12 +242,13 @@ Si tu inscripción **choca** con el horario del curso nuevo, la aplicación te p
 ---
 
 ## Datos que faltan
-- Capturas con los datos de MySQL: las capturas de la etapa anterior muestran el juego chico (5 usuarios, 2 reportes, 3 sectores reservables); con MySQL las listas se ven más largas (por ejemplo, 22 reportes en Higiene y hasta 24 reservas para el Preceptor).
+- Capturas con los datos de MySQL: las capturas de la etapa anterior son de una base de demostración más chica (5 usuarios, 2 reportes, 3 sectores reservables); con los datos de `04_DatosSQL_Grupo00.sql` las listas se ven más largas (por ejemplo, 22 reportes en Higiene y hasta 24 reservas para el Preceptor).
 - `[COMPLETAR: quién restablece las contraseñas en el colegio]` (CONTEXTO §19.3, decisión pendiente del usuario).
 - Capturas de la v3 de Higiene, Sectores y Mi cuenta, para reemplazar las de la etapa anterior.
 - Las capturas **sin carpeta** (`higiene_reportar_formulario_completo`, `higiene_reporte_enviado`, `higiene_marcar_resuelto_seleccion`, `sectores_reservar_profesor`, `sectores_reserva_pendiente_en_lista`, `sectores_confirmar_cancelacion`, `sectores_aprobar_rechazar_preceptor`, `cuenta_cambiar_contrasena`, `cuenta_cambiar_telefono`, `cuenta_cambiar_curso`, `cuenta_confirmar_cambio_curso_con_choque`, `menu_lateral_y_barra_superior`) las saca el usuario con la aplicación abierta.
 
 ## Desvíos
 - Ronda de cierre: revisé el manual contra `04_DatosSQL_Grupo00.sql` (62 usuarios, 22 sectores, 22 reportes, 28 reservas) y `mainwindow.cpp`. Solo cambiaron las frases que nombraban tres sectores como si fueran los únicos y la del Preceptor ("de todos los profesores"); el resto (ejemplos como "20/10 08:45 — Maestranza Uno" o "4° 1° Computación") sigue valiendo con MySQL.
+- Ronda sin SQLite: revisé el manual completo buscando «SQLite» y el motor de la base: no había menciones, así que no cambié ninguna instrucción. El manual tampoco explica qué hacer si la aplicación no consigue conectarse a MySQL (se ven los avisos «No se pudo usar MySQL…» y las pantallas quedan deshabilitadas); eso es del arranque de la aplicación y no de estas tres pantallas, por eso no lo agregué.
 - No ejecuté la aplicación: los textos de cada aviso y cada pregunta están copiados del código de la app v3.
 - Esta ronda no trae capturas nuevas. Los marcadores `[CAPTURA: capturas/<nombre>.png]` apuntan a las capturas de la etapa anterior (vistas generales de las tres pantallas, Preceptor y Alumno, tema claro y oscuro); la de Higiene fue tomada antes del cambio del texto de ayuda de "¿Qué pasó?" (ahora "Contá qué pasa (ej: falta papel)"). No hay capturas de los avisos ni de las preguntas de confirmación.

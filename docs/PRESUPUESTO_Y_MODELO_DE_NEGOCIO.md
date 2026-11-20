@@ -21,7 +21,7 @@ Y un modelo de negocio: cómo se cobraría y cuándo se recupera lo invertido (s
 | Rol | Qué hizo en IQUAL | Integrante | Horas `[H]` | Valor hora `[V]` | Costo `= H × V` |
 |---|---|---|---|---|---|
 | Analista / relevamiento | Árbol de problemas, requerimientos, historias de usuario, matriz de trazabilidad | `[COMPLETAR: quién]` | `[COMPLETAR]` | `[COMPLETAR]` | `= H × V` |
-| Diseñador de base de datos | Modelo de 47 tablas en 3FN, diagramas, scripts MySQL, SQLite y SQL Server, procedimientos | `[COMPLETAR]` | `[COMPLETAR]` | `[COMPLETAR]` | `= H × V` |
+| Diseñador de base de datos | Modelo de 47 tablas en 3FN, diagramas, scripts MySQL y SQL Server, procedimientos | `[COMPLETAR]` | `[COMPLETAR]` | `[COMPLETAR]` | `= H × V` |
 | Programador C++/Qt | Aplicación de escritorio: 10 pantallas, conexión a la base, roles y permisos, auditoría | `[COMPLETAR]` | `[COMPLETAR]` | `[COMPLETAR]` | `= H × V` |
 | Diseñador de interfaz | Maquetado, temas claro y oscuro, íconos, splash | `[COMPLETAR]` | `[COMPLETAR]` | `[COMPLETAR]` | `= H × V` |
 | QA / pruebas | 337 casos de prueba escritos, informe de errores, revisión de código | `[COMPLETAR]` | `[COMPLETAR]` | `[COMPLETAR]` | `= H × V` |
@@ -63,7 +63,7 @@ Lo que necesita una escuela para usar IQUAL (hoy funciona con un servidor MySQL 
 | Energía / UPS | Que un corte no rompa la base | `[COMPLETAR]` | `[COMPLETAR]` | `= N × P` |
 | **Total infraestructura (inicial)** | | | | **`= suma`** |
 
-Notas verificadas en el proyecto: la app funciona en una sola PC con SQLite si no hay servidor (`motor=sqlite`), así que **el costo mínimo de infraestructura es cero si se usa lo que la escuela ya tiene** (con la limitación de que cada PC tendría sus propios datos). Qué nivel de servidor hace falta para el tamaño de la escuela **no se midió** (RNF03): `[COMPLETAR: cantidad de usuarios simultáneos y de alumnos de E.T. N°3]`.
+Notas verificadas en el proyecto: la app necesita un servidor MySQL (la edición Community no tiene costo de licencia) y no tiene base de respaldo, así que **el costo mínimo de infraestructura es cero si el servidor se instala en una PC que la escuela ya tiene** (con la limitación de que, si esa PC está apagada, la app no abre). Qué nivel de servidor hace falta para el tamaño de la escuela **no se midió** (RNF03): `[COMPLETAR: cantidad de usuarios simultáneos y de alumnos de E.T. N°3]`.
 
 ## 5. Mantenimiento
 **Fórmula:** `Costo anual de mantenimiento = (horas por mes × 12 × valor hora) + costos fijos anuales`. Una referencia habitual es expresarlo como porcentaje del costo de desarrollo: `% anual = mantenimiento anual ÷ costo de desarrollo`. `[COMPLETAR: el porcentaje no lo invento]`

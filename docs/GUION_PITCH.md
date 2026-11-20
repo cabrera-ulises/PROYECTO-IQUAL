@@ -65,9 +65,9 @@ Se hace con la app abierta, **no con capturas** (las capturas son el plan B, ver
 
 ### 3.1 Antes de subir (checklist, 10 minutos antes)
 1. MySQL funcionando y la base **recién cargada** con `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql` (GUIA_INSTALACION_MYSQL.md). Varios pasos de la demo cambian datos: después de ensayar hay que **volver a cargar la base**.
-2. Abrir la app y mirar el **título de la ventana: tiene que decir «· MySQL»** (o «· MySQL (ODBC)»). Si no lo dice, se abrió con el respaldo SQLite (la demo funciona igual, pero con otros datos y otro motor).
+2. Abrir la app y mirar el **título de la ventana: tiene que decir «· MySQL»** (o «· MySQL (ODBC)»). Si la app no conectó, avisa «No se pudo usar MySQL: …» y no abre: levantar el servidor MySQL, revisar `iqual.ini` y volver a abrirla antes de subir.
 3. Tener las sesiones listas **en este orden**: `alumno1`, luego `preceptor1`. Tener a mano la ventana de login para no perder tiempo.
-4. **Reservas de sectores:** el `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql` que recibí las carga con fechas relativas (hoy+1 y hoy+2), así que con MySQL aparecen siempre. Si la app se abrió con el respaldo SQLite, las fechas pueden ser fijas y no verse (CONTEXTO §8): en ese caso la demo de sectores se hace creando una reserva en vivo. `[COMPLETAR: Arce Thiago y Cabrera Ulises confirma las fechas del script de SQLite]`
+4. **Reservas de sectores:** el `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql` que recibí las carga con fechas relativas (hoy+1 y hoy+2), así que aparecen siempre. Si igual no se vieran, la demo de sectores se hace creando una reserva en vivo.
 5. Tener las capturas (`capturas/`) en una carpeta abierta por si la app falla.
 
 ### 3.2 Pasos y texto de cada uno
@@ -85,7 +85,7 @@ El tramo de 3:05 en adelante es el que se **recorta primero** si se pasan de tie
 ### 3.3 Si algo falla (plan B)
 | Falla | Qué hacer |
 |---|---|
-| La app no conecta con MySQL | Decir «el sistema avisa y sigue con la base local de respaldo» (es verdad: pasa a SQLite) y seguir. Los datos de demo son los de SQLite: `[COMPLETAR: confirmar que los datos de SQLite y MySQL son equivalentes para la demo]` |
+| La app no conecta con MySQL | Decir «el sistema avisa el motivo («No se pudo usar MySQL: …») y no abre hasta que se levante el servidor» (es verdad: no hay base de respaldo). Mostrar el aviso, levantar el servidor MySQL, revisar `iqual.ini` y volver a abrir la app. Si no se logra, mostrar la base y las consultas desde DBeaver. |
 | Un paso no da el resultado esperado | No improvisar: pasar a la captura de ese módulo y seguir con el siguiente. |
 | Se cuelga la app | Volver a abrirla (tarda segundos) o pasar a las capturas. |
 | Se pasan de tiempo | Saltear sectores y tema oscuro (3:05 a 4:00). |
@@ -98,16 +98,16 @@ El tramo de 3:05 en adelante es el que se **recorta primero** si se pasan de tie
 
 ## 5. Diez preguntas probables y respuestas cortas
 **1. ¿Por qué MySQL y no otra base?**
-«Porque es la que vimos en Bases de Datos, es gratuita en su edición Community y se instala en el servidor de la escuela. Nuestro modelo es portable: tenemos los scripts también para SQLite y SQL Server, y la app usa SQLite como respaldo.» *(Nota: la confirmación del profesor Linares sobre MySQL todavía está pendiente; si lo preguntan, decir que fue decisión del equipo.)*
+«Porque es la que vimos en Bases de Datos, es gratuita en su edición Community y se instala en el servidor de la escuela. Nuestro modelo es portable: tenemos los scripts también para SQL Server 2005, y la app usa solo MySQL.» *(Nota: la confirmación del profesor Linares sobre MySQL todavía está pendiente; si lo preguntan, decir que fue decisión del equipo.)*
 
 **2. ¿Cómo se conecta la aplicación a la base?**
-«Lee un archivo `iqual.ini` que está junto al ejecutable, con el servidor, el puerto, el usuario y el nombre de la base. Usa el driver de MySQL de Qt o, si no lo tiene, ODBC. Si falla, avisa el motivo y sigue con SQLite. Todas las consultas se hacen con parámetros.»
+«Lee un archivo `iqual.ini` que está junto al ejecutable, con el servidor, el puerto, el usuario y el nombre de la base. Usa el driver de MySQL de Qt o, si no lo tiene, ODBC. Si falla, avisa el motivo y no abre. Todas las consultas se hacen con parámetros.»
 
 **3. ¿Está normalizada? ¿Hasta qué forma?**
 «Sí, hasta Tercera Forma Normal. Son 47 tablas: 24 catálogos y 23 entidades y relaciones. La justificación está en un documento (`justificacion_3FN.md`).»
 
 **4. ¿Qué pasa si el servidor MySQL se cae?**
-«La aplicación avisa y pasa a una base local SQLite para seguir trabajando. Limitación: esos datos quedan en esa computadora y no se sincronizan con la base principal; la solución de fondo es la copia de seguridad y levantar el servidor.»
+«La aplicación avisa el motivo y no abre: no hay base de respaldo. Limitación declarada; la solución es levantar el servidor y, de fondo, tener una copia de seguridad de la base.»
 
 **5. ¿Por qué es de escritorio y no web o celular?**
 «Fue una decisión de alcance: se usa en la red de la escuela y el plan pedía una aplicación en C++ con Qt. Una versión web o móvil sería otra etapa, y es lo que haría falta para ofrecerlo como servicio por suscripción.»
@@ -132,7 +132,7 @@ El tramo de 3:05 en adelante es el que se **recorta primero** si se pasan de tie
 ## Desvíos
 - **Ronda final:** actualicé las cifras a la v3 (337 casos, 20 errores corregidos de 53) y resolví con el script lo que antes estaba como `[COMPLETAR]`: el vendedor de la reserva demo es `alumno1` y las reservas de sectores son relativas en MySQL.
 - No escribí claves ni PIN: la demo usa los usuarios por nombre y las claves están en el script de datos.
-- **Datos de demo:** CONTEXTO §8 está desactualizado frente al `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql` (fechas de las reservas de sectores, especialidad de `alumno2` y estado de las «Llaves con llavero rojo»). Para el guion valen el script (que verifiqué) y la v3. Lo de SQLite no pude verificarlo.
+- **Datos de demo:** CONTEXTO §8 está desactualizado frente al `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql` (fechas de las reservas de sectores, especialidad de `alumno2` y estado de las «Llaves con llavero rojo»). Para el guion valen el script (que verifiqué) y la v3.
 - El guion usa datos que vienen de la documentación; **yo no ejecuté la app**, así que los pasos de la demo (en especial los textos exactos de pantalla y que la reserva de demostración de la Tienda se pueda entregar con `alumno1`) hay que ensayarlos.
 - No tengo el texto del Árbol de Problemas, solo lo que citan los documentos; dejé marcado dónde pegar las palabras reales.
 - El tiempo por parte es una propuesta; hay que cronometrarlo ensayando.
@@ -141,6 +141,5 @@ El tramo de 3:05 en adelante es el que se **recorta primero** si se pasan de tie
 - Texto del Árbol de Problemas y, si existe, un dato real del problema. — **usuario**
 - Reparto de quién habla en cada diapositiva. — **usuario**
 - Totales de presupuesto: horas, costo, mantenimiento, precio, equilibrio (`PRESUPUESTO_Y_MODELO_DE_NEGOCIO.md`). — **usuario**
-- Fechas de las reservas de sectores en el script de SQLite (el de MySQL es relativo). — **Arce Thiago y Cabrera Ulises**
 - Prueba de la demo completa en la computadora del Demo Day (Windows). — **usuario**
 - Pitch Deck armado. — **usuario**

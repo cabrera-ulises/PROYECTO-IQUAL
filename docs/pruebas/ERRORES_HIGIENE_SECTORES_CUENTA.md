@@ -4,6 +4,8 @@
 
 **Ronda de cierre (19/11/2026).** Revisado contra los datos nuevos de MySQL (`04_DatosSQL_Grupo00.sql`, 62 usuarios). Ninguno de los 14 hallazgos cambia de estado ni de gravedad; se actualizaron los pasos de E4-05, E4-07 y E4-08 porque dependían de pocos datos, se corrigió la referencia de línea de E4-03 y se agregaron cuatro observaciones sobre los datos (D4-01 a D4-04, al final de «Observaciones»). No hay errores nuevos de la app.
 
+**Ronda sin SQLite (19/11/2026).** SQLite se sacó del proyecto (CONTEXTO §23) y esta ronda se hizo sobre `repo.zip` (el repositorio actual). Ninguno de los 14 hallazgos E4-01 a E4-14 existía por SQLite, así que **no se borró ni se marcó ninguno**: siguen igual de estado y gravedad. Cambió la redacción de E4-02 (ya no cita `date('now')`), E4-05, E4-07 y E4-08 (solo MySQL) y la tabla «Revisión MySQL» (se quitaron las comparaciones con SQLite). Lo que dependía de SQLite se marca **«No aplica: se sacó SQLite»**: dos puntos de esa tabla y el hallazgo X-01 (los `harness`, que eran las pruebas automáticas con SQLite). Recuento: 14 hallazgos E4 (6 corregidos, 2 decisiones por defecto, 6 abiertos), 13 defectos visuales V1–V13, 1 hallazgo fuera de mis pantallas (X-01, ahora «No aplica») y 4 observaciones de datos (D4-01 a D4-04). Errores nuevos: ninguno.
+
 ## Cómo se revisó
 - **Código:** `mainwindow.cpp`, `mainwindow.h` y `mainwindow.ui` de la app v3 (`app_codigo.zip` de esta ronda). Comparé la v3 contra la versión que revisé en la etapa anterior (78 líneas distintas en `mainwindow.cpp`, un texto en el `.ui` y una declaración nueva en el `.h`) y releí las funciones de mis tres páginas y las compartidas que usan (`cerrarSesion`, `on_stackedWidget_currentChanged`, `cargarResumen`, `valorUnicoHoy`, `aplicarTema`, `aplicarPermisos`, `confirmar`, `valorFecha`, `valorAhora`, `formatoCorto`, `obtenerCurso`, `chocaHorario`).
 - **Capturas:** esta ronda **no trae capturas nuevas**. Los estados de la tabla V se verifican con el `.ui` y el código de la v3 (que solo cambió el texto de ayuda de Higiene); las capturas que vi en la etapa anterior (12 imágenes, claro y oscuro) siguen siendo la referencia visual. `[COMPLETAR: capturas nuevas de la v3 para confirmar los cambios visuales]`
@@ -45,9 +47,9 @@ No hay errores de gravedad alta ni media abiertos en estas tres páginas: lo abi
 
 ### E4-02 — "Tus reservas de sectores" cuenta reservas que no se muestran · Media · **Corregido**
 - **Antes:** el Profesor veía 3 en el Inicio y 2 en la lista porque se contaba la Cancelada; el Preceptor contaba pendientes de cualquier fecha.
-- **Verificado:** `cargarResumen` rama Profesor ahora cuenta `e.nombre_estado IN ('Pendiente', 'Aprobada') AND r.fecha_reserva >= hoy`; rama Preceptor cuenta pendientes con `r.fecha_reserva >= hoy`. Ya no hay `date('now')`.
+- **Verificado:** `cargarResumen` rama Profesor ahora cuenta `e.nombre_estado IN ('Pendiente', 'Aprobada') AND r.fecha_reserva >= hoy`; rama Preceptor cuenta pendientes con `r.fecha_reserva >= hoy`. La fecha de hoy ya no se escribe a mano en el SQL: se pasa como `:hoy` con `bindValue` (función `valorUnicoHoy`).
 - **Detalle que queda y no es error:** la lista "Reservas próximas" del Profesor sí muestra las **Rechazadas** (solo excluye las Canceladas), y el Inicio no las cuenta. Los dos números pueden diferir en esas. Es coherente con "Tus reservas" = activas, pero conviene que quien pruebe lo sepa (caso `SEC-26`).
-- **Observación de código (no es error de comportamiento):** la fecha de hoy se concatena como texto dentro del SQL (`hoy()`); lo anoto en `REVISION_CODIGO_HIGIENE_SECTORES_CUENTA.md`.
+- **Observación de código (no es error de comportamiento):** el método `hoy()` quedó declarado en `mainwindow.h` y definido en `mainwindow.cpp`, pero ya ninguna consulta lo usa (R-07 de `REVISION_CODIGO_HIGIENE_SECTORES_CUENTA.md`, corregido). Se puede borrar.
 
 ### E4-03 — Observaciones sin límite de largo · Media · **Corregido**
 - **Antes:** sin `maxLength`; en MySQL el `INSERT` fallaba con "No se pudo enviar el reporte. Probá de nuevo." para textos de más de 200 caracteres.
@@ -61,7 +63,7 @@ No hay errores de gravedad alta ni media abiertos en estas tres páginas: lo abi
 
 ### E4-05 — Se pueden crear cursos inexistentes desde Mi cuenta · Media · **Decisión por defecto (§19.3)**
 - **Función:** `on_btnCuentaGuardar_clicked` → `obtenerCurso`.
-- **Pasos:** con `alumno1`, elegir 7°, 9°, Óptica y **Guardar curso** (datos: MySQL: esa combinación tampoco existe entre los 24 cursos cargados, así que se crea igual).
+- **Pasos:** con `alumno1`, elegir 7°, 9°, Óptica y **Guardar curso** (esa combinación tampoco existe entre los 24 cursos cargados, así que se crea igual).
 - **Qué pasa:** se inserta el curso en la tabla `curso` y la app responde "Cambiaste tu curso."; el curso inventado no tiene horario, por lo que el cruce con Educación Física deja de validar para ese alumno.
 - **Estado:** el CONTEXTO §19.3 lo deja así y pide documentarlo como **limitación**. Texto sugerido para el informe: "Mi cuenta permite elegir cualquier combinación de año, división y especialidad del catálogo y crea el curso si no existe; el control de choques con Educación Física solo funciona para los cursos que tienen horario cargado".
 
@@ -72,13 +74,13 @@ No hay errores de gravedad alta ni media abiertos en estas tres páginas: lo abi
 
 ### E4-07 — El tope de 20 resueltos no avisa · Baja · **Abierto**
 - **Función:** `cargarHigiene` (`MAX_RESUELTOS`).
-- **Qué pasa:** con más de 20 reportes resueltos, "Todos" y "Resueltos" muestran los 20 de número más alto y los demás no se ven, sin ninguna leyenda. Datos: SQLite: hay 1 resuelto, así que el tope no se ve sin cargar datos. Datos: MySQL: hay 13 resueltos y 9 pendientes; el tope se ve resolviendo 8 de los 9 pendientes (21 resueltos; caso `HIG-14`).
+- **Qué pasa:** con más de 20 reportes resueltos, "Todos" y "Resueltos" muestran los 20 de número más alto y los demás no se ven, sin ninguna leyenda. Hay 13 resueltos y 9 pendientes; el tope se ve resolviendo 8 de los 9 pendientes (21 resueltos; caso `HIG-14`).
 - **Qué debería pasar:** una línea del tipo "Mostrando los últimos 20 resueltos".
 - **Verificado:** el código actual no cambió.
 
 ### E4-08 — El mensaje de "sin pendientes" se repite · Baja · **Abierto**
 - **Función:** `cargarHigiene` y `actualizarPendientesHigiene`.
-- **Pasos:** resolver todo y poner **Ver:** en "Pendientes" (datos: MySQL: son 9 pendientes; el caso `HIG-12` trae un `UPDATE` para resolverlos de una vez).
+- **Pasos:** resolver todo y poner **Ver:** en "Pendientes" (son 9 pendientes; el caso `HIG-12` trae un `UPDATE` para resolverlos de una vez).
 - **Qué pasa:** el chip dice "No hay reportes pendientes. ¡Todo en orden!" y la lista "No hay reportes pendientes.".
 - **Qué debería pasar:** una sola vez.
 - **Verificado:** ambos textos siguen en el código.
@@ -121,16 +123,18 @@ No hay errores de gravedad alta ni media abiertos en estas tres páginas: lo abi
 Resultado: **no encontré errores nuevos en mis pantallas.** No ejecuté la app contra MySQL; esto es lectura del código y de `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql`. Lo ya probado en MariaDB figura en el CONTEXTO §19.1.
 | Punto | Qué revisé | Resultado |
 |---|---|---|
-| `QDate` en las reservas | `valorFecha()` devuelve `QDate` para MySQL y texto para SQLite; el código lo usa en `cargarOcupacion`, `cargarReservasSector` y `on_btnSectoresReservar_clicked`. Al leer, `cargarReservasSector` hace `QDate::fromString(q.value(1).toString(), "yyyy-MM-dd")`, que sirve con `QDate` y con texto. `cargarResumen` compara contra un literal `'yyyy-MM-dd'`, que MySQL convierte | Sin error |
-| Horas de las reservas | `hora_inicio` y `hora_fin` son `VARCHAR(5)` en `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql`: las comparaciones de texto (`<`, `>`) y el `ORDER BY` se comportan igual que en SQLite | Sin error |
+| `QDate` en las reservas | `valorFecha()` devuelve un `QVariant` con un `QDate`; el código lo usa en `cargarOcupacion`, `cargarReservasSector` y `on_btnSectoresReservar_clicked`. Al leer, `cargarReservasSector` hace `QDate::fromString(q.value(1).toString(), "yyyy-MM-dd")`, que sirve con el `QDate` que devuelve MySQL. `cargarResumen` pasa la fecha de hoy como `:hoy` con `bindValue` (`valorUnicoHoy`) | Sin error |
+| Horas de las reservas | `hora_inicio` y `hora_fin` son `VARCHAR(5)` en `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql`: las comparaciones de texto (`<`, `>`) y el `ORDER BY` ordenan bien porque las horas se guardan siempre como `HH:mm` (`toString("HH:mm")`), de 5 caracteres con cero adelante | Sin error |
 | Fechas con hora | `valorAhora()` manda `QDateTime` a MySQL; `formatoCorto()` recorta a 19 caracteres y cambia la "T" por espacio, así que muestra bien lo que devuelve MySQL (`reporte_higiene.fecha_hora` y `fecha_hora_resolucion` son `DATETIME`) | Sin error |
-| Mayúsculas en el login | El login pasa el usuario a minúsculas y compara `LOWER(usuario_nick)`: se comporta igual en los dos motores. Mi cuenta muestra el nick **tal como está guardado** (lo lee por `id_usuario`) | Sin error |
+| Mayúsculas en el login | El login pasa el usuario a minúsculas y compara `LOWER(usuario_nick)`: no depende de la collation de la base. Mi cuenta muestra el nick **tal como está guardado** (lo lee por `id_usuario`) | Sin error |
 | `VARCHAR(200)` | Ver E4-03 | Corregido |
 | Teléfono | `contacto_telefono VARCHAR(15)`; la validación acepta de 8 a 15 dígitos | Coincide |
 | Contraseña | Se compara el SHA-256 en C++ (no en SQL), así que no depende de la collation; `password_hash CHAR(64)` | Sin error |
 | `ONLY_FULL_GROUP_BY` | Mis consultas (`cargarHigiene`, `actualizarPendientesHigiene`, `cargarOcupacion`, `cargarReservasSector`, `cargarCuenta`) no usan `GROUP BY` | Sin error |
 | Autorizador nulo | `id_usuario_autorizador INT NULL`; el `INSERT` manda un `QVariant` vacío cuando reserva un Profesor | Sin error |
 | Collation sin tildes ni mayúsculas | Las comparaciones de estados y sectores de mis funciones son por id o por nombres de catálogo que no se repiten salvo en mayúsculas/tildes | Sin error |
+
+**No aplica: se sacó SQLite.** Dos puntos de la revisión anterior comparaban el comportamiento de MySQL con el de SQLite: que `valorFecha()` devolviera texto en lugar de `QDate`, y que las horas de texto y el login "se comportaran igual en los dos motores". Quedaron reescritos solo con MySQL (filas de arriba); la comparación entre motores ya no existe porque la app usa solo MySQL (CONTEXTO §23).
 
 ## Zonas revisadas sin errores
 - **Superposición de reservas (RF10):** la condición `hora_inicio < nuevo_fin AND hora_fin > nuevo_inicio` está igual que antes; la comprobé sobre la base demo en la etapa anterior (bordes contiguos permitidos, Cancelada no ocupa, otro sector no choca) y no cambió.
@@ -174,7 +178,8 @@ Esta ronda no trae capturas: la tabla parte de las 12 de la etapa anterior (`alu
 ---
 
 ## Hallazgo fuera de mis pantallas (para Arce Thiago y Cabrera Ulises)
-### X-01 — `CMakeLists.txt` de la v3 referencia archivos que no vienen en el zip · Gravedad alta si va al repo
+### X-01 — `CMakeLists.txt` de la v3 referencia archivos que no vienen en el zip · Gravedad alta si va al repo · **No aplica: se sacó SQLite**
+- **Estado (ronda sin SQLite):** **No aplica: se sacó SQLite.** Los `harness` eran las pruebas automáticas con SQLite y dejan de existir (CONTEXTO §23). El `CMakeLists.txt` del repo actual compila solo el target `PROYECTO_IQUAL` y no menciona ningún `harness` (lo comprobé leyéndolo). Lo que sigue es el hallazgo original, que queda como historial.
 - **Dónde:** `CMakeLists.txt` (líneas finales): `foreach(h harness harness2 harness3 harness4 harness6 harness7)` con `add_executable(${h} ${h}.cpp mainwindow.cpp …)`.
 - **Pasos para reproducirlo:** abrir `CMakeLists.txt` de `app_codigo.zip` (v3) en Qt Creator, o correr `cmake` sobre esa carpeta.
 - **Qué pasa:** la carpeta no tiene `harness.cpp`, `harness2.cpp`, `harness3.cpp`, `harness4.cpp`, `harness6.cpp` ni `harness7.cpp` (son las pruebas automáticas internas), así que CMake debería fallar con "Cannot find source file" al configurar y **no se podría compilar la app** desde el repositorio. La versión V5 anterior no tenía esas líneas. *(Lo comprobé por lectura del `CMakeLists.txt` y de la lista de archivos; no corrí CMake.)*
@@ -185,6 +190,7 @@ Esta ronda no trae capturas: la tabla parte de las 12 de la etapa anterior (`alu
 Ninguno. Releí la v3 buscando regresiones en mis tres páginas (por ejemplo, que la comparación del curso se haga después de `obtenerCurso`, que `cargarCuenta` no dependa de nada nuevo y que `valorUnicoHoy` mande `:hoy` también a consultas que no lo usan) y no encontré nada que falle. `valorUnicoHoy` bindea `:hoy` y `:id` en todas las consultas del resumen aunque alguna no use `:hoy`: Qt ignora los nombres que no están en la consulta, así que no es un error.
 
 ## Desvíos
+- Ronda sin SQLite: ningún hallazgo E4 dependía de SQLite, así que lo marcado «No aplica: se sacó SQLite» es X-01 y dos puntos de la tabla «Revisión MySQL». No encontré errores nuevos. Aparte, `hoy()` quedó sin uso en el código (observación en E4-02).
 - No ejecuté la app: "Corregido" es verificado por lectura del código, no por prueba en pantalla. En la ronda de cierre sí cargué `03` y `04` en MariaDB 10.11 para comprobar los datos.
 - El archivo de contexto de este zip dice "VERSIÓN 2.9" en el título, aunque el prompt habla de v3.0; usé su sección 20 (13/11/2026) como referencia de la v3.
 - En la ronda de cierre usé el `03` y el `04` de `paquete_v7.zip`: `observaciones` (`VARCHAR(200)`), `hora_inicio` y `hora_fin` (`VARCHAR(5)`) y `contacto_telefono` (`VARCHAR(15)`) siguen igual.
@@ -194,4 +200,4 @@ Ninguno. Releí la v3 buscando regresiones en mis tres páginas (por ejemplo, qu
 - Resultados de ejecutar los casos de prueba (los completa el usuario).
 - Capturas de la v3 de Higiene, Sectores y Mi cuenta para cerrar la tabla V.
 - Una prueba real en MySQL 8 de Oracle y en Windows (el CONTEXTO §19.1 las marca como no probadas).
-- Confirmar en la compu del usuario, con la app abierta sobre MySQL, los casos de `CASOS_PRUEBA_HIGIENE_SECTORES_CUENTA.md` que dicen "datos: MySQL".
+- Confirmar en la compu del usuario, con la app abierta sobre MySQL, los casos de `CASOS_PRUEBA_HIGIENE_SECTORES_CUENTA.md` de la sección «Qué cambia con los datos de MySQL (resumen)».

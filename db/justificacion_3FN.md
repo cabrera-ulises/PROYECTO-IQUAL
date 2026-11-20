@@ -17,7 +17,7 @@ Las 47 tablas se agrupan en 7 schemas (`seguridad`, `academico`, `objetos`, `ins
 
 ## 2. Las 47 tablas: Chen → Codd → SQL
 
-Los nombres de tabla y de columna son idénticos en los 3 scripts (`iqual_sqlite.sql`, `03_ModeloSQL_Grupo00_sqlserver.sql`, `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql`) y coinciden con la sección 5 y con el contrato de la sección 15 del CONTEXTO.
+Los nombres de tabla y de columna son idénticos en los 2 scripts de modelo (`03_ModeloSQL_Grupo00_sqlserver.sql` y `03_ModeloSQL_Grupo00.sql`) y coinciden con la sección 5 y con el contrato de la sección 15 del CONTEXTO.
 
 | # | Tabla (Codd = SQL) | En el Chen | Tipo |
 |---|---|---|---|
@@ -136,7 +136,7 @@ Cada punto se dejó **como está en el contrato (sección 5)**. Si el profesor o
 
 - **D1 — `horario_escolar.id_turno`.** El turno (Mañana/Tarde) se podría deducir de `hora_inicio` o del curso. Si existiera la regla «hora_inicio → turno» sería una dependencia transitiva (id_bloque → hora_inicio → id_turno) y rompería la 3FN. Como esa regla no está guardada en ninguna tabla (no hay una tabla que diga hasta qué hora es Mañana), se dejó. Opciones: (a) dejarlo; (b) quitarlo y deducirlo por consulta; (c) pasar el turno a `curso` (cada curso cursa en un turno).
 - **D2 — `detalle_venta.precio_unitario`.** Depende de la clave completa (id_venta, id_producto) y NO es derivable de `producto_buffet.precio`, porque el precio del producto puede cambiar después de la venta: guarda el precio **histórico** de esa línea. Con eso el total de una venta (que sí es derivado y no se guarda) no cambia si se edita el producto. Un criterio muy estricto de «derivado» podría objetarlo. Opción alternativa: quitarlo y calcular con `producto_buffet.precio` (el total histórico quedaría inestable).
-- **D3 — `recursos_ct` y el carro NULL de los tableros.** UQ(id_tipo_recurso, id_carro, numero_equipo): en SQLite y MySQL los NULL no cuentan como iguales, así que dos tableros con el mismo número no serían rechazados por la base; SQL Server sí los rechaza. No es un problema de 3FN; la app lo controla (D8). Si se quisiera forzar en todos los motores habría que sacar el carro de los tableros a otra tabla.
+- **D3 — `recursos_ct` y el carro NULL de los tableros.** UQ(id_tipo_recurso, id_carro, numero_equipo): en MySQL los NULL no cuentan como iguales, así que dos tableros con el mismo número no serían rechazados por la base; SQL Server sí los rechaza. No es un problema de 3FN; la app lo controla (D8). Si se quisiera forzar en todos los motores habría que sacar el carro de los tableros a otra tabla.
 - **D4 — `recaudado` en el Chen.** Aparece como atributo derivado (elipse punteada) en GRUPO_BUFFET y no pasa al Codd. Es lo que pide la sección 12 para derivados; si el profesor prefiere no mostrarlo, se borra la elipse.
 - **D5 — `usuario.id_curso` opcional.** Solo los alumnos tienen curso; para los demás roles queda NULL. Una alternativa más «pura» sería una tabla `alumno` (subtipo) pero no está en el contrato (la sección 12 además evita generalizaciones).
 - **D6 — `reporte_higiene`: resolución.** `fecha_hora_resolucion` e `id_usuario_resolutor` son NULL juntos mientras el reporte está Pendiente. No es una dependencia entre atributos no clave en sentido estricto, pero podría ir en una tabla aparte 1 a 0..1.
@@ -154,11 +154,11 @@ Cada punto se dejó **como está en el contrato (sección 5)**. Si el profesor o
 
 ## 6. Dónde está cada cosa en SQL
 
-- Tipos: ids `INTEGER PRIMARY KEY AUTOINCREMENT` (SQLite), `INT IDENTITY(1,1)` (SQL Server 2005), `INT AUTO_INCREMENT` (MySQL 8). Textos con tildes: `NVARCHAR` en SQL Server; en MySQL `utf8mb4` con motor InnoDB. Fechas: `TEXT` `yyyy-MM-dd` (SQLite), `DATETIME` (SQL Server), `DATE` (MySQL); horas `HH:mm` como texto de largo 5 en los tres.
+- Tipos: ids `INT IDENTITY(1,1)` (SQL Server 2005), `INT AUTO_INCREMENT` (MySQL 8). Textos con tildes: `NVARCHAR` en SQL Server; en MySQL `utf8mb4` con motor InnoDB. Fechas: `DATETIME` (SQL Server) y `DATE` (MySQL); horas `HH:mm` como texto de largo 5 en los dos.
 - Restricciones: PK, UQ, FK con nombre, CHECK (año 1–7, división 1–9, DNI de 7 a 8 dígitos, hora_fin > hora_inicio, precio > 0, stock >= 0, cantidad > 0, monto > 0, meta_monto > 0, cupo_maximo > 0). Nota para MySQL: los CHECK se aplican desde MySQL 8.0.16 y desde MariaDB 10.2.1; en versiones anteriores se aceptan pero se ignoran.
-- Datos de ejemplo: todo lo que está debajo de la línea `-- DATOS DE EJEMPLO, REEMPLAZAR AL FINAL`. Las reservas de sectores usan fechas relativas a hoy (`date('now','localtime','+n day')` en SQLite, `DATE_ADD(CURDATE(), INTERVAL n DAY)` en MySQL, `DATEADD(day, n, DATEADD(day, DATEDIFF(day, 0, GETDATE()), 0))` en SQL Server 2005, que deja la fecha a medianoche).
-- `iqual_sqlite.sql` y `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql`: sin triggers, sin BEGIN...END, sin `DELIMITER` y sin «;» dentro de textos o comentarios (la app los parte por «;»). Los procedimientos almacenados van aparte en `05_Backend_Grupo00.sql`.
-- **Qué se ejecutó y qué no.** SQLite: se ejecutó siempre. MySQL: `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql` (47 tablas, 5 usuarios), `05_Backend_Grupo00.sql`, `consultas_demo.sql` y `consultas_verificacion_mysql.sql` corrieron **en MariaDB 10.11** con `ONLY_FULL_GROUP_BY`, sin errores y con los valores esperados (dato del 10/11/2026). **No se ejecutó:** MySQL 8 de Oracle, SQL Server 2005 (solo revisión de lectura: `REVISION_ESTATICA_SQLSERVER.md`) ni nada en Windows.
+- Datos de ejemplo: todo lo que está debajo de la línea `-- DATOS DE EJEMPLO, REEMPLAZAR AL FINAL`. Las reservas de sectores usan fechas relativas a hoy (`DATE_ADD(CURDATE(), INTERVAL n DAY)` en MySQL, `DATEADD(day, n, DATEADD(day, DATEDIFF(day, 0, GETDATE()), 0))` en SQL Server 2005, que deja la fecha a medianoche).
+- `03_ModeloSQL_Grupo00.sql` y `04_DatosSQL_Grupo00.sql`: sin triggers, sin BEGIN...END, sin `DELIMITER` y sin «;» dentro de textos o comentarios (la app los parte por «;»). Los procedimientos almacenados van aparte en `05_Backend_Grupo00.sql`.
+- **Qué se ejecutó y qué no.** MySQL: `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql` (47 tablas, 5 usuarios), `05_Backend_Grupo00.sql`, `consultas_demo.sql` y `consultas_verificacion_mysql.sql` corrieron **en MariaDB 10.11** con `ONLY_FULL_GROUP_BY`, sin errores y con los valores esperados (dato del 10/11/2026). **No se ejecutó:** MySQL 8 de Oracle, SQL Server 2005 (solo revisión de lectura: `REVISION_ESTATICA_SQLSERVER.md`) ni nada en Windows.
 
 ## Desvíos
 

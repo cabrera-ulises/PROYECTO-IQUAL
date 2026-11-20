@@ -9,11 +9,11 @@
 | `05_Backend_Grupo00.sql` | 27 procedimientos: 15 de funcionalidades (el 1 es `sp_registrar_log`), 9 de reportes y auditoría, 2 `_tuneado` y el auxiliar `sp_aux_solo_digitos`. Solo MySQL; usa `DELIMITER` |
 | `06_PruebasSQL.xlsx` | Planilla de pruebas (107 casos de los procedimientos), no es un script |
 | `generar_datos.py`, `generar_modelo.py` | Generaron los cuatro archivos 03 y 04. Para volver a correrlos hacen falta `iqual_mysql.sql` e `iqual_sqlserver.sql` (las fuentes de la ronda anterior), que **ya no viajan en el repositorio**; sin ellos no se pueden regenerar |
-| `renombrar_grupo.sh` | Reemplaza `Grupo00` por el número de grupo en nombres de archivo y textos (ver la sección 5) |
+| `renombrar_grupo.sh` | Reemplaza `Grupo00` por el número de grupo en nombres de archivo y textos (ver la sección 4) |
 | `consultas_verificacion_mysql.sql` / `_sqlserver.sql` | Controles con el valor esperado en cada consulta |
 | `consultas_demo.sql` / `consultas_demo_sqlserver.sql` | Las 10 consultas para la defensa |
 
-**Qué se probó de verdad:** en **MariaDB 10.11** se integraron y probaron 03, 04 y 05 (62 usuarios, 27 procedimientos) y los 107 casos de `06_PruebasSQL.xlsx` dieron PASS (CONTEXTO §22; dato que me pasaron, no lo corrí yo). El 19/11/2026 además se cargó 03 y 04 (MySQL) en una copia SQLite con claves foráneas y CHECK activos y se comprobaron las consultas de demo y de verificación: todas devuelven lo que dicen sus comentarios y los 21 controles de integridad dan 0. **Nunca se ejecutó:** MySQL 8 de Oracle, SQL Server 2005 y Windows. De SQL Server solo hay revisión estática (`REVISION_ESTATICA_SQLSERVER.md`).
+**Qué se probó de verdad:** en **MariaDB 10.11** se integraron y probaron 03, 04 y 05 (62 usuarios, 27 procedimientos) y los 107 casos de `06_PruebasSQL.xlsx` dieron PASS (CONTEXTO §22; dato que me pasaron, no lo corrí yo). Los valores esperados de los comentarios de `consultas_demo.sql` y `consultas_verificacion_*.sql` (con los 62 usuarios) se calcularon con una carga de prueba fuera de MySQL el 19/11/2026: **no están confirmados en MariaDB ni en MySQL 8**. `[COMPLETAR: correr las consultas en MariaDB o MySQL y anotar si las cantidades coinciden]` **Nunca se ejecutó:** MySQL 8 de Oracle, SQL Server 2005 y Windows. De SQL Server solo hay revisión estática (`REVISION_ESTATICA_SQLSERVER.md`).
 
 ## 1. MySQL 8 / MariaDB (DBeaver)
 
@@ -41,11 +41,7 @@ Para repetir: volvé a correr 03, después 04 y después 05 (03 borra las tablas
 
 Consola: `sqlcmd -S .\SQLEXPRESS -i 03_ModeloSQL_Grupo00_sqlserver.sql` y lo mismo con el 04 (los `GO` los entiende `sqlcmd`). Si las tildes salen mal, abrí el archivo en SSMS y guardalo como Unicode. 🔶
 
-## 3. SQLite
-
-No hay versión nueva: `iqual_sqlite.sql` conserva el juego chico de datos de siempre (las cuentas `alumno1`, `alumno2`, `profe1`, `preceptor1` y `maestranza1`) y la app la usa como respaldo. Los datos ampliados (62 usuarios) son solo para MySQL y SQL Server.
-
-## 4. Qué esperar
+## 3. Qué esperar
 
 | Qué | Consulta | Esperado |
 |---|---|---|
@@ -60,13 +56,13 @@ No hay versión nueva: `iqual_sqlite.sql` conserva el juego chico de datos de si
 | Solape de reservas | 1A y 1B | 1A: **1 fila**; 1B: **0 filas** (cargar y consultar el mismo día) |
 | Auditoría | 8A–8E y 9 | **0 filas** hasta correr los procedimientos de 05 o usar la app: `log_auditoria` queda vacía a propósito |
 
-Los valores esperados se comprobaron en una copia SQLite con los mismos datos (19/11/2026) y en MariaDB 10.11 para 03, 04 y 05; en MySQL 8 de Oracle y en SQL Server son los que **deberían** dar.
+Los valores esperados de los comentarios se calcularon con una carga de prueba fuera de MySQL (19/11/2026); en MariaDB 10.11 se probaron 03, 04 y 05; en MySQL 8 de Oracle y en SQL Server son los que **deberían** dar.
 
 **Usuarios y claves:** las cuentas de demostración originales (`alumno1`, `alumno2`, `profe1`, `preceptor1`, `maestranza1`) conservan sus datos. Los 57 usuarios nuevos tienen nombres, DNI, correos y teléfonos ficticios y la misma clave de demostración.
 
 Si algo falla: copiá el mensaje completo (número y texto) y la línea que marca el programa.
 
-## 5. Cambiar `Grupo00` por el número de grupo
+## 4. Cambiar `Grupo00` por el número de grupo
 
 El número de grupo ya se le consultó a Linares; mientras no lo informe, los archivos siguen con `Grupo00`. Cuando lo sepas, en Git Bash y parado en la carpeta del paquete (donde está `renombrar_grupo.sh`):
 
@@ -90,4 +86,4 @@ La primera línea solo muestra qué cambiaría; la segunda lo hace y deja `Grupo
 
 - [COMPLETAR: versión de MySQL 8 y de SQL Server con los que se prueba]
 - [COMPLETAR: resultado de correr 03 y 04 en cada motor (ok o mensaje de error)]
-- [COMPLETAR: número de grupo que informe Linares (sección 5)]
+- [COMPLETAR: número de grupo que informe Linares (sección 4)]

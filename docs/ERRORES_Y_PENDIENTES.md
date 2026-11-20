@@ -36,5 +36,4 @@ Todos de gravedad baja; ninguno de gravedad alta. El detalle y el estado de cada
 
 ## 5. Límites conocidos
 - No probado: MySQL 8, SQL Server, Windows, rendimiento con muchos datos (RNF03) y redimensionado de la ventana.
-- Los datos de SQLite (respaldo de la app) son un juego chico de 5 usuarios; MySQL trae 62.
 - El tuneado de ventas no es más rápido con los datos actuales (28 ventas); está documentado en `db/TUNING_REPORTES.md`.

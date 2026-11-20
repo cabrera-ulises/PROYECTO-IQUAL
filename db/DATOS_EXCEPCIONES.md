@@ -1,6 +1,6 @@
 # DATOS_EXCEPCIONES.md — tablas con menos de 20 filas en `04_DatosSQL`
 
-Regla de la consigna (CONTEXTO_IQUAL §21): toda tabla que admita 20 o más filas plausibles las tiene. Las 47 tablas quedan así: **22 tablas con 20 filas o más**, **24 catálogos cerrados con menos de 20** y **`log_auditoria` vacía a propósito**. Las cantidades salen de la consulta 17 de `consultas_verificacion_*.sql` (se midieron en una copia SQLite con los mismos datos; en MySQL y SQL Server hay que confirmarlas).
+Regla de la consigna (CONTEXTO_IQUAL §21): toda tabla que admita 20 o más filas plausibles las tiene. Las 47 tablas quedan así: **22 tablas con 20 filas o más**, **24 catálogos cerrados con menos de 20** y **`log_auditoria` vacía a propósito**. Las cantidades salen de la consulta 17 de `consultas_verificacion_*.sql` (se midieron con una carga de prueba de los mismos datos fuera de MySQL y SQL Server; en MySQL y SQL Server hay que confirmarlas).
 
 ## 1. Catálogos cerrados (24 tablas)
 
@@ -49,7 +49,7 @@ usuario 62, curso 24, materia 21, horario_escolar 137, horario_dia 229, sector 2
 
 - Pedido: tabla con motivo por cada tabla de menos de 20 filas. Agregué la columna «Se podría llegar a 20» para que se vea qué se descartó y por qué; si no hace falta, se borra.
 - Los motivos de `carro` y `software` suponen datos de la escuela que no pude verificar.
-- Los conteos no se vieron en MySQL ni en SQL Server, solo en SQLite.
+- Los conteos no se vieron en MySQL ni en SQL Server: salen de la carga de prueba del 19/11/2026.
 
 ## Datos que faltan
 

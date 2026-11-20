@@ -1,9 +1,9 @@
 # Revisión de código — Tienda de alumnos y Educación Física (Arce Thiago y Cabrera Ulises)
 
 **Proyecto:** PROYECTO IQUAL® · SGE
-**Versión revisada:** app v3 (`iqual_integrado_v3`, CONTEXTO §20, 13/11/2026). La versión anterior de este documento (app de la etapa de cierre) tenía 2 hallazgos; **en la v3 los dos están corregidos**.
+**Versión revisada:** app v3 (`iqual_integrado_v3`, CONTEXTO §20 y §23, 19/11/2026): `abrirBase` llama a `abrirMySql` y no hay otro motor. La versión anterior de este documento (app de la etapa de cierre) tenía 2 hallazgos; **en la v3 los dos están corregidos**.
 **Alcance:** las funciones de Tienda y Educación Física de `mainwindow.cpp` (37 funciones, listadas abajo) y `ventanaproducto.cpp/.h`. **No se tocó el código:** lo que sale se describe y lo corrige Arce Thiago y Cabrera Ulises.
-**Criterio:** CONTEXTO §2 y §3 (nivel de las guías: sin lambdas, `struct`, plantillas, ternarios, `auto`, `std::`, `continue`, `qMax`/`qMin`, `findData`; `.arg` de a un parámetro; cero comentarios; consultas con `prepare()` y `bindValue()`), más el requisito de §16 y §19.1: ningún SQL específico de SQLite.
+**Criterio:** CONTEXTO §2 y §3 (nivel de las guías: sin lambdas, `struct`, plantillas, ternarios, `auto`, `std::`, `continue`, `qMax`/`qMin`, `findData`; `.arg` de a un parámetro; cero comentarios; consultas con `prepare()` y `bindValue()`), más el requisito de §23: el SQL es el de MySQL (ninguna función propia de otro motor).
 **Método:** un script que recorre cada función por rango de líneas y busca patrones con expresiones regulares (resultado pegado más abajo) y una lectura de cada función. La búsqueda automática no reemplaza la lectura: encuentra los patrones que se le piden, no otros problemas.
 
 ## 1. Funciones revisadas
@@ -39,18 +39,18 @@ Aviso: la lectura función por función la hice solo sobre las 37 funciones de T
 - En `cargarBuffet` la búsqueda por texto usa `LIKE` con `%` + texto + `%` sin escapar (ver E-05 en `ERRORES_TIENDA_EDFISICA.md`).
 - `miniaturaProducto` relee la foto en cada recarga (ver E-04).
 
-## 4. SQL portable a MySQL (¿algo propio de SQLite?)
-Busqué en las 37 funciones y, en la v3, en todo `mainwindow.cpp`, dentro de las cadenas SQL: `date('now')`, `datetime('now')`, `strftime`, `last_insert_rowid`, `INSERT OR IGNORE/REPLACE`, `PRAGMA`, `GLOB` y el operador `||` de concatenación. **No encontré ninguno.** (En toda la app solo aparece `PRAGMA foreign_keys = ON`, y está dentro de `abrirSqlite`, que es la rama de SQLite: es correcto.) Lo que sí usan, y existe igual en MySQL: `COALESCE`, `COUNT`, `MIN`, subconsultas en el `SELECT`, `JOIN`/`LEFT JOIN`, `LIKE`, `ORDER BY`, `DISTINCT`.
-- Fechas: se pasan con `valorAhora()` y `valorFecha()` desde C++ (no se calculan en el SQL). En la v3, el resumen del Inicio también pasa «hoy» como parámetro (`:hoy`, `valorUnicoHoy`).
-- Id nuevo: se usa `ultimoId(q)`, que pide `LAST_INSERT_ID()` cuando el driver es ODBC.
+## 4. SQL de MySQL (¿algo que no sea de MySQL?)
+Busqué en las 37 funciones y en todo `mainwindow.cpp`, dentro de las cadenas SQL: `date('now')`, `datetime('now')`, `strftime`, `last_insert_rowid`, `INSERT OR IGNORE/REPLACE`, `PRAGMA`, `GLOB` y el operador `||` de concatenación. **No encontré ninguno.** La conexión la abre `abrirBase` → `abrirMySql` (`QMYSQL` o, en Windows, `QODBC`). Lo que sí usan, y existe igual en MySQL: `COALESCE`, `COUNT`, `MIN`, subconsultas en el `SELECT`, `JOIN`/`LEFT JOIN`, `LIKE`, `ORDER BY`, `DISTINCT`.
+- Fechas: se pasan con `valorAhora()` y `valorFecha()` desde C++ (no se calculan en el SQL); las dos devuelven siempre `QDateTime` o `QDate` (dentro de un `QVariant`). En la v3, el resumen del Inicio también pasa «hoy» como parámetro (`:hoy`, `valorUnicoHoy`).
+- Id nuevo: se usa `ultimoId(q)`, que pide `LAST_INSERT_ID()` cuando el driver es ODBC y `lastInsertId()` con `QMYSQL`.
 - `ONLY_FULL_GROUP_BY`: mis funciones no usan `GROUP BY`; no aplica. (La validación de las 131 consultas con `ONLY_FULL_GROUP_BY` está en CONTEXTO §19.1, hecha por Arce Thiago y Cabrera Ulises; yo no la ejecuté.)
-- Diferencia a tener en cuenta: `LIKE` en MySQL no distingue mayúsculas ni tildes (collation `utf8mb4_0900_ai_ci`); en SQLite solo ignora mayúsculas ASCII. Afecta la búsqueda de la Tienda, no la rompe.
+- A tener en cuenta: `LIKE` en MySQL no distingue mayúsculas ni tildes (collation `utf8mb4_0900_ai_ci`). Afecta la búsqueda de la Tienda, no la rompe.
 - Lo que **no puedo confirmar**: que las consultas corran en MySQL 8 de Oracle ni en Windows (§19.1 dice que no se probó); no ejecuté nada.
 
 ## Desvíos
 - El pedido decía «pasada de nivel de código sobre tus funciones»: la hice con un script y lectura, no con un compilador ni con una herramienta de análisis estático.
 - En la v3 amplié la búsqueda a todo el código (por texto); la lectura sigue siendo solo de mis funciones.
-- No compilé la v3: en mi entorno no está Qt. Que compile lo confirma Arce Thiago y Cabrera Ulises (CONTEXTO §20 informa harness3 y harness4 con 0 fallas).
+- No compilé la v3: en mi entorno no está Qt. Que compile lo confirma Arce Thiago y Cabrera Ulises. Las pruebas de la app son los casos por pantalla con MySQL (CONTEXTO §23): lo que vale son los casos por pantalla con MySQL.
 
 ## Datos que faltan
 - Ninguno para este documento.

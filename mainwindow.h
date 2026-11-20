@@ -155,7 +155,6 @@ private:
 
     bool abrirBase();
     bool abrirMySql(QSettings &cfg, QString &error);
-    bool abrirSqlite();
     int ultimoId(QSqlQuery &q);
     QString valorUnicoHoy(const QString &sql, int id);
     QVariant valorAhora();

@@ -16,7 +16,7 @@ Este sistema integrado surge para dar solución a la desorganización operativa 
 
 ## 2. Desarrollo del 4° Bimestre (Implementación y Código)
 En esta etapa, el proyecto avanza en la programación e implementación técnica del software en dupla de desarrollo:
-* **Modelo relacional:** esquema de base de datos en 3FN con integridad referencial, de **47 tablas**. La aplicación **se conecta a MySQL** (base `iqual`); si el servidor, el driver o la base fallan, avisa el motivo y sigue con una base local SQLite (`iqual.db`). El modelo también se entrega como script para **SQL Server 2005** y **SQLite**, y hay 5 procedimientos almacenados de ejemplo para MySQL. El motor final está **a confirmar con el profesor de Bases de Datos**. `[COMPLETAR: respuesta del profesor Linares]`
+* **Modelo relacional:** esquema de base de datos en 3FN con integridad referencial, de **47 tablas**. La aplicación **se conecta a MySQL** (base `iqual`); si el servidor, el driver o la base fallan, avisa el motivo y no abre. El modelo también se entrega como script para **SQL Server 2005**, y hay 27 procedimientos almacenados para MySQL (`db/05_Backend_Grupo00.sql`).
 * **Interfaz y lógica de negocio:** aplicación de **escritorio** con una barra lateral de navegación, una barra superior (título de la página, usuario con su rol y botón de tema) y **dos temas**, claro y oscuro, que se recuerdan entre sesiones. Parte de las especificaciones y maquetados de la Carpeta V1 y los ajusta en el 4° Bimestre (ver [cambios respecto al diseño inicial](./docs/cambios-respecto-al-diseno-inicial.md)).
 
 ### 🧰 Tecnología
@@ -25,7 +25,7 @@ En esta etapa, el proyecto avanza en la programación e implementación técnica
 | Lenguaje y framework | C++17 · Qt 6 (Qt Widgets y Qt Sql) · Qt Creator · CMake |
 | Kit de compilación | Desktop Qt 6.12.0 MinGW 64-bit (Windows) |
 | Target CMake | `PROYECTO_IQUAL` |
-| Base de datos | MySQL (por defecto `localhost:3306`, base `iqual`). Los datos de conexión viven en `iqual.ini`, que la app crea sola junto al ejecutable. Driver `QMYSQL` o, si Qt no lo tiene, ODBC. Respaldo: SQLite local (`iqual.db`, se crea sola con un script embebido en `recursos.qrc`) |
+| Base de datos | MySQL (por defecto `localhost:3306`, base `iqual`). Los datos de conexión viven en `iqual.ini`, que la app crea sola junto al ejecutable. Driver `QMYSQL` o, si Qt no lo tiene, ODBC.|
 | Seguridad y auditoría | Contraseñas con hash SHA-256, consultas SQL preparadas (`bindValue`) y registro de auditoría en la base (`log_auditoria`, 14 tipos de evento, con resultado Exitoso o Fallido) |
 | Estructura de la interfaz | Una ventana con un `QStackedWidget` de 10 páginas: Landing, Acceso, Dashboard y una por módulo, más Mi Cuenta |
 
@@ -65,7 +65,7 @@ Para registrar cuentas de Profesor, Preceptor o Maestranza la app pide un PIN in
 ### 4.1 Compilar en Windows (Qt 6 con MinGW)
 1. **Instalar Qt** con Qt Creator y el kit **Desktop Qt 6.x MinGW 64-bit** (en el instalador, marcar los componentes *Qt 6 → MinGW 64-bit* y *Qt Creator*; se usó la versión 6.12.0). La app necesita los módulos **Widgets** y **Sql**.
 2. **Abrir el proyecto:** en Qt Creator, *Archivo → Abrir archivo o proyecto* y elegir el `CMakeLists.txt` de la raíz del repositorio. Elegir el kit MinGW y *Configurar proyecto*.
-3. **Compilar y ejecutar** el target `PROYECTO_IQUAL` (botón verde de Qt Creator). Las imágenes, los íconos, los dos temas y el script de respaldo SQLite van **dentro del ejecutable** (`recursos.qrc`): no hay que copiar nada al lado del `.exe`.
+3. **Compilar y ejecutar** el target `PROYECTO_IQUAL` (botón verde de Qt Creator). Las imágenes, los íconos, los dos temas van **dentro del ejecutable** (`recursos.qrc`): no hay que copiar nada al lado del `.exe`.
 4. Si CMake falla, revisá que abriste el `CMakeLists.txt` de la raíz y que el kit sea MinGW 64-bit con Widgets y Sql instalados.
 
 ### 4.2 Base de datos (MySQL)
@@ -73,7 +73,6 @@ Para registrar cuentas de Profesor, Preceptor o Maestranza la app pide un PIN in
 2. **Conexión (`iqual.ini`).** La primera vez que se abre, la app crea `iqual.ini` junto al ejecutable, con una sección `[base]`:
    | Clave | Valor por defecto | Para qué |
    | :--- | :--- | :--- |
-   | `motor` | `mysql` | `mysql` o `sqlite` (con `sqlite` usa siempre la base local) |
    | `driver` | `auto` | `auto` (usa `QMYSQL` si Qt lo tiene; si no, ODBC), `qmysql` u `odbc` |
    | `odbc_driver` | (vacío) | Nombre del driver ODBC de MySQL, si hay más de uno |
    | `host` | `localhost` | Servidor |
@@ -81,14 +80,13 @@ Para registrar cuentas de Profesor, Preceptor o Maestranza la app pide un PIN in
    | `usuario` | `root` | Usuario |
    | `clave` | `12341234` | Contraseña (la de la clase de Bases de Datos) |
    | `nombre` | `iqual` | Nombre de la base |
-   La variable de entorno `IQUAL_MOTOR=sqlite` fuerza SQLite (la usan las pruebas automáticas).
 3. **Driver en Windows.** El Qt de MinGW no trae `QMYSQL` pero sí `QODBC`: el camino recomendado es instalar *MySQL Connector/ODBC* (no hay que compilar nada); el alternativo es compilar el plugin `QMYSQL`. Detalles en [`db/guias/GUIA_CONEXION_APP_MYSQL.md`](./db/guias/GUIA_CONEXION_APP_MYSQL.md).
-4. **Respaldo automático.** Si MySQL falla (servidor apagado, clave incorrecta, base vacía o sin driver), la app **avisa el motivo y sigue con `iqual.db` (SQLite)**. Si el conector ODBC no compara bien los textos, también vuelve a SQLite con aviso.
-5. **Qué motor está usando:** lo dice el título de la ventana ("· MySQL", "· MySQL (ODBC)" o sin sufijo si trabaja con SQLite).
-6. **Plan de emergencia para una demostración:** poner `motor=sqlite` en `iqual.ini` y mostrar MySQL aparte desde DBeaver (las dos bases tienen las mismas 47 tablas; MySQL trae 62 usuarios y SQLite un juego chico de 5).
+4. **Si MySQL falla** (servidor apagado, clave incorrecta, base vacía o sin driver), la app **avisa el motivo** y no abre: hay que revisar `iqual.ini`, que el servidor esté encendido y que `03`, `04` y `05` estén cargados. Si el conector ODBC no compara bien los textos, también avisa.
+5. **Qué motor está usando:** lo dice el título de la ventana ("· MySQL", "· MySQL (ODBC)").
+6. **Plan de emergencia para una demostración:** tener la base cargada y probada en la PC de la demo con anticipación; como alternativa, mostrar los scripts y las consultas desde DBeaver.
 
 ### 4.3 Qué se probó y qué no
-* **Probado** (Linux, Qt 6.4, MariaDB 10.11): las pruebas automáticas internas de la v3 pasan con **0 fallas** con `QMYSQL` y con SQLite; las 131 consultas del código se validaron con `ONLY_FULL_GROUP_BY`; el script de 47 tablas, los 27 procedimientos (107 casos de prueba de SP en `db/06_PruebasSQL.xlsx`, todos PASS), las 10 consultas de la defensa y las 28 de verificación corren sin errores.
+* **Probado** (Linux, Qt 6.4, MariaDB 10.11): las pruebas automáticas internas de la v3 pasan con **0 fallas** con `QMYSQL`; las 131 consultas del código se validaron con `ONLY_FULL_GROUP_BY`; el script de 47 tablas, los 27 procedimientos (107 casos de prueba de SP en `db/06_PruebasSQL.xlsx`, todos PASS), las 10 consultas de la defensa y las 28 de verificación corren sin errores.
 * **No probado:** MySQL 8 de Oracle, SQL Server 2005 y Windows (compilación y los dos caminos de driver). `[COMPLETAR: resultado de probarlo en la PC del equipo]`
 * Los casos de prueba por pantalla están escritos pero **sin ejecutar**: la columna Resultado la completa el equipo. `[COMPLETAR: resultados de los casos de prueba]`
 
@@ -100,7 +98,7 @@ Para registrar cuentas de Profesor, Preceptor o Maestranza la app pide un PIN in
 ├── README.md        Este archivo
 ├── CMakeLists.txt   Proyecto CMake (target PROYECTO_IQUAL)
 ├── *.cpp, *.h, *.ui Código de la aplicación Qt: main, mainwindow, ventanainicio, ventanadetalle, ventanaproducto
-├── recursos.qrc     Imágenes, íconos, temas (claro.qss y oscuro.qss) y script de respaldo iqual_sqlite.sql
+├── recursos.qrc     Imágenes, íconos, temas (claro.qss y oscuro.qss)
 ├── recursos/        Los archivos que referencia recursos.qrc (imagenes/, iconos/, tema/)
 ├── docs/            Documentación del proyecto
 │   ├── pruebas/           Casos de prueba, errores y revisión de código por módulo
@@ -108,7 +106,7 @@ Para registrar cuentas de Profesor, Preceptor o Maestranza la app pide un PIN in
 └── db/              Scripts SQL, consultas, justificación de 3FN, diagramas y guías (db/guias/)
 ```
 Contenido de `/db`:
-* **Scripts (orden de carga 03, 04, 05):** `03_ModeloSQL_Grupo00.sql` (47 tablas), `04_DatosSQL_Grupo00.sql` (datos), `05_Backend_Grupo00.sql` (procedimientos almacenados: 15 funcionalidades, 8 reportes, 1 auditoría y 2 tuneados) y `06_PruebasSQL.xlsx` (107 casos de prueba). Versión SQL Server 2005 con schemas: `*_sqlserver.sql`. `iqual_sqlite.sql` es el respaldo que la app embebe.
+* **Scripts (orden de carga 03, 04, 05):** `03_ModeloSQL_Grupo00.sql` (47 tablas), `04_DatosSQL_Grupo00.sql` (datos), `05_Backend_Grupo00.sql` (procedimientos almacenados: 15 funcionalidades, 8 reportes, 1 auditoría y 2 tuneados) y `06_PruebasSQL.xlsx` (107 casos de prueba). Versión SQL Server 2005 con schemas: `*_sqlserver.sql`.
 * **Consultas:** `consultas_verificacion_mysql.sql` (y su versión para SQL Server) y `consultas_demo.sql` (consultas para mostrar en la defensa).
 * **Documentos:** `justificacion_3FN.md` y las guías en `db/guias/` (`GUIA_INSTALACION_MYSQL.md`, `GUIA_CONEXION_APP_MYSQL.md`, `REVISION_ESTATICA_MYSQL.md`).
 * **Diagramas:** los dos XML de draw.io y sus PNG (sección 6).
@@ -152,12 +150,11 @@ La documentación técnica de análisis, diagnóstico y maquetado del **3er Bime
 
 Informe general: [`INFORME_PRUEBAS.md`](./docs/INFORME_PRUEBAS.md) y [`CASOS_PRUEBA_CONSOLIDADO.md`](./docs/CASOS_PRUEBA_CONSOLIDADO.md). Revisión de código: archivos `REVISION_CODIGO_*` en `docs/pruebas`. Manual técnico: [`MANUAL_TECNICO.md`](./docs/MANUAL_TECNICO.md).
 
-> Los documentos de requerimientos, historias, matriz y cambios todavía se están poniendo al día con el motor MySQL: si alguno dice que la app usa solo SQLite, vale lo que dice este README.
 
 ---
 
 ## 8. Limitaciones Conocidas
-* **Motor:** MySQL está probado en MariaDB 10.11 sobre Linux; falta probar MySQL 8 de Oracle y SQL Server 2005, y el camino de Windows (driver ODBC o `QMYSQL`). Si la conexión falla, la app trabaja con SQLite en un solo puesto (sin multiusuario en red). El motor final está a confirmar con el profesor de Bases de Datos.
+* **Motor:** MySQL está probado en MariaDB 10.11 sobre Linux; falta probar MySQL 8 de Oracle y SQL Server 2005, y el camino de Windows (driver ODBC o `QMYSQL`). Si la conexión falla, la app avisa y no abre. El motor final está a confirmar con el profesor de Bases de Datos.
 * Sin pagos reales: las reservas y donaciones de la tienda se coordinan en persona.
 * El cruce de horarios de Educación Física solo funciona para los cursos con horario cargado.
 * Sin notificaciones: para saber si una reserva fue aprobada o si un reporte se resolvió hay que entrar a la pantalla.
@@ -172,4 +169,4 @@ Informe general: [`INFORME_PRUEBAS.md`](./docs/INFORME_PRUEBAS.md) y [`CASOS_PRU
 > **Nota de Créditos (3er Bimestre):** La fase de diagnóstico, investigación, MML, requerimientos y maquetados de la Carpeta V1 fue realizada durante el 3er Bimestre por el equipo original: Arce Thiago, Cabrera Ulises, Denuble Franco y González Manuel.
 
 ## Actualización v7: base de datos de la consigna de BBDD
-Los scripts están en `db/`: `03_ModeloSQL_Grupo00.sql` (47 tablas), `04_DatosSQL_Grupo00.sql` (62 usuarios y datos de las demás tablas), `05_Backend_Grupo00.sql` (procedimientos almacenados) y `06_PruebasSQL.xlsx` (107 casos con resultado real). Orden de carga: 03, 04, 05, con Alt+X en DBeaver. Hay versión para SQL Server (`*_sqlserver.sql`, con schemas). El número de grupo `Grupo00` es provisorio hasta confirmarlo con el profesor. Si en algún documento aparece "5 usuarios", es el dato de ejemplo anterior: ahora son 62 en MySQL (SQLite conserva el juego chico).
+Los scripts están en `db/`: `03_ModeloSQL_Grupo00.sql` (47 tablas), `04_DatosSQL_Grupo00.sql` (62 usuarios y datos de las demás tablas), `05_Backend_Grupo00.sql` (procedimientos almacenados) y `06_PruebasSQL.xlsx` (107 casos con resultado real). Orden de carga: 03, 04, 05, con Alt+X en DBeaver. Hay versión para SQL Server (`*_sqlserver.sql`, con schemas). El número de grupo `Grupo00` es provisorio hasta confirmarlo con el profesor. Si en algún documento aparece "5 usuarios", es el dato de ejemplo anterior: ahora son 62.

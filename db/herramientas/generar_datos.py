@@ -20,7 +20,6 @@ Que hace
 Uso (en la carpeta donde estan los scripts):
     python generar_datos.py
     python generar_datos.py --mysql iqual_mysql.sql --sqlserver iqual_sqlserver.sql --salida .
-    python generar_datos.py --sqlite iqual_sqlite.sql      (ademas arma 04_DatosSQL_prueba_sqlite.sql para probar sin servidor)
     python generar_datos.py --resumen                      (muestra cuantas filas nuevas pone en cada tabla)
 
 Los nombres del grupo se cambian con --grupo (por defecto Grupo00).
@@ -84,7 +83,7 @@ class Dialecto(object):
             return "DATE_ADD(CURDATE(), INTERVAL %d DAY)" % n
         if self.nombre == "sqlserver":
             return "DATEADD(day, %d, DATEADD(day, DATEDIFF(day, 0, GETDATE()), 0))" % n
-        return "date('now', '%+d day')" % n
+        raise ValueError("dialecto desconocido: " + self.nombre)
 
     def insertar(self, tabla, columnas, valores):
         return "INSERT INTO %s (%s) VALUES (%s);" % (self.t(tabla), ", ".join(columnas), ", ".join(valores))
@@ -354,7 +353,7 @@ PRODUCTOS = [
 ]
 CARROS_NUEVOS = ["C1", "C2", "C3"]
 SOFTWARE_CARRO = {"C1": ["Qt Creator", "Visual Studio Code", "Microsoft Office"],
-                  "C2": ["Microsoft Office", "SQL Server 2005", "DB Browser for SQLite"],
+                  "C2": ["Microsoft Office", "SQL Server 2005", "DBeaver"],
                   "C3": ["AutoCAD", "Visual Studio Code", "Microsoft Office"]}
 
 
@@ -875,14 +874,6 @@ def armar_sqlserver(texto_ss, m, grupo):
     return "\n".join(L) + "\n"
 
 
-def armar_sqlite(texto_sqlite, m):
-    d = Dialecto("sqlite")
-    L = ["-- datos de prueba para SQLite (no es un entregable)"]
-    L.extend(sentencias_existentes(texto_sqlite))
-    L.extend(emitir_nuevas(d, m))
-    return "\n".join(L) + "\n"
-
-
 def escribir(ruta, texto):
     os.makedirs(os.path.dirname(os.path.abspath(ruta)), exist_ok=True)
     with open(ruta, "w", encoding="utf-8", newline="\n") as f:
@@ -894,7 +885,6 @@ def main():
     ap = argparse.ArgumentParser(description="Genera los scripts 04_DatosSQL de IQUAL.")
     ap.add_argument("--mysql", default="iqual_mysql.sql")
     ap.add_argument("--sqlserver", default="iqual_sqlserver.sql")
-    ap.add_argument("--sqlite", default=None, help="arma ademas un archivo de prueba para SQLite")
     ap.add_argument("--salida", default=".")
     ap.add_argument("--grupo", default="Grupo00")
     ap.add_argument("--resumen", action="store_true")
@@ -915,8 +905,6 @@ def main():
             print("  %-24s %4d" % (t, n))
     escribir(os.path.join(a.salida, "04_DatosSQL_%s.sql" % a.grupo), armar_mysql(t_mysql, m, a.grupo))
     escribir(os.path.join(a.salida, "04_DatosSQL_%s_sqlserver.sql" % a.grupo), armar_sqlserver(t_ss, m, a.grupo))
-    if a.sqlite:
-        escribir(os.path.join(a.salida, "04_DatosSQL_prueba_sqlite.sql"), armar_sqlite(leer(a.sqlite), m))
     return 0
 
 

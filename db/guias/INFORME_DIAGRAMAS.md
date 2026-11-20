@@ -51,7 +51,7 @@ Nota: `recaudado` en GRUPO_BUFFET es una elipse punteada (dato derivado, duda D4
 ## Desvíos
 
 - El pedido describía el Chen como un diagrama que no dibuja las 24 tablas de catálogo como entidades. El diagrama vigente (y la regla 7 de `justificacion_3FN.md`) hace otra cosa: solo `anio` y `division` pasan a multivalorados y los otros 22 catálogos son entidades. Verifiqué el diagrama contra esa regla y no lo cambié. Si el profesor pide sacar todos los catálogos, hay que decidirlo y se rehace el Chen (y el script cambia el conjunto `MULTIVALORADAS`).
-- El script lee el SQL de MySQL (`03_ModeloSQL_Grupo00.sql`), no el de SQL Server ni el de SQLite; el 19/11/2026 se comparó además el 03 de SQL Server contra el de MySQL y tienen las mismas 47 tablas, columnas y 57 claves foráneas (ver `REVISION_ESTATICA_SQLSERVER.md`).
+- El script lee el SQL de MySQL (`03_ModeloSQL_Grupo00.sql`), no el de SQL Server; el 19/11/2026 se comparó además el 03 de SQL Server contra el de MySQL y tienen las mismas 47 tablas, columnas y 57 claves foráneas (ver `REVISION_ESTATICA_SQLSERVER.md`).
 - No entregué XML corregidos porque no hubo diferencias.
 
 ## Datos que faltan

@@ -3,7 +3,7 @@
 -- Cada consulta dice cuántas filas tiene que devolver con esos datos.
 -- Solo se usa lo del nivel de la materia (CONTEXTO 11): JOIN, WHERE, GROUP BY con COUNT y SUM, HAVING, subconsultas escalares y EXISTS.
 -- Esta es la versión para SQL Server 2005: las tablas llevan su schema y la consulta 8 usa GETDATE(). La versión para MySQL es consultas_demo.sql.
--- Verificación del 19/11/2026: las 10 se compararon sentencia por sentencia con consultas_demo.sql (solo cambian el schema y la 8) y los resultados esperados salen de una carga de 03 y 04 en una copia SQLite. No se ejecutaron en SQL Server (revisión estática en guias/REVISION_ESTATICA_SQLSERVER.md).
+-- Verificación del 19/11/2026: las 10 se compararon sentencia por sentencia con consultas_demo.sql (solo cambian el schema y la 8) y los resultados esperados salen de una carga de prueba de 03 y 04 hecha fuera de SQL Server. No se ejecutaron en SQL Server (revisión estática en guias/REVISION_ESTATICA_SQLSERVER.md).
 
 -- 1. JOIN simple: cada usuario con su rol.
 --    Esperado: 62 filas (46 Alumno, 9 Profesor, 4 Preceptor, 3 Maestranza).

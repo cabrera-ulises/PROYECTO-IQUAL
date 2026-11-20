@@ -26,26 +26,22 @@ Nadie más puede hacer estos pasos: necesitan tu compu y tus programas. Tildá c
 14. [ ] Corré la versión de SQL Server de la consulta 8 de `consultas_demo.sql` (es la única que cambia entre motores).
 15. [ ] Si el script da error, copiá el **número y el texto completo** del mensaje y la línea.
 
-## D. SQLite (opcional)
+## D. Capturas de evidencia (guardalas con nombre claro, por ejemplo `bbdd-01-mysql-47-tablas.png`)
 
-16. [ ] Cargá `iqual_sqlite.sql` en DB Browser for SQLite y corré `SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';` → 47.
+16. [ ] DBeaver con el árbol de la base `iqual` (las tablas) y el resultado de `COUNT(*) = 47`.
+17. [ ] Resultado de 1A (1 fila) y de 1B (0 filas) en MySQL.
+18. [ ] Resultado del recaudado = 3500 (consulta 2B).
+19. [ ] Resultado de un `CALL` de procedimiento y de uno que dispare el manejador de errores (por ejemplo `CALL sp_rep_prestamos_por_carro('2026-12-31', '2026-01-01');`, rango invertido: tiene que devolver una fila con `estado = ERROR`).
+20. [ ] SSMS con el Object Explorer mostrando las tablas de `iqual` y el resultado de `SELECT COUNT(*) FROM sys.tables` = 47.
+21. [ ] Resultado de 1A y 1B en SQL Server.
+22. [ ] Los dos diagramas abiertos en draw.io (además de los PNG exportados).
+23. [ ] Cada captura tiene que mostrar la hora del sistema o la versión del motor, para que se vea con qué se probó.
 
-## E. Capturas de evidencia (guardalas con nombre claro, por ejemplo `bbdd-01-mysql-47-tablas.png`)
+## E. Después
 
-17. [ ] DBeaver con el árbol de la base `iqual` (las tablas) y el resultado de `COUNT(*) = 47`.
-18. [ ] Resultado de 1A (1 fila) y de 1B (0 filas) en MySQL.
-19. [ ] Resultado del recaudado = 3500 (consulta 2B).
-20. [ ] Resultado de un `CALL` de procedimiento y de uno que dispare el manejador de errores (por ejemplo `CALL sp_rep_prestamos_por_carro('2026-12-31', '2026-01-01');`, rango invertido: tiene que devolver una fila con `estado = ERROR`).
-21. [ ] SSMS con el Object Explorer mostrando las tablas de `iqual` y el resultado de `SELECT COUNT(*) FROM sys.tables` = 47.
-22. [ ] Resultado de 1A y 1B en SQL Server.
-23. [ ] Los dos diagramas abiertos en draw.io (además de los PNG exportados).
-24. [ ] Cada captura tiene que mostrar la hora del sistema o la versión del motor, para que se vea con qué se probó.
-
-## F. Después
-
-25. [ ] Pasale a Arce Thiago y Cabrera Ulises (o al chat que corresponda) los resultados: ok o mensaje de error, con las versiones anotadas en los pasos 5 y 11.
-26. [ ] Si el profesor ya confirmó el motor, avisá cuál (MySQL o SQL Server) para ajustar los documentos.
-27. [ ] Para cargar datos reales del colegio, seguí `COMO_COMPLETAR_DATOS_REALES.md`.
+24. [ ] Pasale a Arce Thiago y Cabrera Ulises (o al chat que corresponda) los resultados: ok o mensaje de error, con las versiones anotadas en los pasos 5 y 11.
+25. [ ] Si el profesor ya confirmó el motor, avisá cuál (MySQL o SQL Server) para ajustar los documentos.
+26. [ ] Para cargar datos reales del colegio, seguí `COMO_COMPLETAR_DATOS_REALES.md`.
 
 ## Desvíos
 
