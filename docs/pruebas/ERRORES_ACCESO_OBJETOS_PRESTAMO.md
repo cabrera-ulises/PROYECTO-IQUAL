@@ -1,6 +1,6 @@
 # Errores encontrados — Inicio, Acceso, Dashboard, Objetos perdidos y Préstamo de equipos
 
-**Versión:** ronda final, actualizada a la **app v3** (`iqual_integrado_v3`, CONTEXTO v3.0, §20). Reemplaza a la versión anterior; **se mantienen los IDs** `ERR-01` a `ERR-23`. Cada estado lo verifiqué leyendo el código de v3 (comparé `mainwindow.cpp` y `mainwindow.h` de v3 contra la versión anterior, línea por línea). **Ronda de cierre (19/11/2026, CONTEXTO v3.2, §22):** revisé los errores que dependen de pocos datos contra `04_DatosSQL_Grupo00.sql` (62 usuarios, cargado en MariaDB 10.11) y `iqual_sqlite.sql`; cambiaron `ERR-12`, `ERR-18` y `ERR-21`, y sumé `ERR-24` y `ERR-25`.
+**Versión:** ronda final, actualizada a la **app v3** (`iqual_integrado_v3`, CONTEXTO v3.0, §20). Reemplaza a la versión anterior; **se mantienen los IDs** `ERR-01` a `ERR-23`. Cada estado lo verifiqué leyendo el código de v3 (comparé `mainwindow.cpp` y `mainwindow.h` de v3 contra la versión anterior, línea por línea). **Ronda de cierre (19/11/2026, CONTEXTO v3.2, §22):** revisé los errores que dependen de pocos datos contra `04_DatosSQL_Grupo00.sql` (62 usuarios, cargado en MariaDB 10.11); cambiaron `ERR-12`, `ERR-18` y `ERR-21`, y sumé `ERR-24` y `ERR-25`. **Ronda sin SQLite (19/11/2026, CONTEXTO v3.3, §23):** la app usa solo MySQL; los errores que dependían de SQLite (`ERR-15` y `ERR-19`) quedan como «No aplica: se sacó SQLite», y saqué los datos de SQLite de `ERR-12`, `ERR-18`, `ERR-21`, `ERR-24` y de la tabla 4b. Los IDs no cambiaron.
 **Alcance:** lectura de `mainwindow.cpp`, `mainwindow.ui`, `ventanadetalle.*`, `ventanainicio.*` y `main.cpp` actuales, y de las funciones compartidas que usan estas pantallas (`aplicarPermisos`, `exigir`, `fallar`, `confirmar`, `cargarResumen`, `cargarTodo`, `cerrarSesion`, `on_stackedWidget_currentChanged`, login y registro). En esta ronda no vinieron capturas nuevas (ver 4b).
 **Qué no hice:** no ejecuté la aplicación ni corregí código. Cada estado sale de leer el código actual y, donde lo aclaro, de las capturas; los pasos de reproducción están para que los verifiques.
 **Gravedad:** alta = pérdida de datos, salto de permisos o fuga seria; media = resultado incorrecto o confuso que el usuario puede notar; baja = detalle, robustez o decisión pendiente. **No encontré errores de gravedad alta.**
@@ -9,6 +9,7 @@
 - **Abierto:** sigue pasando.
 - **Decisión por defecto:** el comportamiento actual es una decisión vigente (CONTEXTO §19.3 y §20); no se arregla salvo que el usuario diga otra cosa.
 - **A verificar:** lo deduzco de leer el código pero depende de algo que no pude comprobar (motor, Windows).
+- **No aplica: se sacó SQLite:** el error solo existía por el motor SQLite, que ya no forma parte del proyecto (CONTEXTO §23). Queda en la lista para no romper la numeración.
 
 ## 1. Resumen
 
@@ -28,11 +29,11 @@
 | ERR-12 | Objetos | `cargarObjetos` | Baja | **Abierto** |
 | ERR-13 | Objetos / Publicar | `on_btnObjPublicar_clicked` | Baja | **Abierto** |
 | ERR-14 | Registro | `on_btnRegistrar_clicked` | Baja | **Abierto** |
-| ERR-15 | Registro | `on_btnRegistrar_clicked`, `existe` | Baja | **Corregido en MySQL**; abierto solo en el modo SQLite |
+| ERR-15 | Registro | `on_btnRegistrar_clicked`, `existe` | Baja | **No aplica: se sacó SQLite** |
 | ERR-16 | Registro / Login | `PIN_PERSONAL`, `hashClave` | Baja | **Abierto** (limitación declarada) |
 | ERR-17 | Detalle | `VentanaDetalle::setObjeto` | Baja | **Abierto** |
 | ERR-18 | Préstamo | `cargarPrestamos` | Baja | **Abierto** |
-| ERR-19 | Dashboard | `cargarResumen` | Baja | **Corregido** |
+| ERR-19 | Dashboard | `cargarResumen` | Baja | **No aplica: se sacó SQLite** |
 | ERR-20 | Objetos / Publicar | `on_btnObjPublicar_clicked` | Baja | **Corregido en v3** |
 | ERR-21 | Préstamo | `cargarPrestamos` | Baja | **No se da** (cerrado: columnas `VARCHAR(5)`) |
 | ERR-22 | Objetos / Consultas | `cargarConsultas` | Baja | **Corregido en v3** |
@@ -106,7 +107,7 @@
 ### ERR-12 — "Objetos para reclamar: N" depende de la búsqueda, pero no lo dice
 - **Estado: Abierto.** `cargarObjetos` sigue sumando solo lo que pasa el filtro.
 - **Pasos:** 1) Escribir `camp` en el buscador.
-- **Qué pasa:** el resumen baja sin aclarar que está filtrado. **Datos: SQLite:** de "Objetos para reclamar: 2" a 1 (queda "Campera azul"). **Datos: MySQL:** de 12 a 2 (quedan "Campera de jean" y "Campera azul").
+- **Qué pasa:** el resumen baja sin aclarar que está filtrado: de "Objetos para reclamar: 12" a 2 (quedan "Campera de jean" y "Campera azul").
 - **Qué debería pasar:** contar siempre el total, o aclarar "(según tu búsqueda)".
 - **Gravedad:** baja.
 
@@ -124,10 +125,9 @@
 - **Gravedad:** baja.
 
 ### ERR-15 — El control de correo repetido distinguía mayúsculas
-- **Estado: Corregido en MySQL; abierto solo en el modo SQLite de respaldo.** `existe("usuario", "email", mail)` compara con `=`. Con MySQL, la collation por defecto (`utf8mb4_0900_ai_ci`, CONTEXTO §19.1) no distingue mayúsculas ni tildes, así que `Ana@correo.com` ya se detecta como repetido. En SQLite la comparación sigue siendo exacta.
-- **Pasos:** 1) Crear `ana@correo.com`. 2) Crear otra cuenta con `Ana@correo.com`.
-- **Qué pasa en SQLite:** se crea. **En MySQL:** el control dice "Ya hay una cuenta con ese correo."
-- **Efecto relacionado:** con MySQL, `Optica` y `Óptica` se tratan como iguales, lo que afecta a quien arme una especialidad nueva al registrarse (decisión E4-05).
+- **Estado: No aplica: se sacó SQLite.** Motivo: la diferencia de mayúsculas solo se daba cuando la app caía a SQLite, que compara texto de forma exacta; con MySQL el control nunca fallaba y esa rama ya no existe.
+- **Cómo es hoy:** `existe("usuario", "email", mail)` compara con `=`. Con MySQL, la collation por defecto (`utf8mb4_0900_ai_ci`, CONTEXTO §19.1) no distingue mayúsculas ni tildes, así que `Ana@correo.com` se detecta como repetido y la app dice "Ya hay una cuenta con ese correo." Lo comprueba `REG-21`.
+- **Efecto relacionado (sigue vigente, es de MySQL):** `Optica` y `Óptica` se tratan como iguales, lo que afecta a quien arme una especialidad nueva al registrarse (decisión E4-05).
 - **Gravedad:** baja.
 
 ### ERR-16 — PIN en el código y hash sin sal
@@ -144,13 +144,13 @@
 
 ### ERR-18 — La lista de préstamos muestra solo 40 y la consulta trae todos
 - **Estado: Abierto.** `cargarPrestamos` mantiene `mostrados < 40` y no usa `LIMIT`.
-- **Con los datos de la base:** MySQL trae 24 préstamos y SQLite 2, así que el límite no se alcanza con los datos demo; para reproducirlo hay que registrar 17 préstamos más en MySQL.
+- **Con los datos de la base:** hay 24 préstamos, así que el límite no se alcanza con los datos demo; para reproducirlo hay que registrar 17 préstamos más.
 - **Qué pasa:** con más de 40 préstamos se ven los 40 primeros (activos primero) y no hay forma de paginar; el buscador por código sí encuentra los viejos. Cada tecla del buscador vuelve a leer todos.
 - **Qué debería pasar:** documentarlo como límite o agregar un `LIMIT` y un aviso.
 - **Gravedad:** baja.
 
-### ERR-19 — El resumen del Profesor usaba una función de SQLite
-- **Estado: Corregido.** `cargarResumen` ya no usa `date('now', 'localtime')`; busqué en todo `mainwindow.cpp` y lo único propio de SQLite que queda está en `abrirSqlite` (`PRAGMA foreign_keys`), que es el camino de respaldo.
+### ERR-19 — El resumen del Profesor usaba una función propia de otro motor
+- **Estado: No aplica: se sacó SQLite.** Motivo: el error era una función de fecha propia de SQLite dentro de una consulta que corre en MySQL; el código ya no tiene ninguna construcción propia de otro motor (se sacó `abrirSqlite`, CONTEXTO §23) y `cargarResumen` pasa la fecha por el parámetro `:hoy` (ver `ERR-02`).
 - **Gravedad:** baja.
 
 ### ERR-20 (nuevo) — Después de publicar, categoría y sector conservaban la elección anterior
@@ -162,7 +162,7 @@
 ### ERR-21 (nuevo, a verificar) — Las horas del préstamo podrían verse con segundos en MySQL
 - **Función:** `cargarPrestamos`: `q.value(6).toString()` y `"Devuelto " + q.value(7).toString()`.
 - **Estado: No se da (cerrado en la ronda de cierre).** Con `SHOW COLUMNS FROM prestamo_ct;` sobre `03_ModeloSQL_Grupo00.sql` cargado en MariaDB 10.11, `hora_prestamo` y `hora_devolucion` son `varchar(5)` y los datos de `04_DatosSQL_Grupo00.sql` están como `14:10`; el driver las devuelve como texto y la lista dice "Retiró 23/10 14:10". Lo de abajo solo aplicaría si alguien cambiara las columnas a `TIME`. Falta ver el texto en pantalla en la compu del usuario.
-- **Qué pasaría (si las dos columnas fueran de tipo `TIME`):** el driver de MySQL las devuelve como hora y su texto es "14:10:00", así que la lista diría "Retiró 23/10 14:10:00" y "Devuelto 15:10:00". En SQLite son texto "14:10" y se ve bien (así están las capturas).
+- **Qué pasaría (si las dos columnas fueran de tipo `TIME`):** el driver de MySQL las devuelve como hora y su texto es "14:10:00", así que la lista diría "Retiró 23/10 14:10:00" y "Devuelto 15:10:00".
 - **Cómo verificarlo:** `SHOW COLUMNS FROM prestamo_ct;` y abrir Préstamo de equipos con MySQL.
 - **Qué debería pasar:** mostrar siempre `HH:mm` (por ejemplo, tomar los primeros 5 caracteres).
 - **Gravedad:** baja.
@@ -176,15 +176,15 @@
 ### ERR-23 (nuevo) — Si falla MySQL al arrancar, el aviso aparece con el splash abierto y el splash puede repetirse
 - **Estado: Decisión por defecto (no tocar).** CONTEXTO §20: "la pantalla de inicio (splash) sigue como está (ERR-23, decisión: no tocar)". Verifiqué que `main.cpp`, `ventanainicio.cpp` y `ventanainicio.h` no cambiaron entre las dos versiones.
 - **Qué hay hoy:** `main` muestra el splash, **construye** `MainWindow` (que abre la base y puede mostrar un aviso modal) y recién después llama a `inicio.exec()`; el `QTimer` del splash es repetitivo (2600 ms).
-- **Qué pasa (según el código):** durante el aviso el temporizador dispara `accept()` y oculta el splash; al volver a `main`, `exec()` lo muestra otra vez unos 2,6 segundos más.
+- **Qué pasa (según el código):** durante el aviso el temporizador dispara `accept()` y oculta el splash; al volver a `main`, `exec()` lo muestra otra vez unos 2,6 segundos más. Además, como la app ya no tiene base local de respaldo, salen **dos avisos seguidos** ("No se pudo usar MySQL: …" y después "No se pudo abrir la base de datos…") y la ventana abre con el contenido deshabilitado (caso `INI-09`).
 - **Cómo verificarlo:** 1) apagar el servidor MySQL; 2) abrir la aplicación; 3) cerrar el aviso "No se pudo usar MySQL…" pasados unos segundos. En Windows puede variar el orden de las ventanas.
 - **Gravedad:** baja.
 
 ### ERR-24 (nuevo, datos de MySQL) — Un objeto "En reclamo" no vuelve a Disponible al rechazar sus reclamos
 - **Estado: Abierto.**
 - **Función:** `resolverReclamo`. Solo cambia el estado del objeto al **aprobar** (lo pasa a Devuelto); al rechazar solo actualiza el reclamo. El procedimiento `sp_resolver_reclamo` de `05_Backend_Grupo00.sql` sí lo hace: si el objeto estaba "En reclamo" y no le quedan reclamos Pendientes, vuelve a Disponible (y CONTEXTO §6 lo describe así).
-- **Por qué recién aparece:** la app nunca marca un objeto como "En reclamo" (reclamar lo deja Disponible, caso `OBJ-04`), y SQLite no trae ninguno. El script de MySQL carga 4 objetos "En reclamo": "Auriculares blancos", "Termo verde", "Pendrive 16 GB" y "Anteojos con marco negro".
-- **Pasos:** 1) Con MySQL, entrar como `preceptor1`. 2) En Reclamos, rechazar el de Martina Vega (Termo verde, el único pendiente de ese objeto). 3) Mirar Objetos.
+- **Por qué se nota:** la app nunca marca un objeto como "En reclamo" (reclamar lo deja Disponible, caso `OBJ-04`); ese estado viene solo de los datos. El script de MySQL carga 4 objetos "En reclamo": "Auriculares blancos", "Termo verde", "Pendrive 16 GB" y "Anteojos con marco negro".
+- **Pasos:** 1) Entrar como `preceptor1`. 2) En Reclamos, rechazar el de Martina Vega (Termo verde, el único pendiente de ese objeto). 3) Mirar Objetos.
 - **Qué pasa (según el código):** "Termo verde" sigue "En reclamo" (en gris) con "(1 reclamo)" y 0 pendientes; solo sale de ahí si se aprueba un reclamo o se archiva.
 - **Qué debería pasar:** volver a Disponible, como hace el procedimiento. Alternativa: que el script cargue esos objetos como Disponible, igual que las Llaves, que también tienen 2 reclamos pendientes.
 - **Gravedad:** media (el objeto queda trabado en un estado que la app no sabe resolver).
@@ -202,9 +202,9 @@
 - **Doble clic en botones.** "Reclamar", "Publicar" y "Registrar préstamo" no generan duplicados: el índice único de `reclamo_objeto` frena el segundo reclamo, y tras publicar o prestar el formulario y la selección se vacían, así que el segundo clic cae en una validación.
 - **Aprobar o rechazar con la lista desactualizada.** `resolverReclamo` vuelve a leer el estado del reclamo antes de actuar ("Ese reclamo ya fue resuelto.") y la aprobación corre en una transacción.
 - **Reconstrucción de listas.** Después de cada acción de Objetos y Préstamo se recargan las listas que cambian, y el Inicio ahora se actualiza al volver (ERR-01).
-- **Consultas SQL.** Todas las de estas pantallas usan `prepare()` y `bindValue()` salvo la fecha de `cargarResumen` (ver ERR-02) y no usan nada específico de SQLite: ni `date('now')`, ni `strftime`, ni `||`, ni `last_insert_rowid()`.
+- **Consultas SQL.** Todas las de estas pantallas usan `prepare()` y `bindValue()` (la fecha de `cargarResumen` va por el parámetro `:hoy`, ver ERR-02) y son SQL estándar que MySQL ejecuta tal cual.
 - **Fechas hacia MySQL.** Reclamar, publicar y publicar consulta mandan `valorFecha(QDate::currentDate())`; prestar y devolver mandan la hora como texto `HH:mm` y las columnas son `VARCHAR(5)`, así que se leen igual (ERR-21). `obtenerCurso` usa `ultimoId()`.
-- **Mayúsculas en el login.** El usuario se compara con `LOWER(usuario_nick)` y la contraseña se compara por su hash, así que "ALUMNO1" entra igual que "alumno1" en SQLite y en MySQL, y la contraseña sigue distinguiendo mayúsculas.
+- **Mayúsculas en el login.** El usuario se compara con `LOWER(usuario_nick)` y la contraseña se compara por su hash, así que "ALUMNO1" entra igual que "alumno1", y la contraseña sigue distinguiendo mayúsculas.
 
 ## 4. Los dos pendientes míos
 
@@ -233,7 +233,7 @@
 | `alumno_c_p2_inicio`, `preceptor_c_p2_inicio` | Los nombres de las tarjetas no coinciden con los de la barra lateral ni con los títulos de página: "Objetos Perdidos" / "Objetos perdidos", "Higiene y Mantenimiento" / "Higiene", "Reserva de Sectores" / "Reserva de sectores" | Microcopy | Sigue |
 | `preceptor_c_p2_inicio` | Con cinco módulos queda un hueco en la grilla (falta la tarjeta de Educación Física) | Visual | Sigue |
 | `alumno_c_p2_inicio` | Saludo "Hola, Alumno": toma la primera palabra del nombre de la cuenta demo ("Alumno Uno"); con datos reales saldrá bien | Microcopy | Sigue (solo demo) |
-| `alumno_c_p3_t0` | (Captura con el juego chico de SQLite; con MySQL hay 21 tarjetas y la barra de desplazamiento es esperable.) Aparece la barra de desplazamiento vertical con una sola fila de tarjetas, y las miniaturas sin foto son cuadrados lisos que parecen cajas vacías: los íconos `sin_foto_*.png` todavía no están en los recursos (los pide Arce Thiago y Cabrera Ulises) | Visual | Sigue |
+| `alumno_c_p3_t0` | (Captura de una ronda anterior, con pocos objetos; con los datos de MySQL hay 21 tarjetas y la barra de desplazamiento es esperable.) Aparece la barra de desplazamiento vertical con una sola fila de tarjetas, y las miniaturas sin foto son cuadrados lisos que parecen cajas vacías: los íconos `sin_foto_*.png` todavía no están en los recursos (los pide Arce Thiago y Cabrera Ulises) | Visual | Sigue |
 | `preceptor_o_p3_t0` | En tema oscuro las miniaturas vacías casi no se distinguen del fondo | Visual | Sigue |
 | `alumno_c_p3_t2`, `preceptor_c_p3_t2` | Las consultas mostraban la fecha como "2026-10-23"; en v3 se ve "23/10" (ERR-22) | Microcopy | **Resuelto en v3** (por código) |
 | `alumno_c_p3_t2`, `preceptor_c_p3_t2` | "Borrar consulta" se ve activo en rojo aunque no haya ninguna consulta elegida; avisa recién al apretarlo | Visual | Decisión por defecto (botones sin selección, §19.3) |
@@ -253,11 +253,13 @@
 - **`ERR-11` sigue Abierto:** en v3 `cerrarSesion` todavía usa `ui->listObjetos->clearSelection()` (línea 617) y `seleccionado()` sigue leyendo `currentRow()` (línea 526; que `clearSelection()` no cambia), así que la tarjeta elegida sobrevive al cambio de usuario. El CONTEXTO §19.2 lo da por corregido; es lo único donde lo contradigo. Probalo con los pasos del archivo.
 - `ERR-10`, `ERR-12`, `ERR-13`, `ERR-14`, `ERR-16`, `ERR-17` y `ERR-18` no cambiaron en v3 (verifiqué cada función).
 - `ERR-21` quedó **cerrado** en la ronda de cierre: las columnas de hora son `VARCHAR(5)` en el script de MySQL.
-- Ronda de cierre: `ERR-12` y `ERR-18` ahora citan los números de MySQL y de SQLite; `ERR-24` y `ERR-25` salen de los objetos "En reclamo" del script de MySQL (leí el código; no ejecuté la app). Ningún otro error dependía de pocos datos (ninguno hablaba de una lista vacía).
+- Ronda de cierre: `ERR-12` y `ERR-18` ahora citan los números de MySQL; `ERR-24` y `ERR-25` salen de los objetos "En reclamo" del script de MySQL (leí el código; no ejecuté la app). Ningún otro error dependía de pocos datos (ninguno hablaba de una lista vacía).
 - Cambios de v3 que cierran errores míos: `ERR-02` (fecha por parámetro), `ERR-03`, `ERR-20` y `ERR-22`. Lo de `ERR-23` es decisión de no tocar.
+- Ronda sin SQLite (19/11/2026): `ERR-15` y `ERR-19` pasan a «No aplica: se sacó SQLite» (no los borré para conservar la numeración); `ERR-12`, `ERR-18`, `ERR-21` y `ERR-24` ya no citan datos de SQLite; en `ERR-23` sumé que ahora salen dos avisos seguidos y la ventana queda deshabilitada (leído del código, no ejecuté la app); en la sección 3 corregí una frase vieja que decía que la fecha de `cargarResumen` iba pegada al SQL (desde la v3 va por parámetro). Ningún error se borró y no sumé ninguno.
 
 ## Datos que faltan
 - Resultado de probar `ERR-11`, `ERR-24` y `ERR-25` en tu equipo (por confirmar en la compu del usuario).
+- Ver en pantalla los dos avisos y la ventana deshabilitada cuando MySQL falla (`ERR-23`, caso `INI-09`).
 - Ver en pantalla que las horas de Préstamo salen como `HH:mm` con MySQL (cierra del todo `ERR-21`).
 - Capturas nuevas con la v3 para confirmar la tabla 4b.
 - Si el usuario cambia alguna decisión de §19.3 o §20 (U04, U11, ERR-08, botones sin selección, splash), actualizar `ERR-04`, `ERR-08`, `ERR-09`, `ERR-23` y la tabla 4b.

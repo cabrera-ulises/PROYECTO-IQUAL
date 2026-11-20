@@ -1,7 +1,7 @@
 # Revisión de nivel de código — funciones de Arce Thiago y Cabrera Ulises
 
-**Versión:** ronda final, sobre la **app v3** (`iqual_integrado_v3`, CONTEXTO v3.0, §20). Reemplaza a la revisión anterior.
-**Archivos revisados:** `mainwindow.cpp`, `mainwindow.h`, `ventanadetalle.cpp`, `ventanainicio.cpp`, `ventanainicio.h` y `main.cpp` de `app_codigo.zip` (v3). Los números de línea son los de ese archivo.
+**Versión:** ronda final, sobre la **app v3** (`iqual_integrado_v3`, CONTEXTO v3.0, §20). **Ronda sin SQLite (19/11/2026, CONTEXTO v3.3, §23):** la volví a pasar sobre el código actual del repositorio (`repo.zip`), donde `abrirSqlite` y el driver de SQLite ya no existen. Reemplaza a la revisión anterior.
+**Archivos revisados:** `mainwindow.cpp`, `mainwindow.h`, `ventanadetalle.cpp`, `ventanainicio.cpp`, `ventanainicio.h` y `main.cpp` del repositorio actual (`repo.zip`). Los números de línea son los de ese `mainwindow.cpp`; cambiaron respecto de la revisión anterior porque se sacó el código de SQLite.
 **Reglas contra las que revisé:** CONTEXTO §2 (cero comentarios, `delete` después de `takeItem`, código simple) y §3 (lo permitido, lo permitido extra que hay que listar y lo prohibido: `struct`, expresiones regulares, lambdas, operador ternario, `QOverload`, referencias devueltas, templates, herencia propia salvo `QDialog`, comentarios), más las reglas comunes de la etapa: sin `auto`, `std::`, `continue`, `qMax` ni `findData`, `.arg` encadenado de a un parámetro y consultas con `prepare()` y `bindValue()`.
 **No toqué el código.**
 
@@ -11,10 +11,10 @@
 
 | # | Función | Qué había | Estado en v3 | Dónde lo verifiqué |
 |---|---|---|---|---|
-| R-01 | `on_btnLoginIngresar_clicked` | Operador ternario en el `registrarLog` | **Corregido** | Líneas 761 a 763: `QString detalle = "Intento fallido con un usuario inexistente";`, un `if (idActual > 0)` y `registrarLog("Inicio de sesión", detalle, ...)` |
+| R-01 | `on_btnLoginIngresar_clicked` | Operador ternario en el `registrarLog` | **Corregido** | Líneas 740 a 742: `QString detalle = "Intento fallido con un usuario inexistente";`, un `if (idActual > 0)` y `registrarLog("Inicio de sesión", detalle, ...)` |
 | R-02 | `cargarPrestamos` | Ternario dentro de `.arg(...)` | **Corregido** | Se arma antes `QString donde = "";` y un `if (soloMios)`, y el SQL usa `.arg(donde)` |
-| R-03 | `cargarConsultas` | `.arg` con cuatro parámetros | **Corregido** | Líneas 1264 y 1265: `.arg(...).arg(...).arg(dia).arg(...)` encadenados |
-| R-04 | `cargarResumen` | La fecha de hoy se pegaba dentro del SQL | **Corregido** | Las consultas usan `:hoy` y la nueva `valorUnicoHoy` (línea 372) lo pasa con `bindValue(":hoy", valorFecha(QDate::currentDate()))`; las tres cifras del Inicio se piden con `valorUnicoHoy` (líneas 3048 a 3050) |
+| R-03 | `cargarConsultas` | `.arg` con cuatro parámetros | **Corregido** | Líneas 1243 y 1244: `.arg(...).arg(...).arg(dia).arg(...)` encadenados |
+| R-04 | `cargarResumen` | La fecha de hoy se pegaba dentro del SQL | **Corregido** | Las consultas usan `:hoy` y la nueva `valorUnicoHoy` (línea 333) lo pasa con `bindValue(":hoy", valorFecha(QDate::currentDate()))`; las tres cifras del Inicio se piden con `valorUnicoHoy` (líneas 3027 a 3029) |
 
 ## 2. Qué miré de verdad y qué no
 
@@ -29,14 +29,14 @@
 
 **No miré:**
 - Los `.ui` ni los `.qss`.
-- Que el código compile o que los resultados sean correctos: no lo ejecuté. CONTEXTO §20 dice que los harness 3 y 4 pasaron con 0 fallas en MariaDB 10.11 y en SQLite; eso no lo puedo confirmar yo.
+- Que el código compile o que los resultados sean correctos: no lo ejecuté. Los harness automáticos de la ronda final ya no existen (CONTEXTO §23): las pruebas de la app son los casos por pantalla de `CASOS_PRUEBA_ACCESO_OBJETOS_PRESTAMO.md` y los 107 casos de los procedimientos.
 - El contenido de las funciones de los otros chats más allá de la búsqueda de patrones.
 
 ## 3. Todo el archivo, no solo mis funciones
 
-CONTEXTO §20 dice que la v3 corrigió las infracciones en todo el archivo. Lo verifiqué con la misma búsqueda de patrones sobre `mainwindow.cpp`, `ventanadetalle.cpp`, `ventanainicio.cpp` y `main.cpp`: **0 hallazgos** de comentarios, ternarios, `continue`, `qMax`, `findData`, `auto`, `std::`, lambdas ni `.arg` con varios parámetros. Las que había en la revisión anterior en funciones de otros (comentarios en `abrirBase`, `ultimoId`, `nombreDriverOdbc`, `abrirMySql`, `valorAhora` y `formatoCorto`; el ternario de `abrirBase`; el `continue` de `abrirSqlite`; el `findData` de `cargarTodo`; el comentario y el ternario de `cargarDiasEdFisica`) ya no están. También desaparecieron el `.arg` con relleno de `codigoRecurso` y los `.arg` de varios parámetros de `abrirMySql`, `idPorNombre` y `existe`.
+CONTEXTO §20 dice que la v3 corrigió las infracciones en todo el archivo. Lo verifiqué con la misma búsqueda de patrones sobre `mainwindow.cpp`, `ventanadetalle.cpp`, `ventanainicio.cpp` y `main.cpp`: **0 hallazgos** (repetida en esta ronda sobre el código actual, también con `mainwindow.h`, `ventanadetalle.h` y `ventanainicio.h`) de comentarios, ternarios, `continue`, `qMax`, `findData`, `auto`, `std::`, lambdas ni `.arg` con varios parámetros. Las que había en la revisión anterior en funciones de otros (comentarios en `abrirBase`, `ultimoId`, `nombreDriverOdbc`, `abrirMySql`, `valorAhora` y `formatoCorto`; el ternario de `abrirBase`; el `findData` de `cargarTodo`; el comentario y el ternario de `cargarDiasEdFisica`) ya no están. `abrirSqlite` ya no existe (CONTEXTO §23): `abrirBase` solo llama a `abrirMySql` y, si falla, avisa el motivo y devuelve `false`; el constructor de `MainWindow` deshabilita el `stackedWidget`. También desaparecieron el `.arg` con relleno de `codigoRecurso` y los `.arg` de varios parámetros de `abrirMySql`, `idPorNombre` y `existe`.
 
-**Una observación (no es una infracción):** `hoy()` quedó definida en `mainwindow.cpp` (línea 481) y declarada en `mainwindow.h`, pero ya no la usa ninguna función (el dashboard pasó a `valorFecha(QDate::currentDate())`). Es código sin uso: se puede borrar o dejar.
+**Una observación (no es una infracción):** `hoy()` quedó definida en `mainwindow.cpp` (línea 460) y declarada en `mainwindow.h`, pero ya no la usa ninguna función (el dashboard pasó a `valorFecha(QDate::currentDate())`). Es código sin uso: se puede borrar o dejar.
 
 ## 4. Extras fuera de la lista permitida de §3 (para el informe final, una línea cada uno)
 
@@ -59,9 +59,9 @@ No son infracciones por sí mismos, pero §3 pide listarlos con una línea de ex
 
 `VentanaInicio` hereda de `QDialog`, que es la herencia permitida; el único método sobrescrito es `mousePressEvent`.
 
-## 5. Consultas: nada específico de SQLite (§16)
+## 5. Consultas: SQL estándar que corre en MySQL (§23)
 
-Revisé de nuevo todas las consultas de mis funciones en la v3. **Ninguna usa nada propio de SQLite:** ni `date('now')`, ni `strftime`, ni `datetime(`, ni `||` dentro de un SQL, ni `last_insert_rowid()`, ni `INSERT OR`, ni `AUTOINCREMENT`, ni `IFNULL`, ni `GLOB`, ni `COLLATE`. Lo único propio de SQLite que aparece en todo el archivo es `PRAGMA foreign_keys` en `abrirSqlite` (línea 204), que es el camino de respaldo y no una consulta mía.
+Revisé de nuevo todas las consultas de mis funciones sobre el código actual. **Todas son SQL estándar que MySQL ejecuta tal cual** y ya no hay ninguna rama ni función por motor: `abrirSqlite` y el driver de SQLite se sacaron en la ronda sin SQLite (CONTEXTO §23). Busqué en todo `mainwindow.cpp`, `mainwindow.h`, `ventanadetalle.*`, `ventanainicio.*` y `main.cpp` `PRAGMA`, `strftime`, `date('now')`, `datetime(`, `INSERT OR`, `AUTOINCREMENT`, `IFNULL`, `GLOB`, `last_insert_rowid`, `QSQLITE` y `IQUAL_MOTOR`: **0 resultados** (la búsqueda de `datetime(` solo encuentra `QDateTime::currentDateTime()` de Qt, que no es SQL).
 
 | Zona | Funciones | Lo que usan | Resultado |
 |---|---|---|---|
@@ -74,13 +74,14 @@ Otras notas:
 - `AND :id > 0` (en `cargarObjetos` y `cargarResumen`, para que `valorUnico` siempre reciba su parámetro) queda como `? > 0`, válido en MySQL y también en SQL Server.
 - `valorUnicoHoy` le pasa siempre `:hoy` aunque la consulta no lo use; Qt ignora un parámetro que no está en el SQL, y CONTEXTO §20 dice que los harness pasaron con 0 fallas.
 - Todos los `LIMIT` de la app están hechos en C++ (por ejemplo `mostrados < 40`), no en el SQL.
-- **Lo que no es sintaxis pero depende del motor:** cómo se lee `hora_prestamo` si la columna es de tipo hora en MySQL (ver `ERR-21` en `ERRORES_ACCESO_OBJETOS_PRESTAMO.md`, a verificar).
+- **Lo que no es sintaxis pero depende de la base:** cómo se lee `hora_prestamo`. Las columnas son `VARCHAR(5)` y se leen como texto `HH:mm` (ver `ERR-21` en `ERRORES_ACCESO_OBJETOS_PRESTAMO.md`: cerrado, falta solo verlo en pantalla).
 
 ## Desvíos
 
 - Esta revisión no incluye `cerrarSesion`, `cargarTodo` ni `aplicarPermisos` como "mías": son compartidas y de Arce Thiago y Cabrera Ulises; solo las leí para verificar errores.
 - El resultado "0 hallazgos" sale de la lectura y de la búsqueda automática; no usé ningún analizador de código.
 - No compilé ni ejecuté nada.
+- Ronda sin SQLite (19/11/2026): en la sección 3 saqué `abrirSqlite` de la lista de funciones corregidas (ya no existe) y actualicé los números de línea de R-01, R-03, R-04 y de `hoy()`; el `.cpp` no lo toqué. Verifiqué las líneas con `grep -n` sobre el `mainwindow.cpp` de `repo.zip`.
 
 ## Datos que faltan
 - Ninguno para esta entrega.

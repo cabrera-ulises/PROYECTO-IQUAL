@@ -130,7 +130,7 @@ Importante: si cambiás de curso en **Mi cuenta** y tu inscripción choca con el
 - Actualizado a la app v3 (CONTEXTO §20): lo único que cambió para este manual es el cambio de curso en Mi cuenta («Ese ya es tu curso.» y el combo que vuelve al curso anterior con «No»). Las capturas que tengo son anteriores a la v3; no muestran ese cambio, y `cuenta_cambio_curso_aviso` sigue sin existir.
 - Las capturas son del tema claro; en `capturas/` están también las del tema oscuro (`_o_`).
 
-- Actualizado el 19/11/2026 a los datos de MySQL (CONTEXTO §22): el ejemplo de la sección 2 pasó de «3 productos» (juego chico de SQLite) a «14 productos»; y la sección 8 aclara que el estado de Educación Física depende de si ya te inscribiste (en MySQL, 37 de los 46 alumnos ya tienen inscripción). El resto del manual no depende de cantidades ni de nombres de ejemplo.
+- Actualizado el 19/11/2026 a los datos de MySQL (CONTEXTO §22): el ejemplo de la sección 2 pasó de «3 productos» (el juego chico de datos que ya no se usa) a «14 productos»; y la sección 8 aclara que el estado de Educación Física depende de si ya te inscribiste (en MySQL, 37 de los 46 alumnos ya tienen inscripción). El resto del manual no depende de cantidades ni de nombres de ejemplo.
 - Las capturas de `capturas/` se sacaron antes de ampliar los datos: las listas de Productos, Grupos y Educación Física ahora son más largas (21 grupos, 22 vendedores). Falta confirmarlo y, si hace falta, volver a sacarlas en la compu.
 
 ## Datos que faltan

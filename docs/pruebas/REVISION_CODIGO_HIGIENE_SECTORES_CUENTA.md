@@ -2,14 +2,16 @@
 
 **Versión de la ronda final (app v3).** Reemplaza a la `REVISION_CODIGO_HIGIENE_SECTORES_CUENTA.md` anterior y mantiene sus IDs (R-01 a R-15), con la columna **Estado** verificada en el código de la v3.
 
+**Ronda sin SQLite (19/11/2026).** SQLite se sacó del proyecto (CONTEXTO §23): en `mainwindow.cpp`, `mainwindow.h`, `main.cpp`, `CMakeLists.txt` y `recursos.qrc` ya no hay `abrirSqlite`, `QSQLITE` ni `IQUAL_MOTOR` (lo comprobé buscando el texto «sqlite» sin distinguir mayúsculas: 0 resultados). Ajusté solo lo que los citaba: la lista de helpers de «Qué miré de verdad», **R-01** y **R-02** (números de línea), **R-03** (queda «No aplica: se sacó SQLite»), **R-13** (cambió su razón de ser) y la tabla de extras de §2 (`QSettings`, `qEnvironmentVariable`, drivers y `#ifdef`). Los números de línea de esas filas son los del `mainwindow.cpp` actual; en las demás filas siguen siendo los de la v3 y quedaron corridos hacia arriba (entre unas 20 y 40 líneas), porque no las releí en esta ronda. Con el código actual solo repetí dos comprobaciones: no hay ningún `//` ni `/*` y no hay ningún `continue`.
+
 **Contra qué se revisó:** las reglas de la profesora (CONTEXTO §2 y §3) y las que se sumaron en `DISENO_IQUAL.md` (sin lambdas, structs, templates, ternarios, `auto`, `std::`, `continue`, `qMax`, `findData`; `.arg` encadenado de a un parámetro; cero comentarios; consultas con `prepare()`/`bindValue()`; `delete` después de `takeItem`).
-**Sobre qué:** `mainwindow.cpp` (3270 líneas, 186 funciones) y `mainwindow.h` de la app v3 (`iqual_integrado_v3`, CONTEXTO §20). Los números de línea son los de ese archivo y pueden correrse si se edita.
+**Sobre qué:** `mainwindow.cpp` (3248 líneas y 185 definiciones de función en el archivo actual; la revisión anterior contaba 186, y la diferencia coincide con `abrirSqlite`) y `mainwindow.h` de la app v3 (`iqual_integrado_v3`, CONTEXTO §20). Los números de línea son los de ese archivo y pueden correrse si se edita.
 **No corregí nada**: cada hallazgo dice qué había, qué hay ahora y qué falta.
 
 ## Qué miré de verdad y qué no
 | Qué hice | Alcance |
 |---|---|
-| **Lectura completa, línea por línea** | Las 23 funciones de Higiene, Sectores y Mi cuenta (tabla del punto 3), los helpers pedidos (`confirmar`, `plural`, `agregarVacio`, `pintarUltimo`, `colorToken`, `elegirPorId`, `alternarVacio`, `abrirBase`, `abrirSqlite`, `abrirMySql`, `nombreDriverOdbc`, `valorFecha`, `valorAhora`, `ultimoId`) y los que cambiaron o se agregaron en la v3 (`valorUnicoHoy`, `cargarResumen`, `codigoRecurso`, `on_btnLoginIngresar_clicked` en el tramo corregido). Además leí el **diff completo entre la v3 y la versión anterior** (78 líneas de `mainwindow.cpp`, una de `mainwindow.ui`, una de `mainwindow.h`) |
+| **Lectura completa, línea por línea** | Las 23 funciones de Higiene, Sectores y Mi cuenta (tabla del punto 3), los helpers pedidos (`confirmar`, `plural`, `agregarVacio`, `pintarUltimo`, `colorToken`, `elegirPorId`, `alternarVacio`, `abrirBase`, `abrirMySql`, `nombreDriverOdbc`, `valorFecha`, `valorAhora`, `ultimoId`) y los que cambiaron o se agregaron en la v3 (`valorUnicoHoy`, `cargarResumen`, `codigoRecurso`, `on_btnLoginIngresar_clicked` en el tramo corregido). Además leí el **diff completo entre la v3 y la versión anterior** (78 líneas de `mainwindow.cpp`, una de `mainwindow.ui`, una de `mainwindow.h`) |
 | **Escaneo automático** | Un script recorre las **186 funciones** buscando comentarios, ternarios, `auto`, `std::`, `continue`, `qMax`/`qMin`, `findData`, lambdas, expresiones regulares, `struct`/`template`, `QOverload`, `takeItem` sin `delete` y `.arg` con más de un parámetro (incluso partido en varias líneas). Resultado en la v3: **0 hallazgos**. También recorrí `mainwindow.h`, `main.cpp`, `ventanainicio.*`, `ventanadetalle.*` y `ventanaproducto.*`: sin comentarios |
 | **No hice** | No compilé ni ejecuté la app; no leí a mano las ~160 funciones de otros módulos; no revisé `.ui`, `.qss`, `CMakeLists.txt` ni `recursos.qrc`. El escaneo busca patrones de texto: puede dejar pasar algo raro (por ejemplo, un ternario escrito en varias líneas) |
 
@@ -21,9 +23,9 @@
 ## 1. Hallazgos contra las reglas
 | ID | Función (línea aprox. en la v3) | Regla | Qué había | Estado y verificación | Dueño |
 |---|---|---|---|---|---|
-| R-01 | `abrirBase` (90), `ultimoId` (118), `nombreDriverOdbc` (128), `abrirMySql` (145), `valorAhora` (469), `formatoCorto`, `cargarDiasEdFisica` | §2.1 y DISENO: cero comentarios | 8 líneas con `//` | **Corregido.** El escaneo no encuentra ninguna línea con `//` ni `/*` en el archivo | Arce Thiago y Cabrera Ulises / Arce Thiago y Cabrera Ulises |
-| R-02 | `abrirBase`, `on_btnLoginIngresar_clicked`, `cargarPrestamos`, `cargarDiasEdFisica` | §3: sin ternarios | 4 ternarios | **Corregido.** Ahora son `if` con una variable: `QString sufijo = " · MySQL"; if (db.driverName() == "QODBC") sufijo = …` (líneas 105–107), `QString detalle = …` en el login (761–763), `QString donde = ""; if (soloMios) donde = …` (2222–2223) y `QString motivo = " (sin clase)"; if (… > 0) motivo = " (choca con tu horario)"` (2682–2683) | Arce Thiago y Cabrera Ulises, 2 y 3 |
-| R-03 | `abrirSqlite` (196) | DISENO: sin `continue` | `if (sentencia.isEmpty()) continue;` | **Corregido.** Ahora es `if (!sentencia.isEmpty() && !q.exec(sentencia)) { … return false; }` (línea 219). Mismo comportamiento: una sentencia vacía no se ejecuta ni falla | Arce Thiago y Cabrera Ulises |
+| R-01 | `abrirBase` (90), `ultimoId` (113), `nombreDriverOdbc` (123), `abrirMySql` (140), `valorAhora` (450), `formatoCorto`, `cargarDiasEdFisica` | §2.1 y DISENO: cero comentarios | 8 líneas con `//` | **Corregido.** El escaneo no encuentra ninguna línea con `//` ni `/*` en el archivo | Arce Thiago y Cabrera Ulises / Arce Thiago y Cabrera Ulises |
+| R-02 | `abrirBase`, `on_btnLoginIngresar_clicked`, `cargarPrestamos`, `cargarDiasEdFisica` | §3: sin ternarios | 4 ternarios | **Corregido.** Ahora son `if` con una variable: `QString sufijo = " · MySQL"; if (db.driverName() == "QODBC") sufijo = …` (líneas 102–103), `QString detalle = …` en el login (740–741), `QString donde = ""; if (soloMios) donde = …` (2201–2202) y `QString motivo = " (sin clase)"; if (… > 0) motivo = " (choca con tu horario)"` (2661–2662) | Arce Thiago y Cabrera Ulises, 2 y 3 |
+| R-03 | `abrirSqlite` | DISENO: sin `continue` | `if (sentencia.isEmpty()) continue;` | **No aplica: se sacó SQLite.** La función `abrirSqlite` ya no existe (CONTEXTO §23), así que no hay nada que corregir; en `mainwindow.cpp` actual no queda ningún `continue` | Arce Thiago y Cabrera Ulises |
 | R-04 | `cargarTodo` | DISENO: sin `findData` | 1 uso | **Corregido.** Usa `elegirPorId(ui->cbPlanillasAlumno, idActual)` (línea 284) | Arce Thiago y Cabrera Ulises |
 | R-05 | `abrirMySql`, `idPorNombre`, `existe`, `cargarConsultas` | DISENO: `.arg` de a un parámetro | 4 `.arg` con varios parámetros | **Corregido.** Todos encadenados (`.arg(a).arg(b).arg(c)`): líneas 162–163, 350, 386 y 1264–1265. El escaneo de `.arg` con coma (multilínea incluido) no encuentra ninguno | Arce Thiago y Cabrera Ulises y 2 |
 | R-06 | `codigoRecurso` | DISENO: `.arg` de a un parámetro | `.arg(numero, 2, 10, QChar('0'))` (formato) | **Corregido.** `QString texto = QString::number(numero); if (texto.size() < 2) texto = "0" + texto;` y después se arma el código por concatenación (líneas ~565–568) | Arce Thiago y Cabrera Ulises |
@@ -34,9 +36,8 @@
 La regla dice: "Permitido extra, solo lo imprescindible, y hay que listarlo en el informe final con una línea de explicación cada uno". Sigue siendo lo mismo que en la revisión anterior (la v3 no agregó clases nuevas); lo que **no** está en la lista de §3 y aparece en el código:
 | Elemento | Dónde (líneas v3) | Para qué | Mío |
 |---|---|---|---|
-| `QSettings` (`iqual.ini`, tema, registro de Windows) | 68, 92, 128–145, 2961 | Guardar el motor y la conexión, y la elección de tema | |
-| `qEnvironmentVariable` | 101 | Forzar SQLite con `IQUAL_MOTOR` (la usan las pruebas) | |
-| Drivers `QMYSQL` y `QODBC` (además de `QSQLITE`) | `abrirMySql` | Conectar con MySQL | |
+| `QSettings` (`iqual.ini`, tema, registro de Windows) | 68, 92, 128–140, 2940 | Guardar la conexión a MySQL y la elección de tema, y buscar el driver ODBC en el registro de Windows | |
+| Drivers `QMYSQL` y `QODBC` | `abrirMySql` | Conectar con MySQL | |
 | `QSqlError` | `abrirMySql` (13 es el `#include`) | Mostrar el motivo cuando falla la conexión | |
 | `QSysInfo::machineHostName()` | 450 (`registrarLog`) | Guardar el equipo en el log de auditoría | |
 | `QDir().mkpath` | 1216, 2048 | Crear la carpeta de fotos | |
@@ -46,7 +47,7 @@ La regla dice: "Permitido extra, solo lo imprescindible, y hay que listarlo en e
 | `QMessageBox` como objeto con `addButton`/`clickedButton` | `confirmar` (422) | Preguntas con botones "Sí" y "No" en español (el `question` estático los muestra en inglés si no hay traducciones) | |
 | `QListWidgetItem::setToolTip` | `cargarHigiene`, `cargarReservasSector` | Mostrar el texto completo de cada ítem | **Sí** |
 | `blockSignals` | 506, 515, 2653, 2692, 2702, 2735, 3074, 3078 | Evitar disparar slots al cargar combos | |
-| `#ifdef Q_OS_WIN` | 132 (`nombreDriverOdbc`) | Buscar el driver ODBC solo en Windows | |
+| `#ifdef Q_OS_WIN` | 127 (`nombreDriverOdbc`) | Buscar el driver ODBC solo en Windows | |
 | `QMovie` y `QTimer` | `ventanainicio.cpp` | Splash con el GIF y cierre automático | |
 
 Dentro de lo permitido, pero conviene tenerlo presente para la defensa: `QDateEdit`/`QTimeEdit` con `setMinimumDate`, `setMinimumTime` y `setMaximumTime` (los límites 07:00–19:00 están en el `.ui`).
@@ -77,7 +78,7 @@ Dentro de lo permitido, pero conviene tenerlo presente para la defensa: `QDateEd
 | R-10 | `on_btnSectoresReservar_clicked` (77 líneas) y `on_btnCuentaGuardar_clicked` (54) | Mezclan validaciones, consultas, el `INSERT`/`UPDATE` y los avisos en una sola función. Cumplen las reglas, pero "código simple y pocas líneas" | Separar en funciones chicas (por ejemplo `bool hayChoqueReserva(int sector, const QDate &dia, const QString &inicio, const QString &fin)` y una para el choque de Educación Física). No urgente | **Abierto** |
 | R-11 | `pintarUltimo` / `agregarVacio` / `alternarVacio` / `pintarEstadoVenta` | Dos formas de resolver el estado vacío (un ítem gris o un `QLabel` que se alterna con la lista) y dos de pintar estados | Es una decisión de diseño y funciona; en el informe, nombrar `agregarVacio` y `alternarVacio` como "estado vacío" | Sin cambios |
 | R-12 | `confirmar` (422) | Devuelve `caja.clickedButton() == si`; si se cierra con la X, no confirma | Correcto (la X equivale a "No") | Sin cambios |
-| R-13 | `valorFecha` / `valorAhora` / `valorUnicoHoy` | `valorFecha` y `valorAhora` devuelven `QVariant` (texto para SQLite; `QDate`/`QDateTime` para MySQL) y `valorUnicoHoy` los usa | Correcto y simple. Explicar en el informe que esa es la razón de ser de esos métodos | Sin cambios |
+| R-13 | `valorFecha` / `valorAhora` / `valorUnicoHoy` | `valorFecha` y `valorAhora` devuelven un `QVariant` que siempre trae `QDate` / `QDateTime` (antes existían para mandar texto a SQLite y fechas a MySQL) y `valorUnicoHoy` los usa | Funciona. Con un solo motor ya no hay dos formatos que elegir: en el informe, explicarlos como el único punto por donde pasan las fechas de los `bindValue`. Si se quiere código más simple, se puede bindear `QDate::currentDate()` y `QDateTime::currentDateTime()` directo y borrar los dos métodos (no urgente) | Ajustado: se sacó SQLite |
 | R-14 | `colorToken` (3054) | Los colores están escritos como `QColor("#…")` en el `.cpp` (DISENO §2 dice que nadie escribe colores en el `.cpp`, pero §4.7 admite `QColor` con los tokens para las listas) | Es el único lugar con colores; los claros usados son más oscuros que los del DISENO por contraste. Documentarlo | Sin cambios |
 | R-15 | `takeItem` / `delete` | Ninguna función usa `takeItem` | Sin problema | Sin cambios |
 
@@ -87,6 +88,7 @@ Dentro de lo permitido, pero conviene tenerlo presente para la defensa: `QDateEd
 
 ## Desvíos
 - No compilé ni ejecuté la app.
+- Ronda sin SQLite: cambios puntuales. No releí las 23 funciones de mis páginas ni volví a correr el escaneo completo de las 185 definiciones; solo repetí la búsqueda de comentarios y de `continue` y la de «sqlite» en el código. Por eso los números de línea de las filas que no toqué siguen siendo los de la v3. Además, `hoy()` quedó declarado y definido pero sin uso (lo anoto en `ERRORES_HIGIENE_SECTORES_CUENTA.md`, E4-02).
 - El escaneo automático busca patrones de texto; lo complementé leyendo a mano los helpers pedidos, las funciones corregidas y mis 23 funciones, pero **no** leí a mano las otras ~160 funciones.
 - No revisé `.ui`, `.qss`, `CMakeLists.txt` ni `recursos.qrc` (no eran parte del pedido).
 - Los números de línea son aproximados (los saqué del archivo de la v3 tal como vino en el zip).

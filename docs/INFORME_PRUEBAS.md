@@ -4,7 +4,7 @@
 **Autores:** Arce Thiago · Cabrera Ulises
 **Fecha de este informe:** 13/11/2026 · **App evaluada:** v3 (`iqual_integrado_v3`, CONTEXTO §20)
 
-> **Estado en una línea:** hay **337 casos de prueba escritos** y **53 errores detectados por lectura de código** (20 corregidos, 8 con decisión por defecto, 24 abiertos, 1 a verificar en MySQL, ninguno de gravedad alta). **Ningún caso fue ejecutado todavía:** la columna «Resultado» está vacía. Lo único que se ejecutó fue lo que informa el CONTEXTO (§19.1 y §20): pruebas automáticas (harness3 y harness4, 0 fallas) y scripts en MariaDB 10.11 y SQLite.
+> **Estado en una línea:** hay **337 casos de prueba escritos** y **55 errores detectados por lectura de código** (20 corregidos, 7 con decisión por defecto, 1 «No aplica» porque se sacó SQLite, 26 abiertos, 1 a verificar en MySQL, ninguno de gravedad alta). **Ningún caso fue ejecutado todavía:** la columna «Resultado» está vacía. Lo único que se ejecutó, en la versión anterior de la app, fue lo que informa el CONTEXTO (§19.1): scripts y consultas en MariaDB 10.11 y las 131 consultas con `ONLY_FULL_GROUP_BY`; las pruebas automáticas internas ya no existen (CONTEXTO §23).
 >
 > **Aviso sobre las fuentes:** no recibí `docs_otros.zip` (documentos revisados de Arce Thiago y Cabrera Ulises, 2 y 4). Este informe usa los casos y errores de Arce Thiago y Cabrera Ulises y 4 de la etapa de cierre. Si ellos sumaron casos o errores nuevos (el CONTEXTO nombra un ERR-23 que no figura en mis copias), **faltan acá** y hay que volver a correr el conteo.
 
@@ -26,9 +26,9 @@ Los casos se relacionan con las historias de usuario (US) y los requerimientos (
 ## 2. Entorno
 | Dato | Valor |
 |---|---|
-| Probado por Arce Thiago y Cabrera Ulises (CONTEXTO §19.1 y §20) | Linux, Qt 6.4, MariaDB 10.11: pruebas automáticas (en la v3, harness3 y harness4) con 0 fallas con `QMYSQL` y con SQLite; 131 consultas validadas con `ONLY_FULL_GROUP_BY`; `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql`, procedimientos, `consultas_demo.sql` y `consultas_verificacion.sql` sin errores |
+| Probado por Arce Thiago y Cabrera Ulises (CONTEXTO §19.1 y §20) | Linux, Qt 6.4, MariaDB 10.11: 131 consultas validadas con `ONLY_FULL_GROUP_BY`; `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql`, procedimientos, `consultas_demo.sql` y `consultas_verificacion.sql` sin errores |
 | **No probado** | MySQL 8 de Oracle · SQL Server 2005 · Windows (ni ODBC ni plugin `QMYSQL` compilado) |
-| Entorno previsto para ejecutar los casos | `[COMPLETAR: equipo, sistema operativo, versión de Qt, motor de base (MySQL o SQLite) y versión de la app con la que se corran los casos]` |
+| Entorno previsto para ejecutar los casos | `[COMPLETAR: equipo, sistema operativo, versión de Qt, versión de MySQL y versión de la app con la que se corran los casos]` |
 | Datos | Base de demostración recién cargada. Usuarios y claves: script de datos y `GUIA_CONEXION_APP_MYSQL.md` (no se copian acá) |
 
 ## 3. Método
@@ -81,15 +81,17 @@ Controles del conteo: no hay IDs repetidos dentro de los casos (172, 78 y 87 IDs
 - **Decisión por defecto:** figura en §19.3 (se dejó así a propósito, el usuario puede cambiarlo).
 - **Corregido (app v3):** lo dice CONTEXTO §20 (E4-04 y E4-06) o lo verifiqué en el código v3 (E-15).
 - **Abierto:** no figura en ninguno de los anteriores; se asume que sigue igual. `[COMPLETAR: Arce Thiago y Cabrera Ulises y Arce Thiago y Cabrera Ulises confirman el estado de sus errores «Abierto» y de los nuevos, p. ej. ERR-20 a ERR-23; Arce Thiago y Cabrera Ulises confirma cuáles se arreglaron en la v3]`
-- Excepción: ERR-19 (función de SQLite en el resumen del Profesor) no figura en §19.2, pero busqué en el `mainwindow.cpp` de la v3 `date('now')`, `datetime('now')`, `strftime`, `julianday`, `last_insert_rowid`, `INSERT OR` y no hay ninguno; el único `PRAGMA` es el de `abrirSqlite` (propio de SQLite, que es correcto ahí). Lo marco **Corregido (verificado en el código)**.
+- Excepción: ERR-19 (función de fecha propia de otro motor en el resumen del Profesor) no figura en §19.2, pero busqué en el `mainwindow.cpp` actual `date('now')`, `datetime('now')`, `strftime`, `julianday`, `last_insert_rowid`, `INSERT OR` y `PRAGMA` y no hay ninguno. Lo marco **Corregido (verificado en el código)**.
 
 ### 5.1 Resumen
 | Autor | Total | Corregido | Decisión por defecto | Abierto | Alta | Media | Baja |
 |---|---|---|---|---|---|---|---|
 | Arce Thiago y Cabrera Ulises (ERR) | 23 | 10 | 4 | 8 + 1 a verificar (ERR-21) | 0 | 6 | 17 |
 | Arce Thiago y Cabrera Ulises (E4) | 14 | 6 | 2 | 6 | 0 | 4 | 10 |
-| Arce Thiago y Cabrera Ulises (E) | 16 | 4 | 2 | 10 | 0 | 3 | 13 |
-| **Total** | **53** | **20** | **8** | **24 + 1 a verificar** | **0** | **13** | **40** |
+| Arce Thiago y Cabrera Ulises (E) | 18 | 4 | 1 (más 1 «No aplica»: E-08) | 12 | 0 | 4 | 14 |
+| **Total** | **55** | **20** | **7** (más 1 «No aplica») | **26 + 1 a verificar** | **0** | **14** | **41** |
+
+Ronda del 19/11/2026 (CONTEXTO §23): la fila de la Tienda y Educación Física (E) ya refleja `ERRORES_TIENDA_EDFISICA.md` (E-17 y E-18 nuevos; E-08 «No aplica: se sacó SQLite»). Las filas ERR y E4 **todavía no se recontaron** con los archivos nuevos de los otros dos Claudes: si ellos marcan errores como «No aplica», hay que volver a sumar.
 
 ### 5.2 Detalle por módulo
 | Módulo | ID | Gravedad | Estado | Título corto |
@@ -100,7 +102,7 @@ Controles del conteo: no hay IDs repetidos dentro de los casos (172, 78 y 87 IDs
 | Objetos perdidos | ERR-22 | Baja | Corregido (app v3) | La fecha de las consultas se mostraba completa; ahora dd/MM |
 | Préstamo de equipos | ERR-21 | Baja | A verificar (MySQL) | Tipo de las columnas de hora de préstamo y devolución |
 | Inicio | ERR-23 | Baja | Decisión por defecto | El splash puede repetirse u ocultarse si aparece el aviso de MySQL (no se toca) |
-| Dashboard | ERR-19 | Baja | Corregido (verificado en el código) | Resumen del Profesor usaba una función de SQLite |
+| Dashboard | ERR-19 | Baja | Corregido (verificado en el código) | Resumen del Profesor usaba una función de fecha propia de otro motor |
 | Dashboard | E4-01 | Media | Corregido | Contadores del Inicio desactualizados (misma causa que ERR-01) |
 | Dashboard | E4-02 | Media | Corregido | Reservas de sectores contaba canceladas y rechazadas (misma causa que ERR-02) |
 | Acceso | ERR-03 | Media | Corregido | El login fallido guardaba en claro lo escrito en «Usuario» |
@@ -136,11 +138,13 @@ Controles del conteo: no hay IDs repetidos dentro de los casos (172, 78 y 87 IDs
 | Tienda | E-05 | Baja | Abierto | Buscar «%» o «_» los toma como comodines |
 | Tienda | E-06 | Baja | Abierto | Reservar queda habilitado con producto propio o sin stock |
 | Tienda | E-07 | Baja | Abierto | Sin tope máximo en precio, stock, meta y monto |
-| Tienda | E-08 | Baja | Decisión por defecto | «Viaje» y «viaje» se toman como el mismo nombre en MySQL |
+| Tienda | E-08 | Baja | No aplica | Era la diferencia de mayúsculas entre dos motores; se sacó SQLite y hoy el comportamiento es solo el de MySQL |
 | Tienda | E-09 | Baja | Abierto | Producto sin stock se lista con «SIN STOCK» (ver E-06) |
 | Tienda | E-10 | Baja | Abierto | El PIN del grupo se guarda en texto plano |
 | Tienda | E-13 | Baja | Abierto | Los combos «Ver» y «Vendedor» cortan el texto a 1100 px |
 | Tienda | E-14 | Baja | Abierto | Los combos «Ver» y «Grupo» conservan la selección al cambiar de usuario |
+| Tienda | E-17 | Baja | Abierto | Mis reservas muestra una fila por producto con el total de la venta (ventas de 2 productos del script 04) |
+| Tienda | E-18 | Media | Abierto | Entregar o cancelar una venta con productos de dos vendedores afecta a toda la venta |
 | Educación Física | E-02 | Media | Corregido | La hora preseleccionada caía en una opción gris |
 | Educación Física | E-03 | Media | Corregido | Un día cuyas horas chocan quedaba habilitado |
 | Educación Física | E-11 | Baja | Abierto | «(choca con …)» nombra una sola materia |
@@ -154,8 +158,8 @@ Los estados de Arce Thiago y Cabrera Ulises y Arce Thiago y Cabrera Ulises son l
 
 ## 6. Conclusiones
 1. **El sistema está bien cubierto en papel, pero sin ejecución:** 337 casos para las diez pantallas, ninguno corrido. Hasta que se corran, no se puede afirmar que algo «pasa» ni que «falla».
-2. **No se encontró ningún error de gravedad alta.** Los 13 de gravedad media son de coherencia (números desactualizados, formularios que no se limpian, opciones mal preseleccionadas) y **los 13 figuran corregidos (11) o con decisión por defecto (2: ERR-04 y E4-05)**.
-3. **De los 53 errores, 20 están corregidos y 8 se dejaron a propósito** (decisión por defecto, el usuario puede cambiarla). Quedan **24 abiertos** y 1 a verificar en MySQL (ERR-21), casi todos de gravedad baja (usabilidad, textos, robustez); algunos pueden estar ya arreglados sin que conste (ver 5).
+2. **No se encontró ningún error de gravedad alta.** Los 14 de gravedad media son de coherencia (números desactualizados, formularios que no se limpian, opciones mal preseleccionadas) y **13 figuran corregidos (11) o con decisión por defecto (2: ERR-04 y E4-05)**; el que queda abierto es E-18 (ventas con dos vendedores, que sale de los datos del script 04).
+3. **De los 55 errores, 20 están corregidos, 7 se dejaron a propósito** (decisión por defecto, el usuario puede cambiarla) y 1 ya no aplica (E-08). Quedan **26 abiertos** y 1 a verificar en MySQL (ERR-21), casi todos de gravedad baja (usabilidad, textos, robustez); algunos pueden estar ya arreglados sin que conste (ver 5).
 4. **Riesgos reales que siguen abiertos:** Windows sin probar (ODBC y plugin), MySQL 8 de Oracle sin probar, y la falta de confirmación de Linares sobre MySQL. Ningún caso se ejecutó sobre esos entornos.
 5. **Limitaciones declaradas, no errores:** PIN del grupo en texto plano (E-10) y clave con SHA-256 sin sal (ERR-16), alcance escolar (RNF02).
 6. **Siguiente paso:** ejecutar primero los casos que tocan lo corregido (para confirmar los arreglos) y los de flujo principal por rol (LOG, REG, OBJ, PRE, SEC, TIE-P0/P3, EDF); después el resto.
@@ -168,7 +172,7 @@ Los estados de Arce Thiago y Cabrera Ulises y Arce Thiago y Cabrera Ulises son l
 
 ## Datos que faltan
 - Resultados (OK / FALLA / NO PROBADO) de los 337 casos: quien pruebe.
-- `[COMPLETAR: entorno de ejecución de los casos (equipo, SO, Qt, motor, versión de la app)]`
+- `[COMPLETAR: entorno de ejecución de los casos (equipo, SO, Qt, versión de MySQL, versión de la app)]`
 - `[COMPLETAR: Arce Thiago y Cabrera Ulises confirma qué errores «Abierto» de Arce Thiago y Cabrera Ulises y Arce Thiago y Cabrera Ulises ya fueron corregidos]`
 - Datos para los 11 casos con `[COMPLETAR]` (programas por equipo, DNI y correo de `alumno1`, decisión sobre nombre repetido de producto, etc.).
 - Medición de E-04 (rendimiento de fotos) y de RNF03.

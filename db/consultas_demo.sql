@@ -3,7 +3,7 @@
 -- Cada consulta dice cuántas filas tiene que devolver con esos datos.
 -- Solo se usa lo del nivel de la materia (CONTEXTO 11): JOIN, WHERE, GROUP BY con COUNT y SUM, HAVING, subconsultas escalares y EXISTS.
 -- Las consultas 1 a 7, 9 y 10 son iguales en MySQL y SQL Server. Solo la 8 cambia (la fecha de hoy): tiene una versión para cada motor.
--- Verificación del 19/11/2026: se cargaron 03 y 04 (MySQL) en una copia SQLite con claves foráneas y CHECK activos y las 10 devuelven la cantidad de filas indicada. En MariaDB 10.11 ya habían corrido sin errores (CONTEXTO §19.1, con los datos anteriores). No se ejecutaron en MySQL 8 de Oracle ni en SQL Server.
+-- Verificación del 19/11/2026: la cantidad de filas indicada en las 10 se calculó con una carga de prueba de 03 y 04 hecha fuera de MySQL. En MariaDB 10.11 ya habían corrido sin errores (CONTEXTO §19.1, con los datos anteriores). No se ejecutaron en MySQL 8 de Oracle ni en SQL Server.
 
 -- 1. JOIN simple: cada usuario con su rol.
 --    Esperado: 62 filas (46 Alumno, 9 Profesor, 4 Preceptor, 3 Maestranza).

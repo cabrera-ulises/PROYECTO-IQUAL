@@ -90,7 +90,6 @@ MainWindow::~MainWindow()
 bool MainWindow::abrirBase()
 {
     QSettings cfg(QCoreApplication::applicationDirPath() + "/iqual.ini", QSettings::IniFormat);
-    if (!cfg.contains("base/motor")) cfg.setValue("base/motor", "mysql");
     if (!cfg.contains("base/host")) cfg.setValue("base/host", "localhost");
     if (!cfg.contains("base/puerto")) cfg.setValue("base/puerto", 3306);
     if (!cfg.contains("base/usuario")) cfg.setValue("base/usuario", "root");
@@ -98,21 +97,17 @@ bool MainWindow::abrirBase()
     if (!cfg.contains("base/nombre")) cfg.setValue("base/nombre", "iqual");
     cfg.sync();
 
-    QString motor = qEnvironmentVariable("IQUAL_MOTOR", cfg.value("base/motor").toString()).toLower();
-    if (motor != "sqlite") {
-        QString error;
-        if (abrirMySql(cfg, error)) {
-            QString sufijo = " · MySQL";
-            if (db.driverName() == "QODBC") sufijo = " · MySQL (ODBC)";
-            setWindowTitle(windowTitle() + sufijo);
-            return true;
-        }
-        db = QSqlDatabase();
-        QSqlDatabase::removeDatabase(QSqlDatabase::defaultConnection);
-        aviso("No se pudo usar MySQL:\n" + error + "\n\nLa aplicación va a trabajar con la base local iqual.db. "
-              "Para usar MySQL revisá iqual.ini y que el servidor esté encendido.");
+    QString error;
+    if (abrirMySql(cfg, error)) {
+        QString sufijo = " · MySQL";
+        if (db.driverName() == "QODBC") sufijo = " · MySQL (ODBC)";
+        setWindowTitle(windowTitle() + sufijo);
+        return true;
     }
-    return abrirSqlite();
+    db = QSqlDatabase();
+    QSqlDatabase::removeDatabase(QSqlDatabase::defaultConnection);
+    aviso("No se pudo usar MySQL:\n" + error + "\n\nRevisá iqual.ini y que el servidor esté encendido.");
+    return false;
 }
 
 int MainWindow::ultimoId(QSqlQuery &q)
@@ -149,11 +144,11 @@ bool MainWindow::abrirMySql(QSettings &cfg, QString &error)
     bool hayOdbc = QSqlDatabase::isDriverAvailable("QODBC");
     bool usarOdbc = preferido == "odbc" || (preferido != "qmysql" && !hayMysql);
     if (usarOdbc && !hayOdbc) {
-        error = "Qt no tiene ni el driver QMYSQL ni el QODBC (ver la guía GUIA_APP_MYSQL).";
+        error = "Qt no tiene ni el driver QMYSQL ni el QODBC (ver la guía GUIA_CONEXION_APP_MYSQL).";
         return false;
     }
     if (!usarOdbc && !hayMysql) {
-        error = "Falta el driver QMYSQL de Qt (ver la guía GUIA_APP_MYSQL).";
+        error = "Falta el driver QMYSQL de Qt (ver la guía GUIA_CONEXION_APP_MYSQL).";
         return false;
     }
     if (usarOdbc) {
@@ -190,40 +185,6 @@ bool MainWindow::abrirMySql(QSettings &cfg, QString &error)
             return false;
         }
     }
-    return true;
-}
-
-bool MainWindow::abrirSqlite()
-{
-    QString ruta = QCoreApplication::applicationDirPath() + "/iqual.db";
-    bool nueva = !QFile::exists(ruta);
-    db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(ruta);
-    if (!db.open()) return false;
-    QSqlQuery q;
-    q.prepare("PRAGMA foreign_keys = ON");
-    q.exec();
-    if (!nueva) return true;
-
-    QFile script(":/imagenes/iqual_sqlite.sql");
-    if (!script.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        db.close();
-        QFile::remove(ruta);
-        return false;
-    }
-    QTextStream entrada(&script);
-    QStringList sentencias = entrada.readAll().split(";");
-    db.transaction();
-    for (int i = 0; i < sentencias.size(); i++) {
-        QString sentencia = sentencias[i].trimmed();
-        if (!sentencia.isEmpty() && !q.exec(sentencia)) {
-            db.rollback();
-            db.close();
-            QFile::remove(ruta);
-            return false;
-        }
-    }
-    db.commit();
     return true;
 }
 
@@ -443,27 +404,25 @@ void MainWindow::registrarLog(const QString &evento, const QString &descripcion,
 {
     QVariant usuario;
     if (idActual > 0) usuario = idActual;
-    if (db.driverName() != "QSQLITE") {
-        QVariant nick;
-        if (idActual > 0) {
-            QSqlQuery qn;
-            qn.prepare("SELECT usuario_nick FROM usuario WHERE id_usuario = :id");
-            qn.bindValue(":id", idActual);
-            qn.exec();
-            if (qn.next()) nick = qn.value(0).toString();
-        }
-        QSqlQuery sp;
-        sp.prepare("CALL sp_registrar_log(:evento, :descripcion, :entidad, :nick, :resultado, :ip)");
-        sp.bindValue(":evento", evento);
-        sp.bindValue(":descripcion", descripcion);
-        sp.bindValue(":entidad", entidad);
-        sp.bindValue(":nick", nick);
-        sp.bindValue(":resultado", resultado);
-        sp.bindValue(":ip", QSysInfo::machineHostName());
-        if (sp.exec()) {
-            sp.finish();
-            return;
-        }
+    QVariant nick;
+    if (idActual > 0) {
+        QSqlQuery qn;
+        qn.prepare("SELECT usuario_nick FROM usuario WHERE id_usuario = :id");
+        qn.bindValue(":id", idActual);
+        qn.exec();
+        if (qn.next()) nick = qn.value(0).toString();
+    }
+    QSqlQuery sp;
+    sp.prepare("CALL sp_registrar_log(:evento, :descripcion, :entidad, :nick, :resultado, :ip)");
+    sp.bindValue(":evento", evento);
+    sp.bindValue(":descripcion", descripcion);
+    sp.bindValue(":entidad", entidad);
+    sp.bindValue(":nick", nick);
+    sp.bindValue(":resultado", resultado);
+    sp.bindValue(":ip", QSysInfo::machineHostName());
+    if (sp.exec()) {
+        sp.finish();
+        return;
     }
     QSqlQuery q;
     q.prepare("INSERT INTO log_auditoria (fecha_hora, direccion_ip, descripcion_evento, id_entidad, id_usuario, id_tipo_log, id_resultado) "
@@ -490,13 +449,11 @@ QString MainWindow::ahora()
 
 QVariant MainWindow::valorAhora()
 {
-    if (db.driverName() == "QSQLITE") return ahora();
     return QDateTime::currentDateTime();
 }
 
 QVariant MainWindow::valorFecha(const QDate &fecha)
 {
-    if (db.driverName() == "QSQLITE") return fecha.toString("yyyy-MM-dd");
     return fecha;
 }
 

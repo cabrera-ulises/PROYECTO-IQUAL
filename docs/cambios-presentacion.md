@@ -19,7 +19,7 @@ La presentación está hecha en Canva y no se puede editar desde acá, así que 
 | 4 | **Usuario de ejemplo "liomessi"**: es el nombre de una persona real conocida | Lámina 6 | Usar un usuario ficticio, como `alumno1` | Alta |
 | 5 | **Íconos**: la maqueta muestra íconos que no son los de la app. La app usa íconos propios (dibujados en SVG y exportados a PNG para el tema claro y el oscuro) | Lámina 7 | Reemplazar por capturas del Inicio de la app | Alta |
 | 6 | **Plataforma**: se habla de "plataforma web/móvil" y las maquetas tienen marco de celular; la app es de **escritorio** | Láminas 3, 4, 6 a 13 | Cambiar los textos a "aplicación de escritorio" y usar capturas de la app (o aclarar que son las maquetas del diseño inicial) | Alta |
-| 7 | **Motor de base de datos**: las láminas hablan de una base local; la app **se conecta a MySQL** (con respaldo en SQLite) y el modelo tiene **47 tablas** | Láminas 4 y 5 (y donde se mencione la base) | Escribir "MySQL (47 tablas; también SQL Server 2005 y SQLite)". Si dice "44 tablas", cambiar a 47. `[COMPLETAR: confirmación del profesor sobre el motor]` | Alta |
+| 7 | **Motor de base de datos**: las láminas hablan de una base local; la app **se conecta a MySQL** (sin base de respaldo) y el modelo tiene **47 tablas** | Láminas 4 y 5 (y donde se mencione la base) | Escribir "MySQL (47 tablas; también el modelo para SQL Server 2005)". Si dice "44 tablas", cambiar a 47. `[COMPLETAR: confirmación del profesor sobre el motor]` | Alta |
 | 8 | **Nombres de módulo distintos** entre láminas y app. Los nombres actuales de la app son: **Objetos Perdidos, Higiene y Mantenimiento, Tienda de alumnos, Préstamo de equipos, Reserva de Sectores, Educación Física** | Láminas 3, 7, 9, 10 y 11 | Unificar con esos nombres (se puede aclarar "Tienda de alumnos (antes Buffet Paralelo)" y "Préstamo de equipos (antes Planillas de Taller)") | Media |
 | 9 | **Colores y temas**: las láminas dicen que la app usa una paleta de 4 colores. Esa regla no existe: la app tiene **dos temas (claro y oscuro)** con el azul marino del splash y el celeste del logo, y usa verde y rojo en las listas para marcar estados (siempre con el estado escrito) | Láminas 3, 8 a 13 | Mostrar capturas de los dos temas y no afirmar que "la app usa solo 4 colores" | Media |
 | 10 | **Navegación**: se menciona un menú hamburguesa (☰) y un botón "Volver" en cada módulo. La app tiene una **barra lateral** con un ítem por módulo, una barra superior con el título, el usuario y el botón de tema | Láminas 3, 7 a 13 | Reemplazar por capturas y decir "barra lateral de navegación" | Media |
@@ -47,7 +47,7 @@ La presentación está hecha en Canva y no se puede editar desde acá, así que 
 * **Alta:** Propósito dice "Aplicación web/móvil autogestionable" → "aplicación de escritorio autogestionable".
 * **Alta:** "Fuentes de verificación" dice "logs y reportes de uso del sistema" → "registros de la propia base de datos, incluido el log de auditoría (14 tipos de evento)". No hay reportes automáticos.
 * **Alta:** "Supuestos críticos" dice "estabilidad del servidor y la red escolar" → "disponibilidad de la PC donde corre la base MySQL; si no está disponible, la app trabaja con una base local (un solo puesto)".
-* **Media:** Actividades: "diseño de base de datos" → "base de datos de 47 tablas en 3FN, en MySQL (con respaldo SQLite y script para SQL Server 2005)".
+* **Media:** Actividades: "diseño de base de datos" → "base de datos de 47 tablas en 3FN, en MySQL (con el modelo también para SQL Server 2005)".
 * Los indicadores (-40%, 85-90%, < 2 s) **no cambian**; en la defensa se puede aclarar la línea base de medición (está en el Excel del MML).
 
 ### Lámina 5 · Requerimientos e Historias de Usuario
@@ -105,7 +105,7 @@ La presentación está hecha en Canva y no se puede editar desde acá, así que 
 
 ### Lámina 14 · Repositorio GitHub y Bitácora de Trabajo
 * **Alta:** `bitacoras.md` → `bitacora.md` (inconsistencia 2) y el número de semanas (inconsistencia 3).
-* **Alta:** la lista de archivos de `/docs` está desactualizada: `arbol-de-objetivos.png` pasa a **`arbol-de-objetivos.drawio.xml`**; agregar `cambios-respecto-al-diseno-inicial.md`, `matriz-trazabilidad.md`, `cambios-presentacion.md` y las carpetas `casos_de_prueba/`, `errores/` y `manuales/`; y la carpeta `/db` (scripts de MySQL, SQL Server y SQLite, 3FN, consultas, guías y diagramas).
+* **Alta:** la lista de archivos de `/docs` está desactualizada: `arbol-de-objetivos.png` pasa a **`arbol-de-objetivos.drawio.xml`**; agregar `cambios-respecto-al-diseno-inicial.md`, `matriz-trazabilidad.md`, `cambios-presentacion.md` y las carpetas `casos_de_prueba/`, `errores/` y `manuales/`; y la carpeta `/db` (scripts de MySQL y SQL Server, 3FN, consultas, guías y diagramas).
 * **Media:** estructura actual: `README.md`, `/docs`, `/db` y el código de la app en la raíz.
 * **Baja:** los títulos de las semanas de la lámina resumen la bitácora; si se quiere fidelidad, usar los de `docs/bitacora.md`.
 
@@ -118,9 +118,9 @@ La presentación está hecha en Canva y no se puede editar desde acá, así que 
 Solo hechos del archivo de contexto interno (§19 y §20); las fechas y horas reales que no figuran quedan como `[COMPLETAR]`.
 | # | Qué cambió | Láminas afectadas | Qué hacer |
 | :-: | :--- | :--- | :--- |
-| 1 | **MySQL como motor** (la app se conecta a MySQL con `iqual.ini` y vuelve a SQLite si falla; base ejecutada en MariaDB 10.11; falta MySQL 8 de Oracle, SQL Server 2005 y Windows) | 4, 5 y donde se mencione la base | Escribir "MySQL" y no afirmar que está probado en Windows. `[COMPLETAR: confirmación del profesor Linares sobre el motor]` |
+| 1 | **MySQL como motor** (la app se conecta a MySQL con `iqual.ini` y, si falla, avisa el motivo y no abre; base ejecutada en MariaDB 10.11; falta MySQL 8 de Oracle, SQL Server 2005 y Windows) | 4, 5 y donde se mencione la base | Escribir "MySQL" y no afirmar que está probado en Windows. `[COMPLETAR: confirmación del profesor Linares sobre el motor]` |
 | 2 | **Revisión de código** aplicada: sin comentarios, ternarios, `continue` ni `findData`; `.arg` encadenados | Lámina de calidad (opcional, sección 4) | Si se muestra, decir "cumple las reglas de la profesora" solo para estas reglas |
-| 3 | **App v3**: pruebas automáticas internas (harness3 y harness4) con 0 fallas en MariaDB 10.11 y en SQLite | Lámina de calidad (opcional) | No presentarlas como "casos de prueba ejecutados": los casos manuales por pantalla todavía no se corrieron |
+| 3 | **App v3**: las pruebas automáticas internas con el motor de respaldo ya no existen; hoy hay casos por pantalla (337) y 107 casos de procedimientos almacenados con resultado PASS en MariaDB 10.11 | Lámina de calidad (opcional) | No presentar los casos por pantalla como "ejecutados": todavía no se corrieron. Sí se pueden mencionar los 107 casos de la base |
 | 4 | **Objetos:** al publicar, Categoría y Sector vuelven a "Elegí una categoría / un sector"; las Consultas muestran la fecha como `dd/MM` | 8 | Usar una captura de la v3 |
 | 5 | **Mi cuenta:** "Ese ya es tu curso." si se elige el mismo curso; el selector vuelve atrás si se dice "No" al choque | (sin lámina propia) | Mencionarlo solo si se explica Mi Cuenta |
 | 6 | **Higiene:** el texto de ayuda de las observaciones es "Contá qué pasa (ej: falta papel)" | 9 | Usar una captura de la v3 |

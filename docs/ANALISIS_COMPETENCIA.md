@@ -10,7 +10,7 @@
 ---
 
 ## 1. Qué es IQUAL hoy (lo que se compara)
-IQUAL es una aplicación de escritorio (C++17 con Qt) para una escuela técnica, con base de datos MySQL (respaldo SQLite) y cuatro roles: Alumno, Profesor, Preceptor y Maestranza. Hoy resuelve estos módulos:
+IQUAL es una aplicación de escritorio (C++17 con Qt) para una escuela técnica, con base de datos MySQL y cuatro roles: Alumno, Profesor, Preceptor y Maestranza. Hoy resuelve estos módulos:
 
 | Módulo de IQUAL | Qué hace |
 |---|---|
@@ -57,7 +57,7 @@ Se eligieron alternativas reales que una escuela podría usar en lugar de IQUAL,
 | Reportes de higiene y mantenimiento | **✔** | — | — | — | — | — | — | — | — |
 | Inscripción a Educación Física con cupos | **✔** | — | — | — | — | ✔ (extraescolares, comedor, transporte) | ✔ (extraescolares) | — | — |
 | Auditoría de acciones de usuarios | **✔** | — | — | — | — | — | — | — | — (la nota solo menciona administración de accesos y seguridad) |
-| Funciona sin conexión a internet (red de la escuela) | **✔** (MySQL local o SQLite) | — | — | — | — | — | — | Nube / SaaS / web (la fuente lo lista como plataforma) | — |
+| Funciona sin conexión a internet (red de la escuela) | **✔** (MySQL local) | — | — | — | — | — | — | Nube / SaaS / web (la fuente lo lista como plataforma) | — |
 
 Notas de la matriz:
 - Esemtia y Cifra son las únicas que mencionan tienda, extraescolares o comedor; son pagos y servicios **del colegio hacia las familias**, no entre alumnos.
@@ -98,7 +98,7 @@ Consecuencia para IQUAL: usar Qt Community y MySQL Community no tiene costo de l
 **Cinco puntos que sostienen la PUV:**
 1. **Cubre cosas que las fuentes no listan:** objetos perdidos, préstamo de equipos, reserva de sectores, reportes de higiene e inscripción a Educación Física con control de choque de horarios (matriz, sección 3).
 2. **Hecho a la medida de esta escuela:** los carros C4 y C5, los tableros y las especialidades son los reales de E.T. N°3 (CONTEXTO §8).
-3. **Funciona en la red de la escuela:** con MySQL local, sin depender de un servicio en la nube; con respaldo SQLite si el servidor falla.
+3. **Funciona en la red de la escuela:** con MySQL local, sin depender de un servicio en la nube; si el servidor no está encendido, la app avisa y no abre.
 4. **Trazabilidad:** toda acción importante queda en la auditoría.
 5. **Sin costo de licencia de base y framework** (secciones 5 y 7) para el alcance escolar; el costo real es el de horas de desarrollo y soporte (ver presupuesto).
 

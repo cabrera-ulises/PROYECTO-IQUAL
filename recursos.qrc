@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/imagenes">
-        <file>iqual_sqlite.sql</file>
         <file alias="logo_iqual.png">recursos/imagenes/logo_iqual.png</file>
         <file alias="splash_escritorio.gif">recursos/imagenes/splash_escritorio.gif</file>
     </qresource>

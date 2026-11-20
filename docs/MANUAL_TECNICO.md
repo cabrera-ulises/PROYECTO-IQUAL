@@ -2,7 +2,7 @@
 
 **Proyecto:** PROYECTO IQUAL® · Sistema de Gestión Escolar · E.T. N°3 D.E.9 · Proyecto Informático I
 **Autores:** Arce Thiago · Cabrera Ulises
-**Versión de la app descripta:** v3 (`iqual_integrado_v3`, CONTEXTO §20, 13/11/2026).
+**Versión de la app descripta:** v3 (`iqual_integrado_v3`), CONTEXTO §20 y §23 (19/11/2026): la app usa solo MySQL.
 **Qué es este documento:** explica cómo está armada la aplicación, cómo se conecta a la base de datos, cómo compilarla y ejecutarla, qué se probó y qué no, y qué limitaciones tiene hoy. Describe lo que la app hace **hoy**, no lo que se pensó en el diseño inicial.
 **Cómo se obtuvo:** lectura del código fuente integrado (`main.cpp`, `mainwindow.cpp/.h/.ui`, `ventanadetalle.*`, `ventanainicio.*`, `ventanaproducto.*`, `CMakeLists.txt`, `recursos.qrc`, los dos `.qss`) y de las guías y scripts del proyecto. Los números de líneas y de funciones salen de contarlos con comandos sobre los archivos recibidos. **Yo no compilé ni ejecuté la app** (ver sección 9).
 
@@ -16,11 +16,10 @@
 | Framework | Qt 6 (Widgets + Sql). Kit usado en el proyecto: Desktop Qt 6.12.0 MinGW 64-bit |
 | Sistema de construcción | CMake (objetivo `PROYECTO_IQUAL`) |
 | Tipo de app | Escritorio, una sola ventana principal |
-| Base de datos principal | MySQL (47 tablas) |
-| Base de respaldo | SQLite (`iqual.db`, se crea sola en el primer uso) |
-| Drivers | `QMYSQL` (plugin de Qt) o ODBC (`QODBC`) con MySQL Connector/ODBC; `QSQLITE` para el respaldo |
-| Tamaño del código principal (v3) | `mainwindow.cpp` 3269 líneas; `mainwindow.ui` 2244; `mainwindow.h` 247; 186 funciones de `MainWindow` (contadas con una búsqueda por texto, sin contar constructor y destructor) |
-| Consultas | 98 llamadas a `prepare(` y 217 a `bindValue`; solo dos `exec("...")` directos sin parámetros: `SELECT LAST_INSERT_ID()` y `SET NAMES utf8mb4` |
+| Base de datos | MySQL (47 tablas); es la única que usa la app |
+| Drivers | `QMYSQL` (plugin de Qt) o, en Windows, ODBC (`QODBC`) con MySQL Connector/ODBC |
+| Tamaño del código principal (v3) | `mainwindow.cpp` 3248 líneas; `mainwindow.ui` 2244; `mainwindow.h` 246; 185 funciones de `MainWindow` (contadas con una búsqueda por texto, sin contar constructor y destructor) |
+| Consultas | 99 llamadas a `prepare(` y 224 a `bindValue`; solo dos `exec("...")` directos sin parámetros: `SELECT LAST_INSERT_ID()` y `SET NAMES utf8mb4` |
 | Nivel de código | Sin comentarios, sin ternarios, sin `continue`, sin `findData`, `.arg` encadenados de a un parámetro (verificado con búsquedas por texto sobre toda la app v3; ver `REVISION_CODIGO_*`) |
 
 ---
@@ -38,7 +37,7 @@
 ### 2.2 Arranque (`main.cpp`)
 1. Se crea la `QApplication`.
 2. Se muestra `VentanaInicio` (splash).
-3. Se construye `MainWindow` (ahí se abre la base de datos, ver sección 4).
+3. Se construye `MainWindow` (ahí se abre la base de datos, ver sección 4). Si no se puede abrir MySQL, la app muestra el motivo y la ventana queda deshabilitada (ver 4.5).
 4. `inicio.exec()` espera a que se cierre el splash.
 5. `w.show()` muestra la ventana principal.
 
@@ -76,7 +75,7 @@ Estas funciones se usan en todos los módulos; conviene conocerlas antes de toca
 | `registrarLog` | **Único método** que escribe en la auditoría |
 | `confirmar(titulo, pregunta)` | Cuadro Sí/No; el botón por defecto es **No** |
 | `hashClave` | SHA-256 de la clave con `QCryptographicHash` |
-| `valorAhora()`, `valorFecha(QDate)` | Fecha y hora para guardar en la base, calculadas en C++ (no en el SQL) |
+| `valorAhora()`, `valorFecha(QDate)` | Fecha y hora para guardar en la base, calculadas en C++ (no en el SQL): devuelven siempre un `QDateTime` o un `QDate` |
 | `ultimoId(QSqlQuery&)` | Devuelve el id recién insertado; con driver ODBC pide `SELECT LAST_INSERT_ID()` |
 | `formatoCorto()`, `plural` | Formato de fechas y plurales en los textos |
 | `ponerIcono`, `colorToken` | Íconos y colores de estado |
@@ -106,28 +105,34 @@ Toda acción relevante (alta, baja, cambio de estado, intento fallido) termina e
 ### 3.2 Scripts
 | Script | Para qué sirve | Quién lo usa |
 |---|---|---|
-| `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql` | Crea las 47 tablas y carga los datos de demostración en MySQL | Se carga a mano en DBeaver o Workbench |
-| `05_Backend_Grupo00.sql` | Crea 5 procedimientos almacenados (usa `DELIMITER`, se carga aparte) | Se carga a mano |
-| `iqual_sqlite.sql` | Mismo modelo para SQLite | **Está embebido en la app** (`:/imagenes/iqual_sqlite.sql`); la app lo ejecuta para crear `iqual.db` |
-| `03_ModeloSQL_Grupo00_sqlserver.sql` | Versión para SQL Server 2005 | Entrega del proyecto; **no se probó** |
-| `consultas_demo.sql` | 10 consultas para la demostración | A mano |
-| `consultas_verificacion.sql` | 28 consultas para verificar la carga | A mano |
+| `03_ModeloSQL_Grupo00.sql` | Crea la base `iqual` y las 47 tablas | Se carga a mano en DBeaver o Workbench |
+| `04_DatosSQL_Grupo00.sql` | Carga los datos de demostración (62 usuarios) | Se carga a mano, después del 03 |
+| `05_Backend_Grupo00.sql` | Crea los 27 procedimientos almacenados (usa `DELIMITER`, se carga aparte) | Se carga a mano, después del 04 |
+| `03_ModeloSQL_Grupo00_sqlserver.sql` y `04_DatosSQL_Grupo00_sqlserver.sql` | Versión para SQL Server 2005 | Entrega del proyecto; **no se probó** |
+| `consultas_demo.sql` | Consultas para la demostración | A mano |
+| `consultas_verificacion_mysql.sql` | Consultas para verificar la carga | A mano |
 
-**Importante:** la app **no crea las tablas en MySQL**. Si la base `iqual` existe pero está vacía, la app avisa que hay que cargar `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql` desde DBeaver.
+La app no trae ningún script embebido: no crea tablas ni datos.
+
+**Importante:** la app **no crea las tablas en MySQL**. Si la base `iqual` existe pero está vacía, la app avisa que hay que cargar `03_ModeloSQL_Grupo00.sql` y `04_DatosSQL_Grupo00.sql` desde DBeaver.
 
 ### 3.3 Procedimientos almacenados
-`05_Backend_Grupo00.sql` crea 27 rutinas: 15 SP de funcionalidades (registrar log y usuario, objetos y reclamos, préstamo y devolución de equipos, reservas de sectores, higiene, compras y donaciones, inscripciones de Educación Física), 8 reportes, 1 de auditoría con rango de fechas y 2 versiones tuneadas, más el auxiliar `sp_aux_solo_digitos`. Cada SP devuelve un único resultado: `estado = 'OK'` con los ids, o `estado = 'ERROR'` con `codigo_sql` y `descripcion_error`. Fichas en `db/SP_*.md`, pruebas en `db/06_PruebasSQL.xlsx` y tuning medido en `db/TUNING_REPORTES.md`. De todos ellos la app Qt solo llama a `sp_registrar_log` (para el log de auditoría en MySQL, con respaldo al INSERT); el resto de las consultas de la app están escritas en `mainwindow.cpp`.
+`db/05_Backend_Grupo00.sql` crea **27 rutinas**: 15 procedimientos de funcionalidades (registrar log y usuario, objetos y reclamos, préstamo y devolución de equipos, reservas de sectores, higiene, compras y donaciones, inscripciones de Educación Física), 9 de reportes y auditoría, 2 versiones tuneadas de reportes y el auxiliar `sp_aux_solo_digitos`. (El script también crea y borra al final `sp_aux_crear_indices`, que solo sirve para crear índices al cargarlo.) Cada procedimiento devuelve un único resultado: `estado = 'OK'` con los ids, o `estado = 'ERROR'` con `codigo_sql` y `descripcion_error`.
 
-### 3.4 Diferencias entre MySQL y SQLite
-| Tema | MySQL | SQLite (respaldo) |
-|---|---|---|
-| Fechas | tipos `DATE` / `DATETIME` | texto |
-| Mayúsculas y tildes en comparaciones y `LIKE` | el collation por defecto (`utf8mb4_0900_ai_ci`) no las distingue: `ALUMNO1` = `alumno1` | solo ignora mayúsculas ASCII |
-| Restricciones `CHECK` | se aplican desde MySQL 8.0.16 | se aplican |
-| Claves foráneas | siempre | la app ejecuta `PRAGMA foreign_keys = ON` al abrir |
-| Id nuevo | `LAST_INSERT_ID()` con ODBC, `lastInsertId()` con QMYSQL | `lastInsertId()` |
+**La app llama solo a `sp_registrar_log`** (`CALL sp_registrar_log(...)` desde `registrarLog`, para el log de auditoría). Si ese `CALL` falla, hace el `INSERT` en `log_auditoria` directamente. Las demás consultas de la app están escritas en `mainwindow.cpp`; los otros 26 procedimientos se usan desde la base (DBeaver o Workbench).
 
-El código evita SQL propio de un motor: las fechas se calculan en C++ y el id nuevo pasa por `ultimoId`.
+Fichas en `db/SP_*.md`, pruebas en `db/06_PruebasSQL.xlsx` (107 casos) y tuning medido en `db/TUNING_REPORTES.md`.
+
+### 3.4 Cómo usa la app los tipos y el motor
+| Tema | Cómo es en MySQL |
+|---|---|
+| Fechas | tipos `DATE` / `DATETIME`; la app pasa un `QDate` o un `QDateTime` con `bindValue` |
+| Mayúsculas y tildes en comparaciones y `LIKE` | el collation por defecto (`utf8mb4_0900_ai_ci`) no las distingue: `ALUMNO1` = `alumno1` |
+| Restricciones `CHECK` | se aplican desde MySQL 8.0.16 |
+| Claves foráneas | siempre (InnoDB) |
+| Id nuevo | `LAST_INSERT_ID()` con ODBC, `lastInsertId()` con `QMYSQL` (función `ultimoId`) |
+
+El código no usa funciones de fecha del SQL (`NOW()`, `CURDATE()`): las fechas se calculan en C++ y el id nuevo pasa por `ultimoId`.
 
 ---
 
@@ -135,15 +140,13 @@ El código evita SQL propio de un motor: las fechas se calculan en C++ y el id n
 
 ### 4.1 Flujo
 1. Al construir `MainWindow` se llama a `abrirBase()`.
-2. Si existe la variable de entorno `IQUAL_MOTOR=sqlite`, se usa SQLite directamente.
-3. Si no, se lee `iqual.ini`, que está **al lado del .exe**. Si no existe, la app lo crea con valores por defecto.
-4. Con `motor=mysql` se intenta `abrirMySql`. Si falla, la app muestra un aviso con el motivo y **pasa a SQLite** (`abrirSqlite`).
-5. El título de la ventana indica el motor: «· MySQL», «· MySQL (ODBC)» o nada si es SQLite.
+2. `abrirBase()` lee `iqual.ini`, que está **al lado del .exe**. Si no existe, la app lo crea con valores por defecto.
+3. Llama a `abrirMySql()`. Si conecta, el título de la ventana termina en «· MySQL» o «· MySQL (ODBC)» según el driver.
+4. Si no conecta, `abrirBase()` muestra «No se pudo usar MySQL: …» con el motivo y devuelve `false` (ver 4.5).
 
 ### 4.2 `iqual.ini`
 | Clave | Valor por defecto | Descripción |
 |---|---|---|
-| `motor` | `mysql` | `mysql` o `sqlite` |
 | `host` | `localhost` | Servidor |
 | `puerto` | `3306` | Puerto |
 | `usuario` | (por defecto de la app) | Usuario de MySQL |
@@ -152,23 +155,26 @@ El código evita SQL propio de un motor: las fechas se calculan en C++ y el id n
 | `driver` (opcional) | `auto` | `auto`, `qmysql` u `odbc` |
 | `odbc_driver` (opcional) | (se busca solo) | Nombre exacto del driver ODBC instalado |
 
-Los valores de usuario y clave **no se escriben en este manual**: están en `GUIA_CONEXION_APP_MYSQL.md` y en el script de datos.
+Todas van en la sección `[base]`. Los valores de usuario y clave **no se escriben en este manual**: están en `GUIA_CONEXION_APP_MYSQL.md` y en el script de datos.
 
 ### 4.3 `abrirMySql` y elección del driver
-- `driver=auto`: usa `QMYSQL` si Qt lo tiene disponible; si no, usa `QODBC`.
+- `driver=auto`: usa `QMYSQL` si Qt lo tiene disponible; si no, usa `QODBC`. Si no hay ninguno de los dos, devuelve el error «Qt no tiene ni el driver QMYSQL ni el QODBC».
 - Con ODBC arma la cadena de conexión `DRIVER={...};SERVER=...;PORT=...;DATABASE=...`.
 - `nombreDriverOdbc` busca en el registro de Windows (`HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI\ODBC Drivers`) un driver de MySQL y prefiere el que dice «Unicode». Se puede forzar con `odbc_driver`.
 - Después de conectar ejecuta `SET NAMES utf8mb4` para que las tildes y la ñ viajen bien.
-- Si la base existe pero no tiene tablas, falla con el mensaje «Cargá 03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql desde DBeaver».
+- Si la base existe pero no tiene la tabla `usuario`, devuelve el error «La base … existe pero está vacía. Cargá 03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql desde DBeaver.»
 
 ### 4.4 Autochequeo con ODBC
-Con ODBC, la app hace una consulta de prueba (`SELECT COUNT(*) FROM rol WHERE nombre_rol = :nombre` buscando «Alumno»). Si devuelve menos de 1, entiende que el driver no está pasando bien los parámetros y cae al respaldo con un mensaje que sugiere instalar MariaDB Connector/ODBC.
+Con ODBC, la app hace una consulta de prueba (`SELECT COUNT(*) FROM rol WHERE nombre_rol = :nombre` buscando «Alumno»). Si devuelve menos de 1, entiende que el driver no está pasando bien los parámetros, cierra la conexión y devuelve un error que sugiere instalar MySQL Connector/ODBC o usar el driver `QMYSQL`. No hay otra base a la que pasar.
 
-### 4.5 `abrirSqlite`
-Si no existe `iqual.db` junto al .exe, la crea ejecutando el script embebido `:/imagenes/iqual_sqlite.sql` (lo separa por «;» y lo corre dentro de una transacción), y activa `PRAGMA foreign_keys = ON`.
+### 4.5 Qué pasa si no se puede conectar
+Si `abrirMySql` falla (servidor apagado, clave mal, base vacía, falta el driver o el autochequeo ODBC falla):
+1. `abrirBase()` muestra el aviso «No se pudo usar MySQL:» + el motivo + «Revisá iqual.ini y que el servidor esté encendido.».
+2. El constructor de `MainWindow` muestra un segundo aviso («No se pudo abrir la base de datos. Revisá iqual.ini y que el servidor MySQL esté encendido.»), deshabilita el `QStackedWidget` y sale sin llamar a `cargarCatalogos`.
+3. La ventana queda abierta pero **sin usarse**: no hay login ni módulos hasta corregir el problema y volver a abrir la app. No hay base de respaldo.
 
 ### 4.6 Pasos para instalar el driver
-**No se repiten acá.** Están en `GUIA_CONEXION_APP_MYSQL.md`: Camino A (MySQL Connector/ODBC Unicode de 64 bits), Camino B (compilar el plugin `QMYSQL`), instalación en Ubuntu y el plan de emergencia (`motor=sqlite`). La instalación del servidor y la carga del script están en `GUIA_INSTALACION_MYSQL.md`.
+**No se repiten acá.** Están en `GUIA_CONEXION_APP_MYSQL.md`: Camino A (MySQL Connector/ODBC Unicode de 64 bits), Camino B (compilar el plugin `QMYSQL`) e instalación en Ubuntu. La instalación del servidor y la carga del script están en `GUIA_INSTALACION_MYSQL.md`.
 
 ---
 
@@ -183,13 +189,13 @@ Si no existe `iqual.db` junto al .exe, la crea ejecutando el script embebido `:/
 1. Abrir `CMakeLists.txt`.
 2. Elegir el kit Desktop Qt 6.12.0 MinGW 64-bit.
 3. Compilar y ejecutar el objetivo **`PROYECTO_IQUAL`**.
-4. En la primera ejecución se crea `iqual.ini` (y `iqual.db` si cae en SQLite) **junto al .exe**, no junto al código.
-5. Para usar MySQL: levantar el servidor, cargar `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql` (y los procedimientos) y revisar `iqual.ini` (`GUIA_INSTALACION_MYSQL.md` y `GUIA_CONEXION_APP_MYSQL.md`).
+4. En la primera ejecución se crea `iqual.ini` **junto al .exe**, no junto al código.
+5. Antes de abrir la app: levantar el servidor MySQL, cargar `03_ModeloSQL_Grupo00.sql`, `04_DatosSQL_Grupo00.sql` y `05_Backend_Grupo00.sql` y revisar `iqual.ini` (`GUIA_INSTALACION_MYSQL.md` y `GUIA_CONEXION_APP_MYSQL.md`).
 
-### 5.3 Observaciones sobre el paquete recibido (`app_codigo.zip` de la v3)
-- **Ahora sí trae** la carpeta `recursos/` (íconos, imágenes y las dos hojas `.qss`).
-- **Sigue faltando `iqual_sqlite.sql`**: `recursos.qrc` lo incluye (`<file>iqual_sqlite.sql</file>`, junto al `.qrc`) y no está en el zip. Sin ese archivo el proyecto no compila. Es el script que la app ejecuta para crear `iqual.db`.
-- **Siguen faltando los `harness*.cpp`**: `CMakeLists.txt` conserva el bucle `foreach(h harness harness2 harness3 harness4 harness6 harness7)` y esos archivos no están en el zip; CMake falla al configurar si no están. CONTEXTO §20 informa que Arce Thiago y Cabrera Ulises corrió `harness3` y `harness4` (0 fallas), así que existen en su repositorio. `[COMPLETAR: Arce Thiago y Cabrera Ulises incluye los harness y `iqual_sqlite.sql` en el repositorio de entrega, o saca el bucle del `CMakeLists.txt`]`
+### 5.3 Observaciones sobre el paquete (`repo.zip` del 19/11/2026)
+- `CMakeLists.txt` compila solo `main.cpp`, `mainwindow.*`, `ventanadetalle.*`, `ventanaproducto.*`, `ventanainicio.*` y `recursos.qrc`, y enlaza `Qt6::Widgets` y `Qt6::Sql`. Ya no hay ejecutables de prueba aparte (`harness*`): las pruebas de la app son los casos por pantalla de `docs/pruebas` y los 107 casos de los procedimientos (`db/06_PruebasSQL.xlsx`).
+- `recursos.qrc` embebe el logo, el GIF del splash, los dos `.qss` y los íconos; ya no embebe ningún script SQL.
+- **El zip no trae la carpeta `recursos/`** que `recursos.qrc` referencia (imágenes, temas e íconos); sin ella no compila desde ese zip. `[COMPLETAR: confirmar que la carpeta recursos/ está en el repositorio de GitHub]`
 - No pude compilar este paquete (en mi entorno no hay Qt).
 
 ---
@@ -206,9 +212,9 @@ db/          scripts SQL, diagramas y guías de MySQL
 recursos/    tema/ (claro.qss, oscuro.qss), imagenes/, iconos/
 ```
 
-`[COMPLETAR: confirmar la estructura final del repositorio; el README_proyecto.md todavía dice 44 tablas, SQLite por defecto, «Buffet Paralelo» y «Planillas de Taller», y lo está actualizando Arce Thiago y Cabrera Ulises]`
+`[COMPLETAR: confirmar la estructura final del repositorio]`
 
-Recursos embebidos (`recursos.qrc`): `/imagenes` (logo, GIF del splash, `iqual_sqlite.sql`), `/tema` (los dos `.qss`) e `/iconos` (`nav_*`, `tarj_*`, `barra_*`).
+Recursos embebidos (`recursos.qrc`): `/imagenes` (logo y GIF del splash), `/tema` (los dos `.qss`) e `/iconos` (`nav_*`, `tarj_*`, `barra_*`).
 
 ---
 
@@ -217,7 +223,7 @@ Recursos embebidos (`recursos.qrc`): `/imagenes` (logo, GIF del splash, `iqual_s
 Fuente: CONTEXTO §19.1 y §20.
 
 **Probado (Arce Thiago y Cabrera Ulises, en Linux con Qt 6.4 y MariaDB 10.11):**
-- Pruebas automáticas: 0 fallas con `QMYSQL` y con SQLite (en la v3, `harness3` y `harness4`, según CONTEXTO §20).
+- Las pruebas automáticas que se hacían con el motor de respaldo (`harness*`) dejaron de existir (CONTEXTO §23); lo que se informó con `QMYSQL` fue en la versión anterior y no se repitió con la v3.
 - 131 consultas validadas con el modo `ONLY_FULL_GROUP_BY`.
 - `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql`, los procedimientos, `consultas_demo.sql` y `consultas_verificacion.sql` corren sin errores.
 
@@ -235,11 +241,11 @@ Fuente: CONTEXTO §19.1 y §20.
 ## 8. Limitaciones y decisiones tomadas
 
 ### 8.1 Limitaciones conocidas
-- **MySQL por defecto, sin confirmación final:** fue decisión del usuario; el profesor Linares todavía no lo confirmó. `[COMPLETAR: confirmación de Linares]`
+- **MySQL como único motor, sin confirmación final:** fue decisión del usuario; el profesor Linares todavía no lo confirmó. `[COMPLETAR: confirmación de Linares]`
 - La app **no crea las tablas** en MySQL: hay que cargar el script a mano.
-- Si MySQL falla, la app sigue con SQLite: puede pasar sin que el usuario lo note si no mira el título de la ventana. Los datos de un motor no pasan al otro.
+- Si MySQL falla, la app avisa el motivo y no se puede usar (no hay base de respaldo): hay que dejar el servidor andando antes de la defensa.
 - El PIN de un grupo de recaudación se guarda en texto plano (`grupo_buffet.pin_acceso`); la clave de usuario se guarda con hash SHA-256 (sin sal). Para el alcance escolar se declara como limitación (RNF02).
-- Las comparaciones no distinguen mayúsculas ni tildes en MySQL (`utf8mb4_0900_ai_ci`) y sí lo hacen distinto en SQLite.
+- Las comparaciones no distinguen mayúsculas ni tildes (`utf8mb4_0900_ai_ci`).
 - Hay errores abiertos de baja gravedad documentados por módulo (ver `ERRORES_ACCESO_OBJETOS_PRESTAMO/3/4.md`).
 - Rendimiento con muchos datos: no se midió (RNF03).
 - Sin pagos reales: las reservas de la Tienda se coordinan y se pagan en persona (CONTEXTO §9).
@@ -267,7 +273,7 @@ ERR-01, 02, 03, 05, 06, 07 (Arce Thiago y Cabrera Ulises); E4-01, 02, 03, 11 (Ar
 
 Los usuarios, claves y PIN de demostración **no se escriben acá**: están en el script de datos (`03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql`) y en `GUIA_CONEXION_APP_MYSQL.md`. Resumen de lo que hay cargado (CONTEXTO §8): usuarios `alumno1`, `alumno2`, `profe1`, `preceptor1` y `maestranza1`; objetos perdidos de ejemplo; el grupo «Viaje de Estudios 4to 1ra» con tres productos; un equipo prestado; un tablero fuera de servicio; 20 ofertas de Educación Física.
 
-**Reservas de sectores:** CONTEXTO §8 dice que tienen fechas fijas (05 y 06/11/2026) y que la app deja de mostrarlas después (filtra fecha ≥ hoy). **El `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql` que recibí el 11/11 las carga con fechas relativas** (`DATE_ADD(CURDATE(), INTERVAL 1 DAY)` y `INTERVAL 2 DAY`), así que con MySQL siempre aparecen como «mañana» y «pasado». Para el script de SQLite (`iqual_sqlite.sql`, el embebido) no pude verificarlo porque no lo recibí. `[COMPLETAR: Arce Thiago y Cabrera Ulises confirma las fechas del script de SQLite y corrige CONTEXTO §8]`
+**Reservas de sectores:** CONTEXTO §8 dice que tienen fechas fijas (05 y 06/11/2026) y que la app deja de mostrarlas después (filtra fecha ≥ hoy). **El `04_DatosSQL_Grupo00.sql` que recibí el 11/11 las carga con fechas relativas** (`DATE_ADD(CURDATE(), INTERVAL 1 DAY)` y `INTERVAL 2 DAY`), así que siempre aparecen como «mañana» y «pasado». `[COMPLETAR: corregir CONTEXTO §8 con esas fechas relativas]`
 
 **Otras diferencias de CONTEXTO §8 con el script de MySQL:** `alumno2` es de **5° 2° Óptica** (no Electrónica); «Llaves con llavero rojo» está **Disponible con dos reclamos pendientes** (de `alumno1` y `alumno2`) y «Calculadora científica» está Devuelta con un reclamo aprobado.
 
@@ -277,16 +283,15 @@ Los usuarios, claves y PIN de demostración **no se escriben acá**: están en e
 - **No compilé ni ejecuté nada.** Todo lo de este manual sale de leer el código y los documentos; los resultados de pruebas son los que informa CONTEXTO §19.1.
 - Dejé las instrucciones del driver en `GUIA_CONEXION_APP_MYSQL.md` (como se pidió) y no inventé pasos.
 - No incluí usuarios, claves ni PIN.
+- **Ronda del 19/11/2026 (CONTEXTO §23):** reescribí las secciones 1, 3.2, 3.3, 3.4, 4 y 5 y los puntos de las secciones 6 a 9 que hablaban del motor de respaldo y de lo que giraba a su alrededor (variable de entorno, clave del `.ini`, ejecutables de prueba y script embebido); recontré líneas, funciones y consultas sobre el `mainwindow.cpp` actual. Los resultados de pruebas anteriores con el motor de respaldo no se repiten.
 - **Ronda final:** actualicé las métricas y el estado del código a la app v3 (los números los recontó con comandos sobre el zip recibido), agregué las limitaciones de CONTEXTO §9 que faltaban y corregí lo que había dicho de las fechas de las reservas de sectores y de `alumno2`, comparando con `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql`.
 - CONTEXTO §8 y §9 tienen datos viejos frente al script y a la v3 (ver sección 9); en este manual valen el script y el código.
-- Los procedimientos almacenados no los llama la app (ver 3.3); lo dejé marcado como duda y no como error.
+- De los 27 procedimientos la app llama solo a `sp_registrar_log` (ver 3.3); lo dejé documentado como decisión y no como error.
 - El plan de aprendizaje dice «C/Qt»; el proyecto es C++17 con Qt: lo describí como C++17.
 
 ## Datos que faltan
 - `[COMPLETAR: confirmación de Linares sobre MySQL]`
 - `[COMPLETAR: resultado de la prueba en Windows (ODBC y plugin QMYSQL)]` — lo hace el usuario.
-- `[COMPLETAR: incluir en el repositorio los `harness*.cpp` y `iqual_sqlite.sql`, o sacar el bucle de harness del CMakeLists.txt]` — Arce Thiago y Cabrera Ulises.
-- `[COMPLETAR: fechas de las reservas de sectores del script de SQLite]` — Arce Thiago y Cabrera Ulises.
-- `[COMPLETAR: estructura final del repositorio]` — Arce Thiago y Cabrera Ulises está actualizando el README.
+- `[COMPLETAR: confirmar que la carpeta recursos/ está en el repositorio de GitHub]` — Arce Thiago y Cabrera Ulises.
+- `[COMPLETAR: estructura final del repositorio]` — Arce Thiago y Cabrera Ulises.
 - `[COMPLETAR: quién restablece la contraseña en el colegio]`
-- `[COMPLETAR: si los procedimientos almacenados se muestran solo como parte de la base o también desde la app]`

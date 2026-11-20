@@ -13,12 +13,12 @@ Fuentes (consultadas el 11/11/2026):
 
 ## 0. Qué hace la app (leído de `mainwindow.cpp`, funciones `abrirBase`, `abrirMySql`, `nombreDriverOdbc`)
 
-1. Lee `iqual.ini` junto al `.exe` (si no existe, lo crea con `motor=mysql`, `host=localhost`, `puerto=3306`, `usuario=root`, `clave=12341234`, `nombre=iqual`).
-2. Con `motor=mysql` y `driver=auto`: si Qt tiene el driver `QMYSQL`, lo usa; si no, usa `QODBC`. Con `driver=qmysql` o `driver=odbc` fuerza uno.
-3. Si el driver elegido no existe, muestra un aviso y **sigue con `iqual.db` (SQLite)**. Por eso la app siempre abre.
+1. Lee `iqual.ini` junto al `.exe` (si no existe, lo crea con `host=localhost`, `puerto=3306`, `usuario=root`, `clave=12341234`, `nombre=iqual`).
+2. Con `driver=auto` (el valor por defecto): si Qt tiene el driver `QMYSQL`, lo usa; si no, usa `QODBC`. Con `driver=qmysql` o `driver=odbc` fuerza uno.
+3. Si el driver elegido no existe, muestra un aviso. La app **no tiene otra base de respaldo**: si no conecta, deja la pantalla deshabilitada (ver «Probar la conexión antes de la demo», al final).
 4. Con ODBC arma la conexión como `DRIVER={<nombre del driver>};SERVER=…;PORT=…;DATABASE=…`. El nombre sale de `odbc_driver=` en `iqual.ini`; si está vacío, en Windows lo busca en el registro (`HKLM\SOFTWARE\ODBC\ODBCINST.INI\ODBC Drivers`), prefiriendo uno que diga «MySQL» y «Unicode»; si no encuentra ninguno usa `MySQL ODBC 8.0 Unicode Driver`.
-5. Después de conectar hace `SET NAMES utf8mb4`, comprueba que exista la tabla `usuario` y, solo con ODBC, hace una consulta de prueba (`rol` con `nombre_rol = 'Alumno'`): si da 0 filas, cierra y vuelve a SQLite con aviso.
-6. El título de la ventana lo dice: sin sufijo = SQLite, **· MySQL** = `QMYSQL`, **· MySQL (ODBC)** = ODBC.
+5. Después de conectar hace `SET NAMES utf8mb4`, comprueba que exista la tabla `usuario` y, solo con ODBC, hace una consulta de prueba (`rol` con `nombre_rol = 'Alumno'`): si da 0 filas, cierra la conexión y muestra el aviso del driver ODBC.
+6. El título de la ventana lo dice: **· MySQL** = `QMYSQL`, **· MySQL (ODBC)** = ODBC. Sin sufijo significa que no conectó.
 
 Qué dice Qt (fuente 1): en Windows ya hay un *driver manager* ODBC instalado; el plugin `QODBC` usa la API Unicode por defecto en Windows; el driver y la base también tienen que soportar Unicode.
 
@@ -45,7 +45,6 @@ Normalmente **nada**: con `driver=auto` y sin `QMYSQL`, la app usa ODBC y busca 
 
 ```
 [base]
-motor=mysql
 driver=odbc
 odbc_driver=MySQL ODBC 8.0 Unicode Driver
 host=localhost
@@ -65,11 +64,11 @@ nombre=iqual
 | Texto del driver con «Data source name not found and no default driver specified» (o parecido) | El nombre en `DRIVER={…}` no coincide con ningún driver instalado | Repetir A2 y copiar el nombre exacto en `odbc_driver=` |
 | «Can't connect to MySQL server» / «Access denied for user» | Servidor apagado, puerto distinto o clave mal | Ver `GUIA_INSTALACION_MYSQL.md` §6 (errores 2003 y 1045) |
 | «La base iqual existe pero está vacía. Cargá 03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql desde DBeaver.» | Se conectó, pero no hay tablas | Cargar `03_ModeloSQL_Grupo00.sql` y después `04_DatosSQL_Grupo00.sql` (`GUIA_INSTALACION_MYSQL.md` §3) |
-| «El driver ODBC no compara bien los textos (le pasa al MariaDB Connector/ODBC)…» | El autochequeo falló: las búsquedas por nombre devuelven 0 filas | Instalar **MySQL Connector/ODBC** (no el de MariaDB) o usar `QMYSQL`. La app ya volvió a SQLite |
+| «El driver ODBC no compara bien los textos (le pasa al MariaDB Connector/ODBC)…» | El autochequeo falló: las búsquedas por nombre devuelven 0 filas | Instalar **MySQL Connector/ODBC** (no el de MariaDB) o usar `QMYSQL`. La app no abre la base: corregí el driver y volvé a abrirla |
 
 Hallazgo previo (CONTEXTO §19 y prompt): con el conector ODBC **de MariaDB**, Qt manda los textos con un carácter nulo de más y por eso las comparaciones por nombre dan 0 filas. Con MySQL Connector/ODBC **no está probado**: el autochequeo existe justamente para detectarlo.
 
-Después de A1 a A3 abrí la app: el título tiene que decir **· MySQL (ODBC)**. Si dice solo «PROYECTO IQUAL» sin sufijo, está en SQLite y hubo un aviso al arrancar: leelo.
+Después de A1 a A3 abrí la app: el título tiene que decir **· MySQL (ODBC)**. Si dice solo «PROYECTO IQUAL» sin sufijo, no conectó y hubo avisos al arrancar: leelos (ver abajo qué dice cada uno).
 
 ---
 
@@ -110,8 +109,18 @@ cmake --install .
 
 ---
 
-## Plan de emergencia para la defensa
-Poné `motor=sqlite` en `iqual.ini` (o la variable de entorno `IQUAL_MOTOR=sqlite`) y mostrá MySQL aparte desde DBeaver o Workbench: las dos bases tienen las mismas 47 tablas y los mismos datos de ejemplo.
+## Probar la conexión antes de la demo
+La app **no tiene base de respaldo**: si no conecta a MySQL, no se puede usar. Por eso hay que probarla en la compu donde se va a presentar, de preferencia la víspera y otra vez un rato antes.
+
+1. **Servidor encendido.** Conectate con DBeaver o Workbench con los mismos datos que `iqual.ini` (por defecto `localhost`, puerto `3306`, usuario `root`, base `iqual`).
+2. **Base cargada.** Corré `SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'iqual';` y comprobá que dé **47** (si da 0, falta cargar `03_ModeloSQL_Grupo00.sql` y `04_DatosSQL_Grupo00.sql`).
+3. **`iqual.ini`.** Está junto al `.exe`; `host`, `puerto`, `usuario`, `clave` y `nombre` tienen que ser los del paso 1.
+4. **Abrir la app.** El título de la ventana tiene que terminar en **· MySQL** o **· MySQL (ODBC)**. Entrá con una cuenta de demostración (por ejemplo `alumno1`, clave `1234`, CONTEXTO §8).
+5. **Si no conecta, qué muestra la app.** Dos cuadros «Atención», uno atrás del otro, y después la ventana con todo deshabilitado y el título sin sufijo:
+   - El primero: «No se pudo usar MySQL:» + el texto del error + «Revisá iqual.ini y que el servidor esté encendido.»
+   - El segundo: «No se pudo abrir la base de datos. Revisá iqual.ini y que el servidor MySQL esté encendido.»
+   - El texto del medio es el que dice qué pasó: ver la tabla de la sección A4 (driver que falta, servidor apagado o clave mal, base vacía, driver ODBC que no compara bien los textos).
+6. **Si falla en plena demo.** No hay otra base a la que cambiar. Lo que sí se puede seguir mostrando es la base y los procedimientos desde DBeaver o Workbench (`consultas_demo.sql` y `05_Backend_Grupo00.sql`). `[COMPLETAR: si el equipo prefiere llevar capturas de la app funcionando como respaldo]`
 
 ## Desvíos
 - No se probó ningún paso en Windows. Todo lo marcado 🔶 es general o está sin confirmar.
