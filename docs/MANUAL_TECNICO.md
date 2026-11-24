@@ -32,14 +32,12 @@
 | `MainWindow` | `mainwindow.cpp/.h/.ui` | Ventana principal: acceso, menú lateral, barra superior, los módulos y toda la lógica de negocio y de acceso a datos |
 | `VentanaDetalle` | `ventanadetalle.*` | Ventana de detalle (se abre desde las listas) |
 | `VentanaProducto` | `ventanaproducto.*` | Ventana de producto de la Tienda |
-| `VentanaInicio` | `ventanainicio.*` | Pantalla de presentación (splash): diálogo sin borde de 960×540 con un GIF animado (`QMovie`); se cierra sola a los 2600 ms o al hacer clic |
+| `VentanaInicio` | `ventanainicio.*` | Pantalla de presentación (splash). Se retiró del arranque: el código sigue en el proyecto pero la aplicación ya no la muestra |
 
 ### 2.2 Arranque (`main.cpp`)
 1. Se crea la `QApplication`.
-2. Se muestra `VentanaInicio` (splash).
-3. Se construye `MainWindow` (ahí se abre la base de datos, ver sección 4). Si no se puede abrir MySQL, la app muestra el motivo y la ventana queda deshabilitada (ver 4.5).
-4. `inicio.exec()` espera a que se cierre el splash.
-5. `w.show()` muestra la ventana principal.
+2. Se construye `MainWindow` (ahí se abre la base de datos, ver sección 4). Si no se puede abrir MySQL, la app muestra el motivo y la ventana queda deshabilitada (ver 4.5).
+3. `w.show()` muestra la ventana principal.
 
 ### 2.3 Una sola ventana, varias páginas (`QStackedWidget`)
 La interfaz se diseñó en Qt Designer (`mainwindow.ui`). El contenido cambia con un `QStackedWidget` de **10 páginas**, que el código nombra con el enum `Pagina`:
@@ -194,7 +192,7 @@ Si `abrirMySql` falla (servidor apagado, clave mal, base vacía, falta el driver
 
 ### 5.3 Observaciones sobre el proyecto CMake
 - `CMakeLists.txt` compila solo `main.cpp`, `mainwindow.*`, `ventanadetalle.*`, `ventanaproducto.*`, `ventanainicio.*` y `recursos.qrc`, y enlaza `Qt6::Widgets` y `Qt6::Sql`. Ya no hay ejecutables de prueba aparte (`harness*`): las pruebas de la app son los casos por pantalla de `docs/pruebas` y los 104 casos de los procedimientos (`db/06_PruebasSQL.xlsx`).
-- `recursos.qrc` embebe el logo, el GIF del splash, los dos `.qss` y los íconos; ya no embebe ningún script SQL.
+- `recursos.qrc` embebe el logo, el GIF del splash (sin uso), los dos `.qss` y los íconos; ya no embebe ningún script SQL.
 - La carpeta `recursos/` (imágenes, temas e íconos) está en el repositorio, junto a `recursos.qrc`.
 
 ---
@@ -212,7 +210,7 @@ recursos/    tema/ (claro.qss, oscuro.qss), imagenes/, iconos/
 ```
 
 
-Recursos embebidos (`recursos.qrc`): `/imagenes` (logo y GIF del splash), `/tema` (los dos `.qss`) e `/iconos` (`nav_*`, `tarj_*`, `barra_*`).
+Recursos embebidos (`recursos.qrc`): `/imagenes` (logo y GIF del splash, sin uso), `/tema` (los dos `.qss`) e `/iconos` (`nav_*`, `tarj_*`, `barra_*`).
 
 ---
 
@@ -221,13 +219,13 @@ Recursos embebidos (`recursos.qrc`): `/imagenes` (logo y GIF del splash), `/tema
 **Probado (Linux, Qt 6.4, MariaDB 10.11):**
 - 131 consultas de la app validadas con el modo `ONLY_FULL_GROUP_BY`.
 - Los scripts `03`, `04` y `05` (47 tablas, 62 usuarios, 27 procedimientos), `consultas_demo.sql` y `consultas_verificacion_mysql.sql` corren sin errores.
-- 104 casos de prueba de los procedimientos (`db/06_PruebasSQL.xlsx`), todos PASS.
+- 104 casos de prueba de los procedimientos (`db/06_PruebasSQL.xlsx`) planificados; 80 se ejecutaron a mano en la aplicación.
 - La app compila con Qt 6.12 MinGW 64-bit (Windows).
 
 **No probado:**
 - MySQL 8 de Oracle (la base usada fue MariaDB 10.11) y SQL Server 2005 (`03_ModeloSQL_Grupo00_sqlserver.sql`, solo revisado por lectura).
 - Rendimiento con muchos usuarios simultáneos (RNF03).
-- Los 337 casos de prueba por pantalla están escritos y su ejecución se registra en `docs/CASOS_PRUEBA_CONSOLIDADO.md` (columna «Resultado»); los que figuren sin resultado no se ejecutaron.
+- De los 337 casos de prueba por pantalla se probaron 306 (285 OK y 21 con observación); 31 quedaron sin probar. De los 104 casos planificados de la base, 80 se ejecutaron a mano. El resultado de cada caso está en `docs/CASOS_PRUEBA_CONSOLIDADO.md` (columna «Resultado»).
 
 `REVISION_ESTATICA_MYSQL.md` es una revisión por lectura, anterior a las corridas con MariaDB.
 
@@ -260,7 +258,7 @@ Recursos embebidos (`recursos.qrc`): `/imagenes` (logo y GIF del splash), `/tema
 | Educación Física | Inscribirme se deshabilita cuando la opción no se puede elegir; no se genera «Fallido» desde la pantalla |
 
 ### 8.3 Errores corregidos 
-ERR-01, 02, 03, 05, 06, 07 ; E4-01, 02, 03, 11 ; E-01, 02, 03 . En la app v3  se suman: E4-04 y E4-06 (Mi cuenta), E-15 (estilo de código en `cargarDiasEdFisica`) y la revisión de código de toda la app (sin comentarios, ternarios, `continue` ni `findData`). Sin cambios: la pantalla de inicio (ERR-23, decisión: no tocar).
+ERR-01, 02, 03, 05, 06, 07 ; E4-01, 02, 03, 11 ; E-01, 02, 03 . En la app v3  se suman: E4-04 y E4-06 (Mi cuenta), E-15 (estilo de código en `cargarDiasEdFisica`) y la revisión de código de toda la app (sin comentarios, ternarios, `continue` ni `findData`). Además, se retiró la pantalla de presentación (splash) del arranque (ERR-23).
 
 ---
 

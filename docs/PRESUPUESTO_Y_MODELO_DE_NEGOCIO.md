@@ -13,7 +13,7 @@ Dos presupuestos distintos, que conviene no mezclar en la defensa:
 1. **Costo de desarrollo (ya hecho):** lo que costó construir IQUAL (horas de trabajo, herramientas).
 2. **Costo de tenerlo funcionando en una escuela (por año):** infraestructura, mantenimiento y soporte.
 
-Y un modelo de negocio: cómo se cobraría y cuándo se recupera lo invertido (secciones 6 y 7).
+Y un modelo de negocio: cómo se cobraría (secciones 6 y 7). Es un ejercicio con estimaciones, no una venta real.
 
 ## 2. Horas hombre por rol
 **Fórmula:** `Costo del rol = [H] horas × [V] valor de la hora`. **Costo total de desarrollo = suma de los costos de todos los roles.**
@@ -23,8 +23,8 @@ Y un modelo de negocio: cómo se cobraría y cuándo se recupera lo invertido (s
 | Analista / relevamiento | Árbol de problemas, requerimientos, historias de usuario, matriz de trazabilidad | Thiago y Ulises | 30 | $10.000 | $300.000 |
 | Diseñador de base de datos | Modelo de 47 tablas en 3FN, diagramas, scripts MySQL y SQL Server, procedimientos | Ulises | 60 | $10.000 | $600.000 |
 | Programador C++/Qt | Aplicación de escritorio: 10 pantallas, conexión a la base, roles y permisos, auditoría | Ulises y Thiago | 120 | $10.000 | $1.200.000 |
-| Diseñador de interfaz | Maquetado, temas claro y oscuro, íconos, splash | Thiago y Ulises | 25 | $10.000 | $250.000 |
-| QA / pruebas | 337 casos de prueba escritos, informe de errores, revisión de código y 104 casos de procedimientos almacenados | Thiago y Ulises | 35 | $10.000 | $350.000 |
+| Diseñador de interfaz | Maquetado, temas claro y oscuro, íconos | Thiago y Ulises | 25 | $10.000 | $250.000 |
+| QA / pruebas | 337 casos de prueba por pantalla, 104 casos de procedimientos almacenados (80 ejecutados), informe de errores y revisión de código | Thiago y Ulises | 35 | $10.000 | $350.000 |
 | Documentación | Manuales de usuario y técnico, guías de MySQL, bitácora | Thiago y Ulises | 30 | $10.000 | $300.000 |
 | Gestión del proyecto | Coordinación, entregas, presentación y pitch | Ulises | 20 | $10.000 | $200.000 |
 | **Total** | | | **320** | | **$3.200.000** |
@@ -92,23 +92,21 @@ Los cuatro modelos que pide el plan, aplicados a IQUAL **tal como es hoy** (apli
 
 **Combinación posible:** llave en mano (instalación y capacitación) + soporte mensual. Es la que mejor se corresponde con el estado actual del producto; el SaaS queda como una etapa futura.
 
-**Qué precio fijar:** propuesta del equipo: llave en mano $4.500.000 + soporte $80.000 por mes (cubre el desarrollo con la primera escuela y el mantenimiento anual con el soporte: $960.000 por año contra $720.000). Criterios para decidirlo: Criterios: (1) cubrir el costo de las secciones 2 y 5, (2) quedar por debajo de lo que la escuela pagaría por una plataforma comercial. Como referencia, `ANALISIS_COMPETENCIA.md` **no pudo sostener ningún precio comercial con fecha** (las fuentes dan «bajo cotización» o «consultar precios», o no tienen fecha de publicación); lo que sí figura es que Google Workspace for Education Fundamentals se ofrece sin cargo a instituciones elegibles (vigencia a confirmar). El precio es una propuesta del equipo; no se pudieron sostener precios comerciales con fecha.
+**Qué precio fijar:** propuesta del equipo: llave en mano $4.500.000 + soporte $80.000 por mes (el soporte anual, $960.000, contra un mantenimiento estimado de $720.000). Criterios para decidirlo: Criterios: (1) cubrir el costo de las secciones 2 y 5, (2) quedar por debajo de lo que la escuela pagaría por una plataforma comercial. Como referencia, `ANALISIS_COMPETENCIA.md` **no pudo sostener ningún precio comercial con fecha** (las fuentes dan «bajo cotización» o «consultar precios», o no tienen fecha de publicación); lo que sí figura es que Google Workspace for Education Fundamentals se ofrece sin cargo a instituciones elegibles (vigencia a confirmar). El precio es una propuesta del equipo; no se pudieron sostener precios comerciales con fecha.
 
 ## 7. Retorno de la inversión
 Hay dos retornos, y el segundo suele ser el más fuerte en una escuela.
 
-### 7.1 Retorno económico (si se vende), con las cifras del equipo
+### 7.1 Margen estimado (si se vendiera), con las cifras del equipo
 | Concepto | Cálculo | Valor |
 |---|---|---|
 | Inversión inicial (desarrollo) | 320 h × $10.000 | $3.200.000 |
-| Ingreso del año 1 con 1 escuela | $4.500.000 + 12 × $80.000 | $5.460.000 |
+| Ingreso del año 1 con 1 escuela (hipotética) | $4.500.000 + 12 × $80.000 | $5.460.000 |
 | Costo de mantenimiento anual | 72 h × $10.000 | $720.000 |
 | Margen del año 1 | $5.460.000 − $3.200.000 − $720.000 | $1.540.000 |
-| **ROI del año 1** | $1.540.000 ÷ ($3.200.000 + $720.000) | **39 %** |
 | Margen anual desde el año 2 (por escuela) | $960.000 de soporte − $720.000 de mantenimiento | $240.000 |
-| **Punto de equilibrio** | La instalación ($4.500.000) supera el desarrollo ($3.200.000) | **1 escuela, dentro del año 1** |
 
-La infraestructura ($870.000) se considera a cargo de la escuela. Si el equipo la tuviera que aportar, el margen del año 1 baja a $670.000 y el ROI a 14 %. Estas cifras dependen de que haya una escuela que pague ese precio: es una hipótesis comercial, no un resultado.
+La infraestructura ($870.000) se considera a cargo de la escuela. Estas cifras son un modelo con estimaciones del equipo: dependen de que una escuela pague ese precio, que es una hipótesis y no un resultado. Ninguna escuela aceptó comprarlo.
 
 ### 7.2 Retorno para la escuela (si se usa dentro del colegio)
 No es dinero, sino tiempo y orden. Qué medir (hoy **no hay mediciones**): 
@@ -125,7 +123,7 @@ No es dinero, sino tiempo y orden. Qué medir (hoy **no hay mediciones**):
 Nada de esto fue medido porque la app todavía no se probó en uso real (`INFORME_PRUEBAS.md`). En la defensa conviene presentarlo como **hipótesis a medir**, no como resultado.
 
 ## 8. Fórmulas para una planilla
-Cuando el equipo cargue los datos, en una hoja de cálculo alcanza con: una columna de horas `[H]`, una de valor `[V]` y una de costo con la fórmula `=H*V` por fila; el total con `=SUMA(...)`. Punto de equilibrio: `=I/Mg`. ROI: `=(Mg*N-I)/I`.
+Cuando el equipo cargue los datos, en una hoja de cálculo alcanza con: una columna de horas `[H]`, una de valor `[V]` y una de costo con la fórmula `=H*V` por fila; el total con `=SUMA(...)`. 
 
 ## 9. Resumen para la defensa
 **Valores estimados por el equipo para el ejercicio (en pesos); se ajustan con el valor de hora que fije el docente y con datos reales de la escuela.**
@@ -138,7 +136,7 @@ Cuando el equipo cargue los datos, en una hoja de cálculo alcanza con: una colu
 | Mantenimiento anual | 6 horas por mes × 12 × $10.000 = $720.000 |
 | Modelo de ingreso elegido | Llave en mano + soporte mensual |
 | Precio por escuela | $4.500.000 de instalación + $80.000 por mes de soporte |
-| Retorno | ROI año 1: 39 %. Punto de equilibrio: 1 escuela: la instalación ($4.500.000) cubre el desarrollo ($3.200.000) y el soporte anual ($960.000) cubre el mantenimiento ($720.000) |
+| Retorno | Hipótesis a medir; no se calcula un ROI porque no hay un cliente real ni mediciones |
 
 ## Fuentes (consultadas el 12/11/2026)
 1. [MySQL Community Edition — mysql.com](https://www.mysql.com/de/products/community/) (consultada 12/11/2026; la página no informa fecha)

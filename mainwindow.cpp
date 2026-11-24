@@ -674,7 +674,9 @@ void MainWindow::on_btnRegistrar_clicked()
     QString problema = "";
     if (!nombre.contains(" ")) problema = "Escribí tu nombre y apellido separados por un espacio.";
     else if (nick.size() < 3) problema = "El usuario tiene que tener al menos 3 caracteres.";
+    else if (nick.contains(QRegularExpression("\\s"))) problema = "El usuario no puede tener espacios.";
     else if (clave.size() < 4) problema = "La contraseña tiene que tener al menos 4 caracteres.";
+    else if (clave.trimmed().isEmpty()) problema = "La contraseña no puede estar en blanco.";
     else if (!soloDigitos(dni, 7, 8)) problema = "El DNI tiene que tener 7 u 8 números, sin puntos.";
     else if (!QRegularExpression("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$").match(mail).hasMatch()) problema = "El correo no es válido. Tiene que ser algo como nombre@dominio.com.";
     else if (!soloDigitos(telefono, 8, 15)) problema = "El teléfono tiene que tener entre 8 y 15 números.";
@@ -2547,9 +2549,10 @@ void MainWindow::on_btnSectoresCancelar_clicked()
     q.bindValue(":estado", idEstado("estado_reserva", "Cancelada"));
     q.bindValue(":reserva", reserva);
     if (!q.exec()) {
-        fallar("", "", "No se pudo cancelar la reserva. Probá de nuevo.");
+        fallar("Reserva de sector", "reserva_sector", "No se pudo cancelar la reserva. Probá de nuevo.");
         return;
     }
+    registrarLog("Reserva de sector", QString("Reserva %1: Cancelada").arg(reserva), "reserva_sector", "Exitoso");
     cargarOcupacion();
     cargarReservasSector();
 }

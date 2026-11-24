@@ -2,12 +2,10 @@
 
 **Proyecto:** PROYECTO IQUAL® · SGE · E.T. N°3 D.E.9 · Proyecto Informático I
 **Autores:** Arce Thiago · Cabrera Ulises
-**Fecha de este informe:** 13/11/2026 · **App evaluada:** v3 (`iqual_integrado_v3`, CONTEXTO §20)
+**Fecha de este informe:** 24/11/2026 · **App evaluada:** v3 con las correcciones de la última ronda
 
-> **Estado en una línea:** hay **337 casos de prueba escritos** y **55 errores detectados por lectura de código** (20 corregidos, 7 con decisión por defecto, 1 «No aplica» porque se sacó SQLite, 26 abiertos, 1 a verificar en MySQL, ninguno de gravedad alta). **Ningún caso fue ejecutado todavía:** la columna «Resultado» está vacía. Lo único que se ejecutó, en la versión anterior de la app, fue lo que informa el CONTEXTO (§19.1): scripts y consultas en MariaDB 10.11 y las 131 consultas con `ONLY_FULL_GROUP_BY`; las pruebas automáticas internas ya no existen (CONTEXTO §23).
+> **Estado en una línea:** hay **337 casos de prueba por pantalla escritos** y **104 casos de prueba planificados para los procedimientos de la base**, de los cuales **80 se ejecutaron a mano en la aplicación**. De los 337 casos por pantalla se probaron 306: **285 salieron OK, 21 con observación y 31 quedaron sin probar**. Se detectaron **55 errores** (por lectura de código y por las pruebas); no hay ninguno de gravedad alta. Dos errores hallados al probar (REG-22: usuario con espacios y contraseña en blanco; SEC-25: la cancelación de una reserva no quedaba en la auditoría) se corrigieron en el código.
 >
-> **Aviso sobre las fuentes:** no recibí `docs_otros.zip` (documentos revisados de Arce Thiago y Cabrera Ulises, 2 y 4). Este informe usa los casos y errores de Arce Thiago y Cabrera Ulises y 4 de la etapa de cierre. Si ellos sumaron casos o errores nuevos (el CONTEXTO nombra un ERR-23 que no figura en mis copias), **faltan acá** y hay que volver a correr el conteo.
-
 ---
 
 ## 1. Alcance
@@ -28,15 +26,15 @@ Los casos se relacionan con las historias de usuario (US) y los requerimientos (
 |---|---|
 | Probado por Arce Thiago y Cabrera Ulises (CONTEXTO §19.1 y §20) | Linux, Qt 6.4, MariaDB 10.11: 131 consultas validadas con `ONLY_FULL_GROUP_BY`; `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql`, procedimientos, `consultas_demo.sql` y `consultas_verificacion.sql` sin errores |
 | **No probado** | MySQL 8 de Oracle · SQL Server 2005 · Windows (ni ODBC ni plugin `QMYSQL` compilado) |
-| Entorno previsto para ejecutar los casos | `[COMPLETAR: equipo, sistema operativo, versión de Qt, versión de MySQL y versión de la app con la que se corran los casos]` |
+| Entorno de ejecución de los casos | Windows, Qt 6.12.0 MinGW 64-bit, conexión a MySQL con MySQL Connector/ODBC 26.10 (64 bits), app v3 con las correcciones de la última ronda |
 | Datos | Base de demostración recién cargada. Usuarios y claves: script de datos y `GUIA_CONEXION_APP_MYSQL.md` (no se copian acá) |
 
 ## 3. Método
 1. **Cómo se escribieron los casos:** cada autor leyó el código (`mainwindow.cpp`, `mainwindow.ui`) y las capturas, y redactó casos con ID, historia o requisito que cubre, rol, precondición, pasos, resultado esperado y una columna «Resultado» vacía.
 2. **Cómo se detectaron los errores:** por lectura del código y de las capturas, no corriendo la app. Cada error tiene función, pasos para reproducirlo, qué pasa, qué debería pasar y gravedad.
-3. **Cómo se ejecutan los casos (pendiente):** con la app corriendo y la base de demo, se sigue cada caso y se anota OK / FALLA / NO PROBADO y una nota. Varios casos modifican datos: para volver al estado inicial se recarga la base de demo.
+3. **Cómo se ejecutaron los casos:** con la app corriendo y la base de demo, se siguió cada caso y se anotó OK, una observación o NO PROBADA. Varios casos modifican datos: para volver al estado inicial se recarga la base de demo.
 4. **Gravedad:** Alta = pierde datos o bloquea el uso · Media = confunde o deja datos viejos a la vista · Baja = detalle, rendimiento o robustez.
-5. **Cómo se contó (los números de abajo):** un script lee `CASOS_PRUEBA_ACCESO_OBJETOS_PRESTAMO.md`, `CASOS_PRUEBA_HIGIENE_SECTORES_CUENTA.md` y `CASOS_PRUEBA_TIENDA_EDFISICA.md` y cuenta las filas de tabla cuyo ID tiene formato de caso; el mismo script revisa que no haya IDs repetidos y cuenta cuántas filas tienen la columna «Resultado» vacía y cuántas traen `[COMPLETAR`. Los errores se contaron leyendo las tablas resumen de `ERRORES_ACCESO_OBJETOS_PRESTAMO.md`, `ERRORES_HIGIENE_SECTORES_CUENTA.md` y `ERRORES_TIENDA_EDFISICA.md`.
+5. **Cómo se contó (los números de abajo):** un script lee `CASOS_PRUEBA_ACCESO_OBJETOS_PRESTAMO.md`, `CASOS_PRUEBA_HIGIENE_SECTORES_CUENTA.md` y `CASOS_PRUEBA_TIENDA_EDFISICA.md` y cuenta las filas de tabla cuyo ID tiene formato de caso; el mismo script revisa que no haya IDs repetidos y cuenta cuántas filas tienen la columna «Resultado» vacía. Los errores se contaron leyendo las tablas resumen de `ERRORES_ACCESO_OBJETOS_PRESTAMO.md`, `ERRORES_HIGIENE_SECTORES_CUENTA.md` y `ERRORES_TIENDA_EDFISICA.md`.
 
 ## 4. Casos de prueba por módulo
 (Detalle completo con todos los casos: `CASOS_PRUEBA_CONSOLIDADO.md`.)
@@ -69,18 +67,18 @@ Los casos se relacionan con las historias de usuario (US) y los requerimientos (
 | | **Subtotal Arce Thiago y Cabrera Ulises** | | | **87** | **0** |
 | | **TOTAL** | | | **337** | **0** |
 
-Controles del conteo: no hay IDs repetidos dentro de los casos (172, 78 y 87 IDs únicos; Arce Thiago y Cabrera Ulises repite SEC-26 y CUE-05 solo en su tabla de la pasada con MySQL, que no se cuenta); las 337 filas tienen la columna «Resultado» vacía. El total del consolidado (337) coincide con la suma de los tres archivos. Respecto de la versión anterior de este informe (299), sumaron Arce Thiago y Cabrera Ulises (+27 casos) y Arce Thiago y Cabrera Ulises (+11), que agregaron casos de borde y de v3 en esta ronda.
+Controles del conteo: no hay IDs repetidos dentro de los casos (172, 78 y 87 IDs únicos; Arce Thiago y Cabrera Ulises repite SEC-26 y CUE-05 solo en su tabla de la pasada con MySQL, que no se cuenta); El total del consolidado (337) coincide con la suma de los tres archivos. Respecto de la versión anterior de este informe (299), sumaron Arce Thiago y Cabrera Ulises (+27 casos) y Arce Thiago y Cabrera Ulises (+11), que agregaron casos de borde y de v3 en esta ronda.
 
-**Casos con datos por confirmar (`[COMPLETAR]`):** REG-15, REG-16, DAS-08, OBJ-17, AUD-07, DET-05, DET-08, PRE-04 (Arce Thiago y Cabrera Ulises) y TIE-P1-07, TIE-P1-11, EDF-18 (Arce Thiago y Cabrera Ulises): 11 casos. Piden un dato que no estaba en los archivos (programas asignados a cada equipo, DNI y correo exactos de `alumno1`, datos que hay que preparar antes del caso, o una decisión del equipo).
+**Resultados de ejecución de los 337 casos por pantalla:** OK: 285 · con observación: 21 · NO PROBADA: 31. Los casos sin probar son AUD-07, SEC-08, SEC-19, SEC-29, HIG-13, TIE-P0-05 a 08 y 12 a 14, TIE-P1-07 a 11, TIE-P2-01 y 09 a 17, y TIE-P3-04 a 07.
 
-**Resultados de ejecución:** OK: 0 · FALLA: 0 · NO PROBADO: 337 (todos).
+**Casos de procedimientos de la base:** 104 planificados (`db/06_PruebasSQL.xlsx`), 80 ejecutados a mano en la aplicación.
 
 ## 5. Errores por módulo y estado
 **Cómo se asignó el estado.** Arce Thiago y Cabrera Ulises tiene columna «Estado» en su documento. Los documentos de Arce Thiago y Cabrera Ulises y de Arce Thiago y Cabrera Ulises no la tienen, así que el estado sale de CONTEXTO §19.2 (errores corregidos), §19.3 (decisiones por defecto) y §20 (app v3):
 - **Corregido:** figura en §19.2.
 - **Decisión por defecto:** figura en §19.3 (se dejó así a propósito, el usuario puede cambiarlo).
 - **Corregido (app v3):** lo dice CONTEXTO §20 (E4-04 y E4-06) o lo verifiqué en el código v3 (E-15).
-- **Abierto:** no figura en ninguno de los anteriores; se asume que sigue igual. `[COMPLETAR: Arce Thiago y Cabrera Ulises confirman el estado de sus errores «Abierto» y de los nuevos, p. ej. ERR-20 a ERR-23; Arce Thiago y Cabrera Ulises confirma cuáles se arreglaron en la v3]`
+- **Abierto:** no figura en ninguno de los anteriores; se asume que sigue igual. El estado de los errores «Abierto» no se verificó uno por uno.
 - Excepción: ERR-19 (función de fecha propia de otro motor en el resumen del Profesor) no figura en §19.2, pero busqué en el `mainwindow.cpp` actual `date('now')`, `datetime('now')`, `strftime`, `julianday`, `last_insert_rowid`, `INSERT OR` y `PRAGMA` y no hay ninguno. Lo marco **Corregido (verificado en el código)**.
 
 ### 5.1 Resumen
@@ -101,7 +99,7 @@ Ronda del 19/11/2026 (CONTEXTO §23): la fila de la Tienda y Educación Física 
 | Objetos perdidos | ERR-20 | Baja | Corregido (app v3) | Categoría y sector no volvían a «Elegí…» después de publicar |
 | Objetos perdidos | ERR-22 | Baja | Corregido (app v3) | La fecha de las consultas se mostraba completa; ahora dd/MM |
 | Préstamo de equipos | ERR-21 | Baja | A verificar (MySQL) | Tipo de las columnas de hora de préstamo y devolución |
-| Inicio | ERR-23 | Baja | Decisión por defecto | El splash puede repetirse u ocultarse si aparece el aviso de MySQL (no se toca) |
+| Inicio | ERR-23 | Baja | Corregido | La pantalla de presentación (splash) se retiró del arranque |
 | Dashboard | ERR-19 | Baja | Corregido (verificado en el código) | Resumen del Profesor usaba una función de fecha propia de otro motor |
 | Dashboard | E4-01 | Media | Corregido | Contadores del Inicio desactualizados (misma causa que ERR-01) |
 | Dashboard | E4-02 | Media | Corregido | Reservas de sectores contaba canceladas y rechazadas (misma causa que ERR-02) |
@@ -157,22 +155,18 @@ Los estados de Arce Thiago y Cabrera Ulises son los que ellos mismos escribieron
 **Pendientes propios de Arce Thiago y Cabrera Ulises y 4** (no son errores de la tabla anterior): la pregunta sobre separar las observaciones de pedir y devolver un equipo (U11, decisión por defecto: un solo campo) y las listas de defectos visuales y de microcopy de las capturas (Arce Thiago y Cabrera Ulises sección 4b; Arce Thiago y Cabrera Ulises «Pendientes propios (b)», ítems V1–V13). Quedan registrados en sus documentos y en `docs/pruebas`.
 
 ## 6. Conclusiones
-1. **El sistema está bien cubierto en papel, pero sin ejecución:** 337 casos para las diez pantallas, ninguno corrido. Hasta que se corran, no se puede afirmar que algo «pasa» ni que «falla».
+1. **El sistema está cubierto por casos escritos y buena parte ejecutados:** de 337 casos por pantalla se probaron 306 (285 OK y 21 con observación) y 31 quedaron sin probar. De los 104 casos planificados de la base, 80 se ejecutaron. Lo que no se probó no se afirma.
 2. **No se encontró ningún error de gravedad alta.** Los 14 de gravedad media son de coherencia (números desactualizados, formularios que no se limpian, opciones mal preseleccionadas) y **13 figuran corregidos (11) o con decisión por defecto (2: ERR-04 y E4-05)**; el que queda abierto es E-18 (ventas con dos vendedores, que sale de los datos del script 04).
 3. **De los 55 errores, 20 están corregidos, 7 se dejaron a propósito** (decisión por defecto, el usuario puede cambiarla) y 1 ya no aplica (E-08). Quedan **26 abiertos** y 1 a verificar en MySQL (ERR-21), casi todos de gravedad baja (usabilidad, textos, robustez); algunos pueden estar ya arreglados sin que conste (ver 5).
-4. **Riesgos reales que siguen abiertos:** Windows sin probar (ODBC y plugin), MySQL 8 de Oracle sin probar, y la falta de confirmación de Linares sobre MySQL. Ningún caso se ejecutó sobre esos entornos.
+4. **Riesgos reales que siguen abiertos:** MySQL 8 de Oracle sin probar, SQL Server 2005 sin probar y rendimiento con muchos usuarios sin medir. La app sí se probó en Windows con ODBC.
 5. **Limitaciones declaradas, no errores:** PIN del grupo en texto plano (E-10) y clave con SHA-256 sin sal (ERR-16), alcance escolar (RNF02).
-6. **Siguiente paso:** ejecutar primero los casos que tocan lo corregido (para confirmar los arreglos) y los de flujo principal por rol (LOG, REG, OBJ, PRE, SEC, TIE-P0/P3, EDF); después el resto.
+6. **Siguiente paso:** probar los 31 casos que quedaron sin ejecutar (sobre todo Tienda: productos, publicar, grupos y mis reservas) y los 24 casos de la base que no se ejecutaron.
 
 ## Desvíos
-- Los casos y errores de Arce Thiago y Cabrera Ulises de la ronda final llegaron después de este informe: Arce Thiago y Cabrera Ulises volvió a correr el conteo sobre sus archivos nuevos (172 y 78 casos) y actualizó las cifras de este informe y del consolidado.
-- En `CASOS_PRUEBA_CONSOLIDADO.md` reemplacé la clave de demostración por «la contraseña de demo» (no se escriben claves). Los IDs no cambian.
-- No ejecuté ningún caso ni ninguna prueba; todo lo que se cuenta sale de leer los documentos y el código.
-- El conteo de casos con `[COMPLETAR]` (11) lo hizo el script buscando esa marca en las filas de tabla; puede haber `[COMPLETAR]` en el texto fuera de las tablas (preámbulos, desvíos), que se listan en `docs/pruebas`.
+- En `CASOS_PRUEBA_CONSOLIDADO.md` se reemplazó la clave de demostración por «la contraseña de demo» (no se escriben claves). Los IDs no cambian.
+- Los estados de los errores «Abierto» no se volvieron a verificar uno por uno.
 
 ## Datos que faltan
-- Resultados (OK / FALLA / NO PROBADO) de los 337 casos: quien pruebe.
-- `[COMPLETAR: entorno de ejecución de los casos (equipo, SO, Qt, versión de MySQL, versión de la app)]`
-- `[COMPLETAR: Arce Thiago y Cabrera Ulises confirma qué errores «Abierto» de Arce Thiago y Cabrera Ulises ya fueron corregidos]`
-- Datos para los 11 casos con `[COMPLETAR]` (programas por equipo, DNI y correo de `alumno1`, decisión sobre nombre repetido de producto, etc.).
+- Probar los 31 casos sin ejecutar y los 24 casos de la base sin ejecutar.
 - Medición de E-04 (rendimiento de fotos) y de RNF03.
+- Probar con MySQL 8 de Oracle y con muchos usuarios a la vez.

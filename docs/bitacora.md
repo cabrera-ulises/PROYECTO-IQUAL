@@ -96,7 +96,7 @@
 * **Actividades:**
   * Validaciones de entrada: DNI de 7 u 8 dígitos, correo con expresión regular, largos mínimos, contraseña con hash SHA-256 y bloqueo tras 5 intentos fallidos de acceso.
   * Reglas del dominio: prueba de pertenencia para reclamar objetos perdidos, bloqueo de reservas de sectores superpuestas, cruce del horario de cursada con Educación Física, stock y metas de recaudación en la tienda.
-  * 27 procedimientos almacenados (15 de funcionalidades, reportes, auditoría y dos versiones tuneadas) y 104 casos de prueba de la base en `db/06_PruebasSQL.xlsx`, todos PASS en MariaDB 10.11. Se midió el tuning de los reportes (`db/TUNING_REPORTES.md`).
+  * 27 procedimientos almacenados (15 de funcionalidades, reportes, auditoría y dos versiones tuneadas) y 104 casos de prueba de la base planificados en `db/06_PruebasSQL.xlsx`, de los cuales 80 se ejecutaron a mano en la aplicación. Se midió el tuning de los reportes (`db/TUNING_REPORTES.md`).
   * Diseño de 337 casos de prueba por pantalla y registro de errores por módulo (`docs/pruebas/`); revisión del código contra las reglas de la profesora (sin comentarios, ternarios, `continue`, `auto`, `std::` ni lambdas).
 * **Entregables / Artefactos:** versión candidata de la app, casos de prueba, informe de errores e `INFORME_PRUEBAS.md`.
 
@@ -110,7 +110,7 @@
 ## Semana 5-Presupuesto, modelo de negocio y pitch
 * **Actividades:**
   * Presupuesto: 320 horas a $10.000 (desarrollo $3.200.000), licencias $0, infraestructura $870.000 y mantenimiento $720.000 por año.
-  * Modelo de negocio: llave en mano más soporte mensual; precio propuesto $4.500.000 + $80.000 por mes; ROI del año 1 de 39 % y punto de equilibrio con una escuela. El SaaS queda como etapa futura.
+  * Modelo de negocio: llave en mano más soporte mensual; precio propuesto $4.500.000 + $80.000 por mes; estimación a validar con datos reales. El SaaS queda como etapa futura.
   * Armado del Pitch Deck de 10 diapositivas y del guion para dos voces, con tiempos para entrar en 5 a 7 minutos.
 * **Entregables / Artefactos:** Pitch Deck, `PRESUPUESTO_Y_MODELO_DE_NEGOCIO.md` y `GUION_PITCH.md`.
 
@@ -119,6 +119,8 @@
   * Ronda de datos reales del colegio: cursos de 1° a 6° con divisiones 1 a 5, 36 sectores, programas instalados en las computadoras y tableros sin programas.
   * Corrección de dos detalles de la app: el «Último mantenimiento» ahora salta al sector del reporte resuelto y la tienda arranca en la vista «TODOS». Se retiró la pantalla de presentación (splash).
   * Manual de usuario unificado y manual técnico finales; revisión de que las cifras de los documentos coincidan con el código y con la base (47 tablas, 62 usuarios, 27 procedimientos, 104 casos de la base).
-  * Ensayos del pitch con cronómetro, capturas y video de respaldo de la demo.
+  * Corrección de dos errores hallados en las pruebas: el registro ahora rechaza usuarios con espacios y contraseñas en blanco, y la cancelación de una reserva de sector queda en la auditoría.
+  * Ejecución de pruebas: 80 de los 104 casos planificados de la base y 306 de los 337 casos por pantalla (285 OK, 21 con observación, 31 sin probar).
+  * Preparación del pitch: ensayos con cronómetro, capturas y video de respaldo de la demo.
   * Demo Day: martes 24/11/2026.
 * **Entregables / Artefactos:** software final, defensa en formato pitch, manual técnico y manual de usuario.

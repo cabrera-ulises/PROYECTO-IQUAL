@@ -48,8 +48,8 @@ Los marcadores `[CAPTURA: …]` indican dónde va una imagen. Los que llevan car
 1. En la pantalla de inicio, tocá **Crear cuenta**.
 2. Completá los datos:
    - **Nombre y apellido** (por ejemplo, Juan Pérez), separados por un espacio.
-   - **Usuario**: con 3 caracteres o más. Con este usuario vas a ingresar.
-   - **Contraseña**: con 4 caracteres o más.
+   - **Usuario**: con 3 caracteres o más y sin espacios. Con este usuario vas a ingresar.
+   - **Contraseña**: con 4 caracteres o más, que no sean todos espacios.
    - **DNI**: 7 u 8 números, sin puntos.
    - **Correo electrónico**: con el formato nombre@dominio.com, sin espacios.
    - **Teléfono**: solo números, entre 8 y 15.
