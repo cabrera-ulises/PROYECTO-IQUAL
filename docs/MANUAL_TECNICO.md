@@ -121,7 +121,7 @@ La app no trae ningún script embebido: no crea tablas ni datos.
 
 **La app llama solo a `sp_registrar_log`** (`CALL sp_registrar_log(...)` desde `registrarLog`, para el log de auditoría). Si ese `CALL` falla, hace el `INSERT` en `log_auditoria` directamente. Las demás consultas de la app están escritas en `mainwindow.cpp`; los otros 26 procedimientos se usan desde la base (DBeaver o Workbench).
 
-Fichas en `db/SP_*.md`, pruebas en `db/06_PruebasSQL.xlsx` (107 casos) y tuning medido en `db/TUNING_REPORTES.md`.
+Fichas en `db/SP_*.md`, pruebas en `db/06_PruebasSQL.xlsx` (106 casos) y tuning medido en `db/TUNING_REPORTES.md`.
 
 ### 3.4 Cómo usa la app los tipos y el motor
 | Tema | Cómo es en MySQL |
@@ -193,7 +193,7 @@ Si `abrirMySql` falla (servidor apagado, clave mal, base vacía, falta el driver
 5. Antes de abrir la app: levantar el servidor MySQL, cargar `03_ModeloSQL_Grupo00.sql`, `04_DatosSQL_Grupo00.sql` y `05_Backend_Grupo00.sql` y revisar `iqual.ini` (`GUIA_INSTALACION_MYSQL.md` y `GUIA_CONEXION_APP_MYSQL.md`).
 
 ### 5.3 Observaciones sobre el paquete (`repo.zip` del 19/11/2026)
-- `CMakeLists.txt` compila solo `main.cpp`, `mainwindow.*`, `ventanadetalle.*`, `ventanaproducto.*`, `ventanainicio.*` y `recursos.qrc`, y enlaza `Qt6::Widgets` y `Qt6::Sql`. Ya no hay ejecutables de prueba aparte (`harness*`): las pruebas de la app son los casos por pantalla de `docs/pruebas` y los 107 casos de los procedimientos (`db/06_PruebasSQL.xlsx`).
+- `CMakeLists.txt` compila solo `main.cpp`, `mainwindow.*`, `ventanadetalle.*`, `ventanaproducto.*`, `ventanainicio.*` y `recursos.qrc`, y enlaza `Qt6::Widgets` y `Qt6::Sql`. Ya no hay ejecutables de prueba aparte (`harness*`): las pruebas de la app son los casos por pantalla de `docs/pruebas` y los 106 casos de los procedimientos (`db/06_PruebasSQL.xlsx`).
 - `recursos.qrc` embebe el logo, el GIF del splash, los dos `.qss` y los íconos; ya no embebe ningún script SQL.
 - **El zip no trae la carpeta `recursos/`** que `recursos.qrc` referencia (imágenes, temas e íconos); sin ella no compila desde ese zip. `[COMPLETAR: confirmar que la carpeta recursos/ está en el repositorio de GitHub]`
 - No pude compilar este paquete (en mi entorno no hay Qt).

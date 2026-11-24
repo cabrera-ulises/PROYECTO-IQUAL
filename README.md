@@ -41,7 +41,7 @@ Los nombres son los que muestra hoy la aplicación; entre paréntesis, cómo se 
 2. **Higiene y Mantenimiento (Higiene e Infraestructura):** reportes de roturas y limpieza que puede hacer cualquier rol (hasta 200 caracteres de observaciones), con el **último mantenimiento** de cada sector (fecha, hora y responsable). Profesores, Preceptores y Maestranza marcan los reportes como resueltos.
 3. **Tienda de alumnos (Buffet Paralelo):** venta estudiantil de productos con foto opcional, categorías, stock y reservas; grupos de recaudación con PIN, metas y donaciones; pestañas "Mis reservas", "Mis ventas" y "Mis productos" (reponer y quitar stock). Sin pagos reales: las entregas se coordinan en persona.
 4. **Préstamo de equipos (Planillas de Taller):** registro y devolución de las computadoras de los carros (C1 a C5 en el catálogo) y de los tableros de dibujo técnico, con los programas instalados en cada equipo, lista de equipos fuera de servicio y "Marcar reparado" (Preceptor y Maestranza).
-5. **Reserva de Sectores:** reserva de sectores de tipo Reservable (hoy Laboratorio de química, Biblioteca y SUM) con selector de fecha, horas de 07:00 a 19:00, lista de ocupación del día y aprobación del Preceptor. Solo reservan Profesores y Preceptores.
+5. **Reserva de Sectores:** reserva de sectores de tipo Reservable (hoy Laboratorio 1, Biblioteca y SUM) con selector de fecha, horas de 07:00 a 19:00, lista de ocupación del día y aprobación del Preceptor. Solo reservan Profesores y Preceptores.
 6. **Educación Física:** inscripción a ofertas deportivas (deporte + día + franja + cupo). Los días y las horas que chocan con el horario de teoría y taller del curso se marcan en gris y no se pueden elegir.
 
 Además: **Acceso** (inicio de sesión y registro con roles Alumno, Profesor, Preceptor y Maestranza; 5 intentos fallidos bloquean el acceso hasta reabrir la app), **Inicio** con un resumen según el rol y **Mi Cuenta** (datos, cambio de curso para alumnos, cambio de contraseña y de teléfono).
@@ -86,7 +86,7 @@ Para registrar cuentas de Profesor, Preceptor o Maestranza la app pide un PIN in
 6. **Plan de emergencia para una demostración:** tener la base cargada y probada en la PC de la demo con anticipación; como alternativa, mostrar los scripts y las consultas desde DBeaver.
 
 ### 4.3 Qué se probó y qué no
-* **Probado** (Linux, Qt 6.4, MariaDB 10.11): las pruebas automáticas internas de la v3 pasan con **0 fallas** con `QMYSQL`; las 131 consultas del código se validaron con `ONLY_FULL_GROUP_BY`; el script de 47 tablas, los 27 procedimientos (107 casos de prueba de SP en `db/06_PruebasSQL.xlsx`, todos PASS), las 10 consultas de la defensa y las 28 de verificación corren sin errores.
+* **Probado** (Linux, Qt 6.4, MariaDB 10.11): las pruebas automáticas internas de la v3 pasan con **0 fallas** con `QMYSQL`; las 131 consultas del código se validaron con `ONLY_FULL_GROUP_BY`; el script de 47 tablas, los 27 procedimientos (106 casos de prueba de SP en `db/06_PruebasSQL.xlsx`, todos PASS), las 10 consultas de la defensa y las 28 de verificación corren sin errores.
 * **No probado:** MySQL 8 de Oracle, SQL Server 2005 y Windows (compilación y los dos caminos de driver). `[COMPLETAR: resultado de probarlo en la PC del equipo]`
 * Los casos de prueba por pantalla están escritos pero **sin ejecutar**: la columna Resultado la completa el equipo. `[COMPLETAR: resultados de los casos de prueba]`
 
@@ -102,11 +102,11 @@ Para registrar cuentas de Profesor, Preceptor o Maestranza la app pide un PIN in
 ├── recursos/        Los archivos que referencia recursos.qrc (imagenes/, iconos/, tema/)
 ├── docs/            Documentación del proyecto
 │   ├── pruebas/           Casos de prueba, errores y revisión de código por módulo
-│   └── manuales/          Manual de usuario por módulo y por rol
+│   └── MANUAL_USUARIO.md  Manual de usuario unificado (todas las pantallas y roles)
 └── db/              Scripts SQL, consultas, justificación de 3FN, diagramas y guías (db/guias/)
 ```
 Contenido de `/db`:
-* **Scripts (orden de carga 03, 04, 05):** `03_ModeloSQL_Grupo00.sql` (47 tablas), `04_DatosSQL_Grupo00.sql` (datos), `05_Backend_Grupo00.sql` (procedimientos almacenados: 15 funcionalidades, 8 reportes, 1 auditoría y 2 tuneados) y `06_PruebasSQL.xlsx` (107 casos de prueba). Versión SQL Server 2005 con schemas: `*_sqlserver.sql`.
+* **Scripts (orden de carga 03, 04, 05):** `03_ModeloSQL_Grupo00.sql` (47 tablas), `04_DatosSQL_Grupo00.sql` (datos), `05_Backend_Grupo00.sql` (procedimientos almacenados: 15 funcionalidades, 8 reportes, 1 auditoría y 2 tuneados) y `06_PruebasSQL.xlsx` (106 casos de prueba). Versión SQL Server 2005 con schemas: `*_sqlserver.sql`.
 * **Consultas:** `consultas_verificacion_mysql.sql` (y su versión para SQL Server) y `consultas_demo.sql` (consultas para mostrar en la defensa).
 * **Documentos:** `justificacion_3FN.md` y las guías en `db/guias/` (`GUIA_INSTALACION_MYSQL.md`, `GUIA_CONEXION_APP_MYSQL.md`, `REVISION_ESTATICA_MYSQL.md`).
 * **Diagramas:** los dos XML de draw.io y sus PNG (sección 6).
@@ -140,13 +140,13 @@ La documentación técnica de análisis, diagnóstico y maquetado del **3er Bime
 * 🧾 **[Cambios a hacer en la Presentación](./docs/cambios-presentacion.md):** corrección lámina por lámina.
 * 🗓️ **[Bitácora de Trabajo](./docs/bitacora.md):** Registro de avances y decisiones del equipo.
 * 🌳 **Diagnósticos Visuales:** [Árbol de Problemas](./docs/arbol-de-problemas.png) y [Árbol de Objetivos](./docs/arbol-de-objetivos.drawio.xml) (editable en draw.io).
-* 🧪📖 **Pruebas, errores y manuales** (carpetas [`docs/pruebas`](./docs/pruebas) y [`docs/manuales`](./docs/manuales)):
+* 🧪📖 **Pruebas, errores y manuales** (carpetas [`docs/pruebas`](./docs/pruebas) y [`MANUAL_USUARIO.md`](./docs/MANUAL_USUARIO.md)):
 
 | Módulos | Casos de prueba | Errores | Manual de usuario |
 | :--- | :--- | :--- | :--- |
-| Inicio, Acceso, Dashboard, Objetos perdidos y Préstamo de equipos | [`casos`](./docs/pruebas/CASOS_PRUEBA_ACCESO_OBJETOS_PRESTAMO.md) | [`errores`](./docs/pruebas/ERRORES_ACCESO_OBJETOS_PRESTAMO.md) | [`manual`](./docs/manuales/MANUAL_USUARIO_ACCESO_OBJETOS_PRESTAMO.md) |
-| Higiene, Reserva de sectores y Mi cuenta | [`casos`](./docs/pruebas/CASOS_PRUEBA_HIGIENE_SECTORES_CUENTA.md) | [`errores`](./docs/pruebas/ERRORES_HIGIENE_SECTORES_CUENTA.md) | [`manual`](./docs/manuales/MANUAL_USUARIO_HIGIENE_SECTORES_CUENTA.md) |
-| Tienda de alumnos y Educación Física | [`casos`](./docs/pruebas/CASOS_PRUEBA_TIENDA_EDFISICA.md) | [`errores`](./docs/pruebas/ERRORES_TIENDA_EDFISICA.md) | [`manual`](./docs/manuales/MANUAL_USUARIO_TIENDA_EDFISICA.md) |
+| Inicio, Acceso, Dashboard, Objetos perdidos y Préstamo de equipos | [`casos`](./docs/pruebas/CASOS_PRUEBA_ACCESO_OBJETOS_PRESTAMO.md) | [`errores`](./docs/pruebas/ERRORES_ACCESO_OBJETOS_PRESTAMO.md) | [`manual`](./docs/MANUAL_USUARIO.md) |
+| Higiene, Reserva de sectores y Mi cuenta | [`casos`](./docs/pruebas/CASOS_PRUEBA_HIGIENE_SECTORES_CUENTA.md) | [`errores`](./docs/pruebas/ERRORES_HIGIENE_SECTORES_CUENTA.md) | [`manual`](./docs/MANUAL_USUARIO.md) |
+| Tienda de alumnos y Educación Física | [`casos`](./docs/pruebas/CASOS_PRUEBA_TIENDA_EDFISICA.md) | [`errores`](./docs/pruebas/ERRORES_TIENDA_EDFISICA.md) | [`manual`](./docs/MANUAL_USUARIO.md) |
 
 Informe general: [`INFORME_PRUEBAS.md`](./docs/INFORME_PRUEBAS.md) y [`CASOS_PRUEBA_CONSOLIDADO.md`](./docs/CASOS_PRUEBA_CONSOLIDADO.md). Revisión de código: archivos `REVISION_CODIGO_*` en `docs/pruebas`. Manual técnico: [`MANUAL_TECNICO.md`](./docs/MANUAL_TECNICO.md).
 
@@ -169,4 +169,4 @@ Informe general: [`INFORME_PRUEBAS.md`](./docs/INFORME_PRUEBAS.md) y [`CASOS_PRU
 > **Nota de Créditos (3er Bimestre):** La fase de diagnóstico, investigación, MML, requerimientos y maquetados de la Carpeta V1 fue realizada durante el 3er Bimestre por el equipo original: Arce Thiago, Cabrera Ulises, Denuble Franco y González Manuel.
 
 ## Actualización v7: base de datos de la consigna de BBDD
-Los scripts están en `db/`: `03_ModeloSQL_Grupo00.sql` (47 tablas), `04_DatosSQL_Grupo00.sql` (62 usuarios y datos de las demás tablas), `05_Backend_Grupo00.sql` (procedimientos almacenados) y `06_PruebasSQL.xlsx` (107 casos con resultado real). Orden de carga: 03, 04, 05, con Alt+X en DBeaver. Hay versión para SQL Server (`*_sqlserver.sql`, con schemas). El número de grupo `Grupo00` es provisorio hasta confirmarlo con el profesor. Si en algún documento aparece "5 usuarios", es el dato de ejemplo anterior: ahora son 62.
+Los scripts están en `db/`: `03_ModeloSQL_Grupo00.sql` (47 tablas), `04_DatosSQL_Grupo00.sql` (62 usuarios y datos de las demás tablas), `05_Backend_Grupo00.sql` (procedimientos almacenados) y `06_PruebasSQL.xlsx` (106 casos con resultado real). Orden de carga: 03, 04, 05, con Alt+X en DBeaver. Hay versión para SQL Server (`*_sqlserver.sql`, con schemas). El número de grupo `Grupo00` es provisorio hasta confirmarlo con el profesor. Si en algún documento aparece "5 usuarios", es el dato de ejemplo anterior: ahora son 62.

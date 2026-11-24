@@ -67,7 +67,7 @@ Notas de la matriz:
 ## 4. Matriz comparativa de costos
 | Alternativa | Dato de costo publicado | Fuente y fecha |
 |---|---|---|
-| IQUAL | Sin precio definido todavía. Los costos de armar y sostener el proyecto están en `PRESUPUESTO_Y_MODELO_DE_NEGOCIO.md`. `[COMPLETAR: precio]` | Este proyecto |
+| IQUAL | Sin precio definido todavía. Los costos de armar y sostener el proyecto están en `PRESUPUESTO_Y_MODELO_DE_NEGOCIO.md`. Propuesta del equipo: llave en mano $4.500.000 + soporte $80.000 por mes (estimación; ver `PRESUPUESTO_Y_MODELO_DE_NEGOCIO.md`) | Este proyecto |
 | miEscuela | La página **no indica** si tiene costo | [1] (consultada 12/11/2026; fecha de publicación `[COMPLETAR]`) |
 | Google Workspace for Education Fundamentals (incluye Classroom) | `[COMPLETAR: confirmar vigencia]`. La página lo describía como «disponible sin cargo para las instituciones que cumplan los requisitos» | [2] (consultada 12/11/2026; la página no informa fecha) |
 | Google Workspace for Education Plus | `[COMPLETAR: precio]` (la página dice «Consultar precios»: suscripción anual, sin monto) | [2] (ídem) |
@@ -137,7 +137,6 @@ Todas se consultaron el **12/11/2026**. La columna «Fecha de la fuente» es la 
 ## Datos que faltan
 - `[COMPLETAR: sistema que usa hoy la escuela para notas y asistencia, si lo hay]` — lo informa el usuario o Linares.
 - `[COMPLETAR: confirmar con demo o con el proveedor las celdas «—» de las matrices (Clickedu, Alexia, Esemtia, e-Schooling)]`
-- `[COMPLETAR: precio de IQUAL]` — sale de `PRESUPUESTO_Y_MODELO_DE_NEGOCIO.md` cuando el usuario cargue las horas.
 - `[COMPLETAR: precios vigentes con fecha de Alexia, Clickedu, Google Workspace Plus y e-Schooling (pedir cotización o leer la página oficial del proveedor)]` — usuario.
 - `[COMPLETAR: precios comerciales de Qt (qt.io/pricing)]` — usuario, si se quiere el costo de una licencia comercial.
 - `[COMPLETAR: disponibilidad en Argentina de los productos españoles]`
