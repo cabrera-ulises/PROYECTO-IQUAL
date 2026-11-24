@@ -7,13 +7,13 @@
 | `03_ModeloSQL_Grupo00.sql` / `_sqlserver.sql` | Borra y crea las 47 tablas vacías (MySQL: una base `iqual`; SQL Server: 7 schemas) |
 | `04_DatosSQL_Grupo00.sql` / `_sqlserver.sql` | Vacía las 47 tablas y carga catálogos y datos (62 usuarios) |
 | `05_Backend_Grupo00.sql` | 27 procedimientos: 15 de funcionalidades (el 1 es `sp_registrar_log`), 9 de reportes y auditoría, 2 `_tuneado` y el auxiliar `sp_aux_solo_digitos`. Solo MySQL; usa `DELIMITER` |
-| `06_PruebasSQL.xlsx` | Planilla de pruebas (107 casos de los procedimientos), no es un script |
+| `06_PruebasSQL.xlsx` | Planilla de pruebas (106 casos de los procedimientos), no es un script |
 | `generar_datos.py`, `generar_modelo.py` | Generaron los cuatro archivos 03 y 04. Para volver a correrlos hacen falta `iqual_mysql.sql` e `iqual_sqlserver.sql` (las fuentes de la ronda anterior), que **ya no viajan en el repositorio**; sin ellos no se pueden regenerar |
 | `renombrar_grupo.sh` | Reemplaza `Grupo00` por el número de grupo en nombres de archivo y textos (ver la sección 4) |
 | `consultas_verificacion_mysql.sql` / `_sqlserver.sql` | Controles con el valor esperado en cada consulta |
 | `consultas_demo.sql` / `consultas_demo_sqlserver.sql` | Las 10 consultas para la defensa |
 
-**Qué se probó de verdad:** en **MariaDB 10.11** se integraron y probaron 03, 04 y 05 (62 usuarios, 27 procedimientos) y los 107 casos de `06_PruebasSQL.xlsx` dieron PASS (CONTEXTO §22; dato que me pasaron, no lo corrí yo). Los valores esperados de los comentarios de `consultas_demo.sql` y `consultas_verificacion_*.sql` (con los 62 usuarios) se calcularon con una carga de prueba fuera de MySQL el 19/11/2026: **no están confirmados en MariaDB ni en MySQL 8**. `[COMPLETAR: correr las consultas en MariaDB o MySQL y anotar si las cantidades coinciden]` **Nunca se ejecutó:** MySQL 8 de Oracle, SQL Server 2005 y Windows. De SQL Server solo hay revisión estática (`REVISION_ESTATICA_SQLSERVER.md`).
+**Qué se probó de verdad:** en **MariaDB 10.11** se integraron y probaron 03, 04 y 05 (62 usuarios, 27 procedimientos) y los 106 casos de `06_PruebasSQL.xlsx` dieron PASS (CONTEXTO §22; dato que me pasaron, no lo corrí yo). Los valores esperados de los comentarios de `consultas_demo.sql` y `consultas_verificacion_*.sql` (con los 62 usuarios) se calcularon con una carga de prueba fuera de MySQL el 19/11/2026: **no están confirmados en MariaDB ni en MySQL 8**. `[COMPLETAR: correr las consultas en MariaDB o MySQL y anotar si las cantidades coinciden]` **Nunca se ejecutó:** MySQL 8 de Oracle, SQL Server 2005 y Windows. De SQL Server solo hay revisión estática (`REVISION_ESTATICA_SQLSERVER.md`).
 
 ## 1. MySQL 8 / MariaDB (DBeaver)
 

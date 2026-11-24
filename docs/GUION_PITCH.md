@@ -13,12 +13,12 @@
 ## 1. Estructura y tiempos (Pitch Deck)
 | # | Diapositiva | Quién (a definir) | Tiempo | Acumulado |
 |---|---|---|---|---|
-| 1 | Problema (Árbol de Problemas) | `[COMPLETAR: Arce / Cabrera]` | 0:45 | 0:45 |
-| 2 | Solución: qué es IQUAL | `[COMPLETAR]` | 0:30 | 1:15 |
-| 3 | **Demo en vivo** | `[COMPLETAR]` | 2:45 | 4:00 |
-| 4 | Competencia y diferencial | `[COMPLETAR]` | 0:50 | 4:50 |
-| 5 | Costos, precio y retorno | `[COMPLETAR]` | 0:55 | 5:45 |
-| 6 | Cierre | `[COMPLETAR]` | 0:15 | 6:00 |
+| 1 | Problema (Árbol de Problemas) | Ulises | 0:45 | 0:45 |
+| 2 | Solución: qué es IQUAL | Thiago | 0:30 | 1:15 |
+| 3 | **Demo en vivo** | Ulises maneja la app, Thiago narra | 2:45 | 4:00 |
+| 4 | Competencia y diferencial | Thiago | 0:50 | 4:50 |
+| 5 | Costos, precio y retorno | Ulises | 0:55 | 5:45 |
+| 6 | Cierre | Thiago y Ulises | 0:15 | 6:00 |
 
 Orden pedido por el plan: Problema → Solución y Demo → Competencia y Diferencial → Costos, Precio y ROI.
 
@@ -30,8 +30,8 @@ Orden pedido por el plan: Problema → Solución y Demo → Competencia y Difere
 > «En la E.T. N°3 pasan muchas cosas todos los días que no están en ningún sistema. Alguien deja una campera en el patio y nadie sabe dónde quedó. Un profesor necesita una computadora del carro y hay que acordarse quién la tiene. Una canilla pierde agua y el aviso se pierde en un pasillo. Reservar la biblioteca depende de preguntarle a la persona correcta.
 > Eso es lo que muestra nuestro Árbol de Problemas: **la escuela se organiza con papeles, mensajes y memoria**, y de ahí salen los efectos: cosas perdidas, tiempo desperdiciado y menos confianza de la comunidad.»
 
-`[COMPLETAR: leer el árbol real y reemplazar «papeles, mensajes y memoria» y los efectos por las palabras exactas del problema central y de los efectos. Los documentos del proyecto solo dicen que el objetivo central es «Organización operativa escolar eficiente» (inverso del problema central) y que el primer efecto es «Incrementar la confianza, pertenencia y satisfacción de la comunidad estudiantil».]`
-`[COMPLETAR: un dato real del problema (por ejemplo, cuántos objetos perdidos hay por mes o cuántas reservas se superponen). No hay mediciones en el proyecto; si no se consigue, no decir números.]`
+*(Árbol real: problema central «Desorganización operativa escolar»; 6 causas, p. ej. gestión ineficiente de objetos perdidos y control en papel de computadoras y tabletas; efectos: pérdida de pertenencias, deterioro edilicio, dificultad para cumplir metas, pérdida de clase, conflictos en biblioteca y laboratorio, inasistencias en Ed. Física.)*
+*(No hay mediciones en el proyecto: no decir números del problema.)*
 
 ### Diapositiva 2 — Solución (0:45 a 1:15)
 *En pantalla: captura del Inicio con la barra lateral.*
@@ -53,8 +53,8 @@ Se hace con la app abierta, **no con capturas** (las capturas son el plan B, ver
 ### Diapositiva 5 — Costos, precio y retorno (4:50 a 5:45)
 *En pantalla: la tabla resumen de `PRESUPUESTO_Y_MODELO_DE_NEGOCIO.md`, sección 9.*
 
-> «Armamos el presupuesto con las horas de cada rol del equipo: `[COMPLETAR: total de horas y costo de desarrollo]`. En licencias el costo es cero: MySQL Community y Qt se usan gratis para un proyecto educativo. Mantenerlo en una escuela cuesta `[COMPLETAR: mantenimiento anual]` por año.
-> Pensamos cobrarlo como **proyecto llave en mano más soporte mensual**: instalamos, configuramos y capacitamos, y después acompañamos. El precio sería `[COMPLETAR: precio por escuela]` y recuperaríamos la inversión con `[COMPLETAR: cantidad de escuelas o meses]`. La versión como servicio por suscripción es una etapa futura, porque hoy IQUAL es de escritorio.
+> «Armamos el presupuesto con las horas de cada rol del equipo: unas 320 horas a $10.000 la hora, $3.200.000 de desarrollo. En licencias el costo es cero: MySQL Community y Qt se usan gratis para un proyecto educativo. Mantenerlo en una escuela cuesta unos $720.000 por año.
+> Pensamos cobrarlo como **proyecto llave en mano más soporte mensual**: instalamos, configuramos y capacitamos, y después acompañamos. El precio sería $4.500.000 de instalación más $80.000 por mes de soporte y recuperaríamos la inversión con la primera escuela. La versión como servicio por suscripción es una etapa futura, porque hoy IQUAL es de escritorio.
 > Y para la escuela el retorno es tiempo y orden; todavía lo tenemos como hipótesis a medir, no como resultado.»
 
 ### Diapositiva 6 — Cierre (5:45 a 6:00)
@@ -91,7 +91,7 @@ El tramo de 3:05 en adelante es el que se **recorta primero** si se pasan de tie
 | Se pasan de tiempo | Saltear sectores y tema oscuro (3:05 a 4:00). |
 
 ## 4. Materiales para llevar
-1. Pitch Deck con las 5 diapositivas (Problema, Solución, Competencia, Costos y Cierre; la demo no lleva diapositiva): `[COMPLETAR: armarlo; este guion indica qué va en cada una]`.
+1. Pitch Deck con las 5 diapositivas (Problema, Solución, Competencia, Costos y Cierre; la demo no lleva diapositiva): hecho (10 diapositivas, con notas del orador); los números de presupuesto son estimaciones del equipo.
 2. Computadora con la app compilada, MySQL y la base cargada (probar **en esa misma computadora** antes: el camino de Windows no se probó, ver `MANUAL_TECNICO.md`, sección 7).
 3. Capturas (`capturas/`) y los manuales de usuario y técnico (entregables del plan).
 4. Este guion impreso.
@@ -125,9 +125,9 @@ El tramo de 3:05 en adelante es el que se **recorta primero** si se pasan de tie
 «Revisamos ocho alternativas (estatales, gratuitas y comerciales) y en las páginas que pudimos leer no aparecen esos módulos. Eso no prueba que nadie los tenga; es lo que encontramos. Si alguien conoce uno, nos interesa compararlo.»
 
 **10. ¿Cuánto cuesta y cómo ganan plata? ¿Escala a más usuarios?**
-«Licencias de software, cero. El costo real es el trabajo: `[COMPLETAR: costo de desarrollo y mantenimiento]`. Lo cobraríamos como llave en mano más soporte. Sobre cuántos usuarios aguanta: todavía no lo medimos (RNF03); es lo próximo que probaríamos.»
+«Licencias de software, cero. El costo real es el trabajo: unos 3,2 millones de pesos de desarrollo y 720 mil por año de mantenimiento (estimaciones del equipo). Lo cobraríamos como llave en mano más soporte. Sobre cuántos usuarios aguanta: todavía no lo medimos (RNF03); es lo próximo que probaríamos.»
 
-*Preguntas de reserva (si hay tiempo para prepararlas):* ¿por qué C++ y Qt (lo pedía el plan: «C/Qt»; Qt permite interfaces de escritorio con un solo código)? · ¿quién restablece una contraseña olvidada (hoy no hay recuperación; `[COMPLETAR: quién lo hace en el colegio]`)? · ¿qué pasa con los datos de los alumnos y la privacidad? `[COMPLETAR: qué política tiene la escuela]`.
+*Preguntas de reserva (si hay tiempo para prepararlas):* ¿por qué C++ y Qt (lo pedía el plan: «C/Qt»; Qt permite interfaces de escritorio con un solo código)? · ¿quién restablece una contraseña olvidada (hoy no hay recuperación; preguntar en la escuela quién lo haría)? · ¿qué pasa con los datos de los alumnos y la privacidad? no tenemos una política definida; los datos quedan en el servidor de la escuela.
 
 ## Desvíos
 - **Ronda final:** actualicé las cifras a la v3 (337 casos, 20 errores corregidos de 53) y resolví con el script lo que antes estaba como `[COMPLETAR]`: el vendedor de la reserva demo es `alumno1` y las reservas de sectores son relativas en MySQL.

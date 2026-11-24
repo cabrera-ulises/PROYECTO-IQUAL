@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include <QRegularExpression>
 #include "ui_mainwindow.h"
 #include "ventanadetalle.h"
 #include "ventanaproducto.h"
@@ -675,7 +676,7 @@ void MainWindow::on_btnRegistrar_clicked()
     else if (nick.size() < 3) problema = "El usuario tiene que tener al menos 3 caracteres.";
     else if (clave.size() < 4) problema = "La contraseña tiene que tener al menos 4 caracteres.";
     else if (!soloDigitos(dni, 7, 8)) problema = "El DNI tiene que tener 7 u 8 números, sin puntos.";
-    else if (!mail.contains("@") || !mail.contains(".")) problema = "El correo tiene que llevar un @ y un punto.";
+    else if (!QRegularExpression("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$").match(mail).hasMatch()) problema = "El correo no es válido. Tiene que ser algo como nombre@dominio.com.";
     else if (!soloDigitos(telefono, 8, 15)) problema = "El teléfono tiene que tener entre 8 y 15 números.";
     else if (!alumno && ui->leRegPin->text() != PIN_PERSONAL) problema = "El PIN de personal es incorrecto.";
     else if (existe("usuario", "LOWER(usuario_nick)", nick)) problema = "Ese usuario ya existe, probá con otro.";
@@ -1393,6 +1394,7 @@ void MainWindow::on_btnHigieneResolver_clicked()
         fallar("Resolución de reporte", "reporte_higiene", "Ese reporte ya está resuelto.");
         return;
     }
+    int sectorResuelto = valorUnico("SELECT id_sector FROM reporte_higiene WHERE id_reporte = :id", reporte).toInt();
     QSqlQuery q;
     q.prepare("UPDATE reporte_higiene SET id_estado_reporte = :estado, fecha_hora_resolucion = :fecha, id_usuario_resolutor = :usuario "
               "WHERE id_reporte = :reporte");
@@ -1406,14 +1408,20 @@ void MainWindow::on_btnHigieneResolver_clicked()
     }
     registrarLog("Resolución de reporte", QString("Reporte %1 resuelto").arg(reporte), "reporte_higiene", "Exitoso");
     cargarHigiene();
+    // El "Último mantenimiento" se muestra para el sector elegido arriba: pasamos al sector que se acaba de resolver
+    if (sectorResuelto > 0) elegirPorId(ui->cbHigieneSector, sectorResuelto);
     actualizarUltimoMantenimiento();
 }
 
 void MainWindow::cargarGrupos()
 {
-    int vista = ui->cbBuffetVista->currentData().toInt();
+    bool primeraVez = (ui->cbBuffetVista->count() == 0);
+    int vista = primeraVez ? -1 : ui->cbBuffetVista->currentData().toInt();
     int donar = ui->cbDonarGrupo->currentData().toInt();
     cargarCombo(ui->cbBuffetVista, "SELECT id_grupo, nombre_grupo FROM grupo_buffet ORDER BY nombre_grupo", "Productos sueltos de alumnos", "");
+    ui->cbBuffetVista->blockSignals(true);
+    ui->cbBuffetVista->insertItem(0, "TODOS", -1);
+    ui->cbBuffetVista->blockSignals(false);
     elegirPorId(ui->cbBuffetVista, vista);
     cargarCombo(ui->cbUnirseGrupo, "SELECT id_grupo, nombre_grupo FROM grupo_buffet ORDER BY nombre_grupo", "", "");
     cargarCombo(ui->cbDonarGrupo, "SELECT id_grupo, nombre_grupo FROM grupo_buffet ORDER BY nombre_grupo", "", "");
@@ -1460,7 +1468,8 @@ void MainWindow::cargarBuffet()
                   "FROM producto_buffet p JOIN usuario u ON u.id_usuario = p.id_usuario "
                   "JOIN categoria_producto c ON c.id_categoria_producto = p.id_categoria_producto ";
     if (grupo > 0) sql += "WHERE p.id_grupo = :grupo ";
-    else sql += "WHERE p.id_grupo IS NULL ";
+    else if (grupo == 0) sql += "WHERE p.id_grupo IS NULL ";
+    else sql += "WHERE 1 = 1 ";  // TODOS: sueltos y de todos los grupos
     if (categoria > 0) sql += "AND p.id_categoria_producto = :categoria ";
     if (vendedor > 0) sql += "AND p.id_usuario = :vendedor ";
     if (!busqueda.isEmpty()) sql += "AND (p.nombre_producto LIKE :texto OR u.nombre_completo LIKE :texto) ";
