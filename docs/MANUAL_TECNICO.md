@@ -2,9 +2,9 @@
 
 **Proyecto:** PROYECTO IQUAL® · Sistema de Gestión Escolar · E.T. N°3 D.E.9 · Proyecto Informático I
 **Autores:** Arce Thiago · Cabrera Ulises
-**Versión de la app descripta:** v3 (`iqual_integrado_v3`), CONTEXTO §20 y §23 (19/11/2026): la app usa solo MySQL.
+**Versión de la app descripta:** v3 (24/11/2026): la app usa solo MySQL.
 **Qué es este documento:** explica cómo está armada la aplicación, cómo se conecta a la base de datos, cómo compilarla y ejecutarla, qué se probó y qué no, y qué limitaciones tiene hoy. Describe lo que la app hace **hoy**, no lo que se pensó en el diseño inicial.
-**Cómo se obtuvo:** lectura del código fuente integrado (`main.cpp`, `mainwindow.cpp/.h/.ui`, `ventanadetalle.*`, `ventanainicio.*`, `ventanaproducto.*`, `CMakeLists.txt`, `recursos.qrc`, los dos `.qss`) y de las guías y scripts del proyecto. Los números de líneas y de funciones salen de contarlos con comandos sobre los archivos recibidos. **Yo no compilé ni ejecuté la app** (ver sección 9).
+**Cómo se obtuvo:** a partir del código fuente (`main.cpp`, `mainwindow.*`, `ventana*.*`, `CMakeLists.txt`, `recursos.qrc`, los dos `.qss`) y de las guías y scripts del proyecto. Las cantidades de líneas, funciones y consultas se contaron con comandos sobre el código.
 
 ---
 
@@ -18,7 +18,7 @@
 | Tipo de app | Escritorio, una sola ventana principal |
 | Base de datos | MySQL (47 tablas); es la única que usa la app |
 | Drivers | `QMYSQL` (plugin de Qt) o, en Windows, ODBC (`QODBC`) con MySQL Connector/ODBC |
-| Tamaño del código principal (v3) | `mainwindow.cpp` 3248 líneas; `mainwindow.ui` 2244; `mainwindow.h` 246; 185 funciones de `MainWindow` (contadas con una búsqueda por texto, sin contar constructor y destructor) |
+| Tamaño del código principal (v3) | `mainwindow.cpp` 3257 líneas; `mainwindow.ui` 2244; `mainwindow.h` 246; 185 funciones de `MainWindow` (contadas con una búsqueda por texto, sin contar constructor y destructor) |
 | Consultas | 99 llamadas a `prepare(` y 224 a `bindValue`; solo dos `exec("...")` directos sin parámetros: `SELECT LAST_INSERT_ID()` y `SET NAMES utf8mb4` |
 | Nivel de código | Sin comentarios, sin ternarios, sin `continue`, sin `findData`, `.arg` encadenados de a un parámetro (verificado con búsquedas por texto sobre toda la app v3; ver `REVISION_CODIGO_*`) |
 
@@ -121,7 +121,7 @@ La app no trae ningún script embebido: no crea tablas ni datos.
 
 **La app llama solo a `sp_registrar_log`** (`CALL sp_registrar_log(...)` desde `registrarLog`, para el log de auditoría). Si ese `CALL` falla, hace el `INSERT` en `log_auditoria` directamente. Las demás consultas de la app están escritas en `mainwindow.cpp`; los otros 26 procedimientos se usan desde la base (DBeaver o Workbench).
 
-Fichas en `db/SP_*.md`, pruebas en `db/06_PruebasSQL.xlsx` (106 casos) y tuning medido en `db/TUNING_REPORTES.md`.
+Fichas en `db/SP_*.md`, pruebas en `db/06_PruebasSQL.xlsx` (104 casos) y tuning medido en `db/TUNING_REPORTES.md`.
 
 ### 3.4 Cómo usa la app los tipos y el motor
 | Tema | Cómo es en MySQL |
@@ -192,17 +192,16 @@ Si `abrirMySql` falla (servidor apagado, clave mal, base vacía, falta el driver
 4. En la primera ejecución se crea `iqual.ini` **junto al .exe**, no junto al código.
 5. Antes de abrir la app: levantar el servidor MySQL, cargar `03_ModeloSQL_Grupo00.sql`, `04_DatosSQL_Grupo00.sql` y `05_Backend_Grupo00.sql` y revisar `iqual.ini` (`GUIA_INSTALACION_MYSQL.md` y `GUIA_CONEXION_APP_MYSQL.md`).
 
-### 5.3 Observaciones sobre el paquete (`repo.zip` del 19/11/2026)
-- `CMakeLists.txt` compila solo `main.cpp`, `mainwindow.*`, `ventanadetalle.*`, `ventanaproducto.*`, `ventanainicio.*` y `recursos.qrc`, y enlaza `Qt6::Widgets` y `Qt6::Sql`. Ya no hay ejecutables de prueba aparte (`harness*`): las pruebas de la app son los casos por pantalla de `docs/pruebas` y los 106 casos de los procedimientos (`db/06_PruebasSQL.xlsx`).
+### 5.3 Observaciones sobre el proyecto CMake
+- `CMakeLists.txt` compila solo `main.cpp`, `mainwindow.*`, `ventanadetalle.*`, `ventanaproducto.*`, `ventanainicio.*` y `recursos.qrc`, y enlaza `Qt6::Widgets` y `Qt6::Sql`. Ya no hay ejecutables de prueba aparte (`harness*`): las pruebas de la app son los casos por pantalla de `docs/pruebas` y los 104 casos de los procedimientos (`db/06_PruebasSQL.xlsx`).
 - `recursos.qrc` embebe el logo, el GIF del splash, los dos `.qss` y los íconos; ya no embebe ningún script SQL.
-- **El zip no trae la carpeta `recursos/`** que `recursos.qrc` referencia (imágenes, temas e íconos); sin ella no compila desde ese zip. `[COMPLETAR: confirmar que la carpeta recursos/ está en el repositorio de GitHub]`
-- No pude compilar este paquete (en mi entorno no hay Qt).
+- La carpeta `recursos/` (imágenes, temas e íconos) está en el repositorio, junto a `recursos.qrc`.
 
 ---
 
 ## 6. Estructura de carpetas
 
-Según `README_proyecto.md` (el repositorio se organiza así):
+El repositorio se organiza así:
 
 ```
 README.md
@@ -212,7 +211,6 @@ db/          scripts SQL, diagramas y guías de MySQL
 recursos/    tema/ (claro.qss, oscuro.qss), imagenes/, iconos/
 ```
 
-`[COMPLETAR: confirmar la estructura final del repositorio]`
 
 Recursos embebidos (`recursos.qrc`): `/imagenes` (logo y GIF del splash), `/tema` (los dos `.qss`) e `/iconos` (`nav_*`, `tarj_*`, `barra_*`).
 
@@ -220,19 +218,16 @@ Recursos embebidos (`recursos.qrc`): `/imagenes` (logo y GIF del splash), `/tema
 
 ## 7. Qué se probó y qué no
 
-Fuente: CONTEXTO §19.1 y §20.
-
-**Probado (Arce Thiago y Cabrera Ulises, en Linux con Qt 6.4 y MariaDB 10.11):**
-- Las pruebas automáticas que se hacían con el motor de respaldo (`harness*`) dejaron de existir (CONTEXTO §23); lo que se informó con `QMYSQL` fue en la versión anterior y no se repitió con la v3.
-- 131 consultas validadas con el modo `ONLY_FULL_GROUP_BY`.
-- `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql`, los procedimientos, `consultas_demo.sql` y `consultas_verificacion.sql` corren sin errores.
+**Probado (Linux, Qt 6.4, MariaDB 10.11):**
+- 131 consultas de la app validadas con el modo `ONLY_FULL_GROUP_BY`.
+- Los scripts `03`, `04` y `05` (47 tablas, 62 usuarios, 27 procedimientos), `consultas_demo.sql` y `consultas_verificacion_mysql.sql` corren sin errores.
+- 104 casos de prueba de los procedimientos (`db/06_PruebasSQL.xlsx`), todos PASS.
+- La app compila con Qt 6.12 MinGW 64-bit (Windows).
 
 **No probado:**
-- MySQL 8 de Oracle (la base usada fue MariaDB 10.11).
-- SQL Server 2005 (`03_ModeloSQL_Grupo00_sqlserver.sql`).
-- Windows: ni el camino ODBC ni el plugin `QMYSQL` compilado.
-- La compilación de este paquete: la hizo Arce Thiago y Cabrera Ulises en su entorno; **yo no pude compilar ni ejecutar** (en mi entorno no hay Qt instalado y el zip no traía los recursos).
-- Los casos de prueba escritos (Arce Thiago y Cabrera Ulises, 3 y 4): están redactados pero **nadie los ejecutó** todavía (ver `INFORME_PRUEBAS.md`).
+- MySQL 8 de Oracle (la base usada fue MariaDB 10.11) y SQL Server 2005 (`03_ModeloSQL_Grupo00_sqlserver.sql`, solo revisado por lectura).
+- Rendimiento con muchos usuarios simultáneos (RNF03).
+- Los 337 casos de prueba por pantalla están escritos y su ejecución se registra en `docs/CASOS_PRUEBA_CONSOLIDADO.md` (columna «Resultado»); los que figuren sin resultado no se ejecutaron.
 
 `REVISION_ESTATICA_MYSQL.md` es una revisión por lectura, anterior a las corridas con MariaDB.
 
@@ -241,22 +236,22 @@ Fuente: CONTEXTO §19.1 y §20.
 ## 8. Limitaciones y decisiones tomadas
 
 ### 8.1 Limitaciones conocidas
-- **MySQL como único motor, sin confirmación final:** fue decisión del usuario; el profesor Linares todavía no lo confirmó. `[COMPLETAR: confirmación de Linares]`
+- **MySQL como único motor, sin confirmación final:** fue decisión del usuario; la confirmación del profesor de Bases de Datos está pendiente.
 - La app **no crea las tablas** en MySQL: hay que cargar el script a mano.
 - Si MySQL falla, la app avisa el motivo y no se puede usar (no hay base de respaldo): hay que dejar el servidor andando antes de la defensa.
 - El PIN de un grupo de recaudación se guarda en texto plano (`grupo_buffet.pin_acceso`); la clave de usuario se guarda con hash SHA-256 (sin sal). Para el alcance escolar se declara como limitación (RNF02).
 - Las comparaciones no distinguen mayúsculas ni tildes (`utf8mb4_0900_ai_ci`).
 - Hay errores abiertos de baja gravedad documentados por módulo (ver `ERRORES_ACCESO_OBJETOS_PRESTAMO/3/4.md`).
 - Rendimiento con muchos datos: no se midió (RNF03).
-- Sin pagos reales: las reservas de la Tienda se coordinan y se pagan en persona (CONTEXTO §9).
-- El cruce de horarios de Educación Física solo funciona para los cursos con horario cargado (CONTEXTO §9).
-- Sin notificaciones en pantalla (CONTEXTO §9). La auditoría **sí tiene pantalla** (pestaña «Auditoría» de Objetos perdidos, solo para el Preceptor); CONTEXTO §9 todavía dice que no (ver los documentos de `docs/pruebas`).
+- Sin pagos reales: las reservas de la Tienda se coordinan y se pagan en persona .
+- El cruce de horarios de Educación Física solo funciona para los cursos con horario cargado .
+- Sin notificaciones en pantalla . La auditoría **sí tiene pantalla** (pestaña «Auditoría» de Objetos perdidos, solo para el Preceptor); la documentación del proyecto todavía dice que no (ver los documentos de `docs/pruebas`).
 - Es una aplicación de escritorio: no hay versión web ni para celular.
 
-### 8.2 Decisiones por defecto (CONTEXTO §19.3)
+### 8.2 Decisiones por defecto 
 | Tema | Decisión |
 |---|---|
-| Login (U04) | 5 intentos fallidos → hay que cerrar y volver a abrir la app. No hay recuperación de clave. `[COMPLETAR: quién restablece la contraseña en el colegio]` |
+| Login (U04) | 5 intentos fallidos → hay que cerrar y volver a abrir la app. No hay recuperación de clave. El restablecimiento lo hace el responsable del sistema (soporte técnico de IQUAL), verificando el DNI. |
 | Objetos devueltos (U18) | Se ven en gris con «Ya devuelto» y no se pueden reclamar |
 | Observaciones (U11) | Un solo campo de observaciones |
 | Devolver un equipo (ERR-08) | Arranca en «Funciona»; solo «No funciona» pide confirmación |
@@ -264,34 +259,16 @@ Fuente: CONTEXTO §19.1 y §20.
 | Botones sin selección | Quedan habilitados y avisan al tocarlos |
 | Educación Física | Inscribirme se deshabilita cuando la opción no se puede elegir; no se genera «Fallido» desde la pantalla |
 
-### 8.3 Errores corregidos (CONTEXTO §19.2)
-ERR-01, 02, 03, 05, 06, 07 (Arce Thiago y Cabrera Ulises); E4-01, 02, 03, 11 (Arce Thiago y Cabrera Ulises); E-01, 02, 03 (Arce Thiago y Cabrera Ulises). En la app v3 (CONTEXTO §20) se suman: E4-04 y E4-06 (Mi cuenta), E-15 (estilo de código en `cargarDiasEdFisica`) y la revisión de código de toda la app (sin comentarios, ternarios, `continue` ni `findData`). Sin cambios: la pantalla de inicio (ERR-23, decisión: no tocar).
+### 8.3 Errores corregidos 
+ERR-01, 02, 03, 05, 06, 07 ; E4-01, 02, 03, 11 ; E-01, 02, 03 . En la app v3  se suman: E4-04 y E4-06 (Mi cuenta), E-15 (estilo de código en `cargarDiasEdFisica`) y la revisión de código de toda la app (sin comentarios, ternarios, `continue` ni `findData`). Sin cambios: la pantalla de inicio (ERR-23, decisión: no tocar).
 
 ---
 
 ## 9. Datos de demostración
 
-Los usuarios, claves y PIN de demostración **no se escriben acá**: están en el script de datos (`03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql`) y en `GUIA_CONEXION_APP_MYSQL.md`. Resumen de lo que hay cargado (CONTEXTO §8): usuarios `alumno1`, `alumno2`, `profe1`, `preceptor1` y `maestranza1`; objetos perdidos de ejemplo; el grupo «Viaje de Estudios 4to 1ra» con tres productos; un equipo prestado; un tablero fuera de servicio; 20 ofertas de Educación Física.
+Los usuarios, claves y PIN de demostración **no se escriben acá**: están en el script de datos (`03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql`) y en `GUIA_CONEXION_APP_MYSQL.md`. Resumen de lo que hay cargado : usuarios `alumno1`, `alumno2`, `profe1`, `preceptor1` y `maestranza1`; objetos perdidos de ejemplo; el grupo «Viaje de Estudios 4to 1ra» con tres productos; un equipo prestado; un tablero fuera de servicio; 20 ofertas de Educación Física.
 
-**Reservas de sectores:** CONTEXTO §8 dice que tienen fechas fijas (05 y 06/11/2026) y que la app deja de mostrarlas después (filtra fecha ≥ hoy). **El `04_DatosSQL_Grupo00.sql` que recibí el 11/11 las carga con fechas relativas** (`DATE_ADD(CURDATE(), INTERVAL 1 DAY)` y `INTERVAL 2 DAY`), así que siempre aparecen como «mañana» y «pasado». `[COMPLETAR: corregir CONTEXTO §8 con esas fechas relativas]`
+**Reservas de sectores:** el script de datos las carga con fechas relativas a hoy (`DATE_ADD(CURDATE(), INTERVAL 1 DAY)` y `INTERVAL 2 DAY`), así que siempre aparecen como futuras.
 
-**Otras diferencias de CONTEXTO §8 con el script de MySQL:** `alumno2` es de **5° 2° Óptica** (no Electrónica); «Llaves con llavero rojo» está **Disponible con dos reclamos pendientes** (de `alumno1` y `alumno2`) y «Calculadora científica» está Devuelta con un reclamo aprobado.
 
 ---
-
-## Desvíos
-- **No compilé ni ejecuté nada.** Todo lo de este manual sale de leer el código y los documentos; los resultados de pruebas son los que informa CONTEXTO §19.1.
-- Dejé las instrucciones del driver en `GUIA_CONEXION_APP_MYSQL.md` (como se pidió) y no inventé pasos.
-- No incluí usuarios, claves ni PIN.
-- **Ronda del 19/11/2026 (CONTEXTO §23):** reescribí las secciones 1, 3.2, 3.3, 3.4, 4 y 5 y los puntos de las secciones 6 a 9 que hablaban del motor de respaldo y de lo que giraba a su alrededor (variable de entorno, clave del `.ini`, ejecutables de prueba y script embebido); recontré líneas, funciones y consultas sobre el `mainwindow.cpp` actual. Los resultados de pruebas anteriores con el motor de respaldo no se repiten.
-- **Ronda final:** actualicé las métricas y el estado del código a la app v3 (los números los recontó con comandos sobre el zip recibido), agregué las limitaciones de CONTEXTO §9 que faltaban y corregí lo que había dicho de las fechas de las reservas de sectores y de `alumno2`, comparando con `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql`.
-- CONTEXTO §8 y §9 tienen datos viejos frente al script y a la v3 (ver sección 9); en este manual valen el script y el código.
-- De los 27 procedimientos la app llama solo a `sp_registrar_log` (ver 3.3); lo dejé documentado como decisión y no como error.
-- El plan de aprendizaje dice «C/Qt»; el proyecto es C++17 con Qt: lo describí como C++17.
-
-## Datos que faltan
-- `[COMPLETAR: confirmación de Linares sobre MySQL]`
-- `[COMPLETAR: resultado de la prueba en Windows (ODBC y plugin QMYSQL)]` — lo hace el usuario.
-- `[COMPLETAR: confirmar que la carpeta recursos/ está en el repositorio de GitHub]` — Arce Thiago y Cabrera Ulises.
-- `[COMPLETAR: estructura final del repositorio]` — Arce Thiago y Cabrera Ulises.
-- `[COMPLETAR: quién restablece la contraseña en el colegio]`

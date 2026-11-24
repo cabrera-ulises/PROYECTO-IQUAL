@@ -7,7 +7,7 @@
 Durante el 4° Bimestre la aplicación se desvió del diseño inicial del 3er Bimestre (árboles, Marco Lógico, 12 RF + 4 RNF, 6 historias y maquetado). Este documento lista **cada cambio, por qué se hizo y qué documento afecta**, para que la documentación describa lo que realmente se construye.
 
 * **Ref.:** número de decisión del archivo de contexto interno del equipo (`CONTEXTO_IQUAL.md`, que no está en el repositorio; los cambios 66 a 90 citan sus secciones §14 a §18). Los motivos que dicen "regla de la profesora" o "regla de BD" vienen de las consignas de la cátedra.
-* Documentos: `REQ` = [requerimientos](./requerimientos.md) · `US` = [historias de usuario](./historias-de-usuario.md) · `MML` = [marco-logico.xlsx](./marco-logico.xlsx) · `MAQ` = [maquetado-y-usabilidad.xlsx](./maquetado-y-usabilidad.xlsx) · `README` · `ARB` = [árbol de objetivos](./arbol-de-objetivos.drawio.xml) · `PRES` = presentación (ver [`cambios-presentacion.md`](./cambios-presentacion.md)) · `MAT` = [matriz de trazabilidad](./matriz-trazabilidad.md).
+* Documentos: `REQ` = [requerimientos](./requerimientos.md) · `US` = [historias de usuario](./historias-de-usuario.md) · `MML` = [marco-logico.xlsx](./marco-logico.xlsx) · `MAQ` = [maquetado-y-usabilidad.xlsx](./maquetado-y-usabilidad.xlsx) · `README` · `ARB` = [árbol de objetivos](./arbol-de-objetivos.png) · `PRES` = presentación (ver [`cambios-presentacion.md`](./cambios-presentacion.md)) · `MAT` = [matriz de trazabilidad](./matriz-trazabilidad.md).
 
 ---
 
@@ -179,7 +179,7 @@ Durante el 4° Bimestre la aplicación se desvió del diseño inicial del 3er Bi
 | 100 | Higiene: texto de ayuda | «Contá qué pasa (ej: falta papel, silla rota)» | «Contá qué pasa (ej: falta papel)» | Ajuste de microcopy en la app v3 | REQ (RF03), US02 |
 | 101 | Nivel de código | La app tenía comentarios, ternarios, un `continue`, `findData` y `.arg` con varios parámetros | Aplicada la revisión de código: sin comentarios, sin ternarios, sin `continue`, sin `findData`, `.arg` encadenados; la fecha de «hoy» del Inicio se pasa por parámetro (`valorUnicoHoy`) | Revisión de código de Arce Thiago y Cabrera Ulises (R-01, R-02, E-15) y de Arce Thiago y Cabrera Ulises | `REVISION_CODIGO_*`, `MANUAL_TECNICO.md` |
 | 102 | Pantalla de inicio (splash) | — | Sin cambios: sigue como está (ERR-23, decisión: no tocar) | CONTEXTO §20 | `MANUAL_TECNICO.md` |
-| 103 | Motor de respaldo | Si MySQL fallaba, la app seguía con una base local de respaldo (SQLite, `iqual.db`, creada con un script embebido en el `.qrc`) | **Se saca el respaldo: la app usa solo MySQL** (`QMYSQL` o, en Windows, `QODBC`). Si no puede conectar, muestra «No se pudo usar MySQL: …» y la ventana queda deshabilitada. Desaparecen el script embebido, la variable de entorno y la clave `motor` del `.ini`, y las pruebas automáticas con ese motor; las pruebas de la app son los casos por pantalla y los 106 casos de los procedimientos | Ningún material de clase usa ese motor; la clase de Bases de Datos conecta con MySQL y ejecuta `CALL` de procedimientos (CONTEXTO §23) | README, REQ (RNF04, sección 4), MANUAL_TECNICO, casos de prueba, errores y manuales |
+| 103 | Motor de respaldo | Si MySQL fallaba, la app seguía con una base local de respaldo (SQLite, `iqual.db`, creada con un script embebido en el `.qrc`) | **Se saca el respaldo: la app usa solo MySQL** (`QMYSQL` o, en Windows, `QODBC`). Si no puede conectar, muestra «No se pudo usar MySQL: …» y la ventana queda deshabilitada. Desaparecen el script embebido, la variable de entorno y la clave `motor` del `.ini`, y las pruebas automáticas con ese motor; las pruebas de la app son los casos por pantalla y los 104 casos de los procedimientos | Ningún material de clase usa ese motor; la clase de Bases de Datos conecta con MySQL y ejecuta `CALL` de procedimientos (CONTEXTO §23) | README, REQ (RNF04, sección 4), MANUAL_TECNICO, casos de prueba, errores y manuales |
 
 ---
 
@@ -207,7 +207,7 @@ Durante el 4° Bimestre la aplicación se desvió del diseño inicial del 3er Bi
 ## 3. Qué no se modificó
 
 * La **pantalla de inicio (splash)** de la app: sigue como está (ERR-23, decisión de la ronda final: no tocar).
-* `docs/bitacora.md`: es el registro histórico del equipo (semanas 1 a 7). Cuando haga falta registrar estos cambios hay entradas en borrador aparte: [`bitacora-borrador.md`](./bitacora-borrador.md).
+* `docs/bitacora.md`: es el registro histórico del equipo (semanas 1 a 7). Cuando haga falta registrar estos cambios hay entradas en borrador aparte: `bitacora.md`.
 * El **árbol de problemas** (`arbol-de-problemas.png`).
 * El PNG viejo del árbol de objetivos (`docs/arbol-de-objetivos.png`) sigue en el repositorio con el objetivo central anterior: **pendiente de reemplazo** (exportar un PNG nuevo desde el XML de draw.io o borrar el viejo).
 * La presentación de Canva y las maquetas de Canva: no se pueden editar desde acá. Qué corregir en cada lámina está en [`cambios-presentacion.md`](./cambios-presentacion.md).

@@ -91,7 +91,7 @@ El tramo de 3:05 en adelante es el que se **recorta primero** si se pasan de tie
 | Se pasan de tiempo | Saltear sectores y tema oscuro (3:05 a 4:00). |
 
 ## 4. Materiales para llevar
-1. Pitch Deck con las 5 diapositivas (Problema, Solución, Competencia, Costos y Cierre; la demo no lleva diapositiva): hecho (10 diapositivas, con notas del orador); los números de presupuesto son estimaciones del equipo.
+1. Pitch Deck de 10 diapositivas (portada, problema, solución, 6 módulos, arquitectura, base de datos, demo, competencia, costos y cierre). Tiempo total previsto: 6 minutos.
 2. Computadora con la app compilada, MySQL y la base cargada (probar **en esa misma computadora** antes: el camino de Windows no se probó, ver `MANUAL_TECNICO.md`, sección 7).
 3. Capturas (`capturas/`) y los manuales de usuario y técnico (entregables del plan).
 4. Este guion impreso.
@@ -116,7 +116,7 @@ El tramo de 3:05 en adelante es el que se **recorta primero** si se pasan de tie
 «Hay roles y permisos por pantalla, las contraseñas se guardan con hash SHA-256, las consultas usan parámetros (no se arman con texto del usuario) y toda acción importante queda en una auditoría. Limitaciones que conocemos y declaramos: el hash no lleva sal y el PIN de los grupos de recaudación se guarda sin cifrar.»
 
 **7. ¿Cómo la probaron?**
-«Hay 337 casos de prueba escritos para todas las pantallas y 53 errores detectados leyendo el código, 20 ya corregidos y ninguno grave. Además se corrieron pruebas automáticas y los scripts de la base sin fallas en Linux con MariaDB. **Lo que todavía no hicimos** es ejecutar los casos a mano y probar en Windows: está declarado.» *(Ser honestos: no decir «probado» si no se corrieron los casos.)*
+«Hay 337 casos de prueba escritos para todas las pantallas y 55 errores detectados leyendo el código, 20 ya corregidos y ninguno grave. Además se corrieron pruebas automáticas y los scripts de la base sin fallas en Linux con MariaDB. **Lo que todavía no hicimos** es ejecutar los casos a mano y probar en Windows: está declarado.» *(Ser honestos: no decir «probado» si no se corrieron los casos.)*
 
 **8. ¿Por qué no usan Google Classroom o miEscuela?**
 «Son buenas y gratuitas para lo académico, pero según lo que leímos no resuelven objetos perdidos, préstamo de equipos, reserva de sectores ni higiene. No competimos con ellas: IQUAL las complementa.»
@@ -130,7 +130,7 @@ El tramo de 3:05 en adelante es el que se **recorta primero** si se pasan de tie
 *Preguntas de reserva (si hay tiempo para prepararlas):* ¿por qué C++ y Qt (lo pedía el plan: «C/Qt»; Qt permite interfaces de escritorio con un solo código)? · ¿quién restablece una contraseña olvidada (hoy no hay recuperación; preguntar en la escuela quién lo haría)? · ¿qué pasa con los datos de los alumnos y la privacidad? no tenemos una política definida; los datos quedan en el servidor de la escuela.
 
 ## Desvíos
-- **Ronda final:** actualicé las cifras a la v3 (337 casos, 20 errores corregidos de 53) y resolví con el script lo que antes estaba como `[COMPLETAR]`: el vendedor de la reserva demo es `alumno1` y las reservas de sectores son relativas en MySQL.
+- **Ronda final:** actualicé las cifras a la v3 (337 casos, 20 errores corregidos de 55) y resolví con el script lo que antes estaba como `[COMPLETAR]`: el vendedor de la reserva demo es `alumno1` y las reservas de sectores son relativas en MySQL.
 - No escribí claves ni PIN: la demo usa los usuarios por nombre y las claves están en el script de datos.
 - **Datos de demo:** CONTEXTO §8 está desactualizado frente al `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql` (fechas de las reservas de sectores, especialidad de `alumno2` y estado de las «Llaves con llavero rojo»). Para el guion valen el script (que verifiqué) y la v3.
 - El guion usa datos que vienen de la documentación; **yo no ejecuté la app**, así que los pasos de la demo (en especial los textos exactos de pantalla y que la reserva de demostración de la Tienda se pueda entregar con `alumno1`) hay que ensayarlos.

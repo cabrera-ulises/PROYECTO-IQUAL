@@ -40,7 +40,7 @@ La presentación está hecha en Canva y no se puede editar desde acá, así que 
 
 ### Lámina 3 · Solución Propuesta y Visión del Sistema (Árbol de Objetivos)
 * **Alta:** el objetivo general dice "plataforma web/móvil autogestionable" → "**aplicación de escritorio** autogestionable que unifique la administración de recursos y mejore la convivencia escolar".
-* **Media:** si se muestra el árbol de objetivos, usar el nuevo ([`arbol-de-objetivos.drawio.xml`](./arbol-de-objetivos.drawio.xml)): el objetivo central ahora es "Organización operativa escolar eficiente".
+* **Media:** si se muestra el árbol de objetivos, usar el nuevo ([`arbol-de-objetivos.drawio.xml`](./arbol-de-objetivos.png)): el objetivo central ahora es "Organización operativa escolar eficiente".
 * Los 6 módulos están bien; ver inconsistencias 8 y 9. Sumar una nota breve: "más Acceso con roles, Inicio con resumen y Mi Cuenta".
 
 ### Lámina 4 · Metodología del Marco Lógico (MML)
@@ -120,7 +120,7 @@ Solo hechos del archivo de contexto interno (§19 y §20); las fechas y horas re
 | :-: | :--- | :--- | :--- |
 | 1 | **MySQL como motor** (la app se conecta a MySQL con `iqual.ini` y, si falla, avisa el motivo y no abre; base ejecutada en MariaDB 10.11; falta MySQL 8 de Oracle, SQL Server 2005 y Windows) | 4, 5 y donde se mencione la base | Escribir "MySQL" y no afirmar que está probado en Windows. `[COMPLETAR: confirmación del profesor Linares sobre el motor]` |
 | 2 | **Revisión de código** aplicada: sin comentarios, ternarios, `continue` ni `findData`; `.arg` encadenados | Lámina de calidad (opcional, sección 4) | Si se muestra, decir "cumple las reglas de la profesora" solo para estas reglas |
-| 3 | **App v3**: las pruebas automáticas internas con el motor de respaldo ya no existen; hoy hay casos por pantalla (337) y 106 casos de procedimientos almacenados con resultado PASS en MariaDB 10.11 | Lámina de calidad (opcional) | No presentar los casos por pantalla como "ejecutados": todavía no se corrieron. Sí se pueden mencionar los 106 casos de la base |
+| 3 | **App v3**: las pruebas automáticas internas con el motor de respaldo ya no existen; hoy hay casos por pantalla (337) y 104 casos de procedimientos almacenados con resultado PASS en MariaDB 10.11 | Lámina de calidad (opcional) | No presentar los casos por pantalla como "ejecutados": todavía no se corrieron. Sí se pueden mencionar los 104 casos de la base |
 | 4 | **Objetos:** al publicar, Categoría y Sector vuelven a "Elegí una categoría / un sector"; las Consultas muestran la fecha como `dd/MM` | 8 | Usar una captura de la v3 |
 | 5 | **Mi cuenta:** "Ese ya es tu curso." si se elige el mismo curso; el selector vuelve atrás si se dice "No" al choque | (sin lámina propia) | Mencionarlo solo si se explica Mi Cuenta |
 | 6 | **Higiene:** el texto de ayuda de las observaciones es "Contá qué pasa (ej: falta papel)" | 9 | Usar una captura de la v3 |

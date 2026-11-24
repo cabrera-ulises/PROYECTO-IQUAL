@@ -80,7 +80,7 @@ Controles del conteo: no hay IDs repetidos dentro de los casos (172, 78 y 87 IDs
 - **Corregido:** figura en §19.2.
 - **Decisión por defecto:** figura en §19.3 (se dejó así a propósito, el usuario puede cambiarlo).
 - **Corregido (app v3):** lo dice CONTEXTO §20 (E4-04 y E4-06) o lo verifiqué en el código v3 (E-15).
-- **Abierto:** no figura en ninguno de los anteriores; se asume que sigue igual. `[COMPLETAR: Arce Thiago y Cabrera Ulises y Arce Thiago y Cabrera Ulises confirman el estado de sus errores «Abierto» y de los nuevos, p. ej. ERR-20 a ERR-23; Arce Thiago y Cabrera Ulises confirma cuáles se arreglaron en la v3]`
+- **Abierto:** no figura en ninguno de los anteriores; se asume que sigue igual. `[COMPLETAR: Arce Thiago y Cabrera Ulises confirman el estado de sus errores «Abierto» y de los nuevos, p. ej. ERR-20 a ERR-23; Arce Thiago y Cabrera Ulises confirma cuáles se arreglaron en la v3]`
 - Excepción: ERR-19 (función de fecha propia de otro motor en el resumen del Profesor) no figura en §19.2, pero busqué en el `mainwindow.cpp` actual `date('now')`, `datetime('now')`, `strftime`, `julianday`, `last_insert_rowid`, `INSERT OR` y `PRAGMA` y no hay ninguno. Lo marco **Corregido (verificado en el código)**.
 
 ### 5.1 Resumen
@@ -152,7 +152,7 @@ Ronda del 19/11/2026 (CONTEXTO §23): la fila de la Tienda y Educación Física 
 | Educación Física | E-15 | Baja | Corregido (app v3, verificado en el código) | Un comentario `//` y un ternario en `cargarDiasEdFisica` |
 | Educación Física | E-16 | Baja | Abierto | Redacción distinta entre la franja y el mensaje de error |
 
-Los estados de Arce Thiago y Cabrera Ulises y Arce Thiago y Cabrera Ulises son los que ellos mismos escribieron en la columna «Estado» de sus `ERRORES_*.md` de la ronda final (verificados en el código v3). ERR-20 y ERR-22 (Corregidos en v3) y ERR-23 (decisión por defecto: no tocar el splash) y ERR-21 (a verificar en MySQL) se suman a la tabla 5.2 como filas nuevas; ERR-09 pasó de Abierto a Decisión por defecto y ERR-15 figura «Corregido en MySQL, abierto solo en SQLite» (se cuenta como Corregido).
+Los estados de Arce Thiago y Cabrera Ulises son los que ellos mismos escribieron en la columna «Estado» de sus `ERRORES_*.md` de la ronda final (verificados en el código v3). ERR-20 y ERR-22 (Corregidos en v3) y ERR-23 (decisión por defecto: no tocar el splash) y ERR-21 (a verificar en MySQL) se suman a la tabla 5.2 como filas nuevas; ERR-09 pasó de Abierto a Decisión por defecto y ERR-15 figura «Corregido en MySQL, abierto solo en SQLite» (se cuenta como Corregido).
 
 **Pendientes propios de Arce Thiago y Cabrera Ulises y 4** (no son errores de la tabla anterior): la pregunta sobre separar las observaciones de pedir y devolver un equipo (U11, decisión por defecto: un solo campo) y las listas de defectos visuales y de microcopy de las capturas (Arce Thiago y Cabrera Ulises sección 4b; Arce Thiago y Cabrera Ulises «Pendientes propios (b)», ítems V1–V13). Quedan registrados en sus documentos y en `docs/pruebas`.
 
@@ -165,7 +165,7 @@ Los estados de Arce Thiago y Cabrera Ulises y Arce Thiago y Cabrera Ulises son l
 6. **Siguiente paso:** ejecutar primero los casos que tocan lo corregido (para confirmar los arreglos) y los de flujo principal por rol (LOG, REG, OBJ, PRE, SEC, TIE-P0/P3, EDF); después el resto.
 
 ## Desvíos
-- Los casos y errores de Arce Thiago y Cabrera Ulises y Arce Thiago y Cabrera Ulises de la ronda final llegaron después de este informe: Arce Thiago y Cabrera Ulises volvió a correr el conteo sobre sus archivos nuevos (172 y 78 casos) y actualizó las cifras de este informe y del consolidado.
+- Los casos y errores de Arce Thiago y Cabrera Ulises de la ronda final llegaron después de este informe: Arce Thiago y Cabrera Ulises volvió a correr el conteo sobre sus archivos nuevos (172 y 78 casos) y actualizó las cifras de este informe y del consolidado.
 - En `CASOS_PRUEBA_CONSOLIDADO.md` reemplacé la clave de demostración por «la contraseña de demo» (no se escriben claves). Los IDs no cambian.
 - No ejecuté ningún caso ni ninguna prueba; todo lo que se cuenta sale de leer los documentos y el código.
 - El conteo de casos con `[COMPLETAR]` (11) lo hizo el script buscando esa marca en las filas de tabla; puede haber `[COMPLETAR]` en el texto fuera de las tablas (preámbulos, desvíos), que se listan en `docs/pruebas`.
@@ -173,6 +173,6 @@ Los estados de Arce Thiago y Cabrera Ulises y Arce Thiago y Cabrera Ulises son l
 ## Datos que faltan
 - Resultados (OK / FALLA / NO PROBADO) de los 337 casos: quien pruebe.
 - `[COMPLETAR: entorno de ejecución de los casos (equipo, SO, Qt, versión de MySQL, versión de la app)]`
-- `[COMPLETAR: Arce Thiago y Cabrera Ulises confirma qué errores «Abierto» de Arce Thiago y Cabrera Ulises y Arce Thiago y Cabrera Ulises ya fueron corregidos]`
+- `[COMPLETAR: Arce Thiago y Cabrera Ulises confirma qué errores «Abierto» de Arce Thiago y Cabrera Ulises ya fueron corregidos]`
 - Datos para los 11 casos con `[COMPLETAR]` (programas por equipo, DNI y correo de `alumno1`, decisión sobre nombre repetido de producto, etc.).
 - Medición de E-04 (rendimiento de fotos) y de RNF03.

@@ -29,7 +29,7 @@
 
 **No miré:**
 - Los `.ui` ni los `.qss`.
-- Que el código compile o que los resultados sean correctos: no lo ejecuté. Los harness automáticos de la ronda final ya no existen (CONTEXTO §23): las pruebas de la app son los casos por pantalla de `CASOS_PRUEBA_ACCESO_OBJETOS_PRESTAMO.md` y los 106 casos de los procedimientos.
+- Que el código compile o que los resultados sean correctos: no lo ejecuté. Los harness automáticos de la ronda final ya no existen (CONTEXTO §23): las pruebas de la app son los casos por pantalla de `CASOS_PRUEBA_ACCESO_OBJETOS_PRESTAMO.md` y los 104 casos de los procedimientos.
 - El contenido de las funciones de los otros chats más allá de la búsqueda de patrones.
 
 ## 3. Todo el archivo, no solo mis funciones

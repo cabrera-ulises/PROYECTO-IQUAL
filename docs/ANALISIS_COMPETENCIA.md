@@ -3,9 +3,9 @@
 **Proyecto:** PROYECTO IQUAL® · SGE · E.T. N°3 D.E.9 · Proyecto Informático I
 **Autores:** Arce Thiago · Cabrera Ulises
 **Plan de Aprendizaje:** 4° bimestre, semana 4 (matriz comparativa de funcionalidades y costos, y propuesta única de valor)
-**Fecha de la consulta:** 12/11/2026. **Revisión de fuentes (ronda final, 13/11/2026):** cada dato de costo tiene fuente y fecha; los que salen de una página **sin fecha de publicación** pasaron a `[COMPLETAR]` (ver sección 4). Todos los datos de otros productos salen de páginas web leídas ese día; cada dato lleva su fuente (numerada en la sección 7) y la fecha que la página informa. **Cuando la página no trae fecha lo digo.** Lo que no pude confirmar queda como `[COMPLETAR]`.
+**Fecha de la consulta:** 12/11/2026 (revisión final de fuentes: 13/11/2026). Cada dato de otros productos sale de una página web leída ese día y lleva su fuente (sección 7). Cuando la página no informa fecha de publicación, se indica.
 
-> **Cómo leer este documento:** «No figura en la fuente» significa que **la página que leí no lo menciona**, no que el producto no lo tenga. Para afirmar que alguien «no lo ofrece» habría que mirar el producto o pedir una demo (ver «Datos que faltan»).
+> **Cómo leer este documento:** «No figura en la fuente» significa que **la página que leí no lo menciona**, no que el producto no lo tenga. Para afirmar que alguien «no lo ofrece» habría que mirar el producto o pedir una demo (ver sección 8).
 
 ---
 
@@ -34,9 +34,9 @@ Se eligieron alternativas reales que una escuela podría usar en lugar de IQUAL,
 | Software de gestión escolar comercial | Clickedu, Alexia (Educaria), Esemtia, Cifra Educación, e-Schooling |
 | Sistema para ministerios (Argentina) | Tramix Gestión Educativa (Unitech) |
 
-`[COMPLETAR: otras alternativas que use realmente E.T. N°3 o el D.E.9 (por ejemplo, el sistema que usa la escuela para notas y legajos). No pude averiguarlo con fuentes públicas y no lo invento.]`
+No se pudo averiguar con fuentes públicas qué sistema usa hoy E.T. N°3 para notas y legajos; por eso no figura en la comparación.
 
-**Límite de esta búsqueda:** casi todos los productos comerciales que figuran en las fuentes son de España o de plataformas de comparación; **no pude confirmar que se vendan o se usen en Argentina** (salvo miEscuela y Tramix, que sí son argentinos). No uso ningún precio en euros ni en pesos: los pocos montos que había eran de páginas sin fecha y quedaron en `[COMPLETAR]` (sección 4).
+**Límite de esta búsqueda:** casi todos los productos comerciales que figuran en las fuentes son de España o de plataformas de comparación; **no pude confirmar que se vendan o se usen en Argentina** (salvo miEscuela y Tramix, que sí son argentinos). No uso ningún precio en euros ni en pesos: los pocos montos que había eran de páginas sin fecha y quedaron en sin dato (sección 4).
 
 ## 3. Matriz comparativa de funcionalidades
 **✔** = la fuente lo menciona · **—** = no figura en la fuente · **No** = IQUAL no lo tiene hoy.
@@ -68,26 +68,26 @@ Notas de la matriz:
 | Alternativa | Dato de costo publicado | Fuente y fecha |
 |---|---|---|
 | IQUAL | Sin precio definido todavía. Los costos de armar y sostener el proyecto están en `PRESUPUESTO_Y_MODELO_DE_NEGOCIO.md`. Propuesta del equipo: llave en mano $4.500.000 + soporte $80.000 por mes (estimación; ver `PRESUPUESTO_Y_MODELO_DE_NEGOCIO.md`) | Este proyecto |
-| miEscuela | La página **no indica** si tiene costo | [1] (consultada 12/11/2026; fecha de publicación `[COMPLETAR]`) |
-| Google Workspace for Education Fundamentals (incluye Classroom) | `[COMPLETAR: confirmar vigencia]`. La página lo describía como «disponible sin cargo para las instituciones que cumplan los requisitos» | [2] (consultada 12/11/2026; la página no informa fecha) |
-| Google Workspace for Education Plus | `[COMPLETAR: precio]` (la página dice «Consultar precios»: suscripción anual, sin monto) | [2] (ídem) |
-| Clickedu | `[COMPLETAR: modelo y precio]` (la página muestra tres modelos posibles —pago único, sin licencia, mensual— sin decir cuál aplica) | [3] (consultada 12/11/2026; sin fecha) |
-| Alexia (Educaria) | `[COMPLETAR: precio vigente]`. El directorio leído da una referencia «orientativa» en euros, pero **sin fecha de publicación**, por eso no la uso como dato | [4b] (consultada 12/11/2026; sin fecha) |
+| miEscuela | La página **no indica** si tiene costo | [1] (consultada 12/11/2026; sin fecha de publicación) |
+| Google Workspace for Education Fundamentals (incluye Classroom) | Sin monto verificable. La página lo describía como «disponible sin cargo para las instituciones que cumplan los requisitos» | [2] (consultada 12/11/2026; la página no informa fecha) |
+| Google Workspace for Education Plus | Sin monto verificable (la página dice «Consultar precios»: suscripción anual, sin monto) | [2] (ídem) |
+| Clickedu | Sin monto verificable (la página muestra tres modelos posibles —pago único, sin licencia, mensual— sin decir cuál aplica) | [3] (consultada 12/11/2026; sin fecha) |
+| Alexia (Educaria) | Sin monto verificable. El directorio leído da una referencia «orientativa» en euros, pero **sin fecha de publicación**, por eso no la uso como dato | [4b] (consultada 12/11/2026; sin fecha) |
 | Esemtia, Cifra Educación | No publican monto en las fuentes consultadas | [4a] (12/01/2014, actualizado 03/07/2026) |
-| e-Schooling | «Bajo cotización» (precio personalizado) | [6] (consultada 12/11/2026; solo informa el año 2026) `[COMPLETAR: fecha]` |
+| e-Schooling | «Bajo cotización» (precio personalizado) | [6] (consultada 12/11/2026; solo informa el año 2026) sin dato |
 | Tramix | La nota **no indica** precios | [7] 29/11/2012 (nota antigua) |
-| Otros directorios (Atenea, Schooltivity, Playoff, Dinantia, Brainbond) | `[COMPLETAR: precios vigentes]`. El directorio [4b] los da como «orientativos», sin fecha de publicación | [4b] (sin fecha) |
+| Otros directorios (Atenea, Schooltivity, Playoff, Dinantia, Brainbond) | Sin monto verificable. El directorio [4b] los da como «orientativos», sin fecha de publicación | [4b] (sin fecha) |
 
-Lo que se ve en las fuentes: las plataformas comerciales de gestión escolar **se ofrecen por suscripción o por cotización** (e-Schooling: «bajo cotización»; Google Workspace Plus: «consultar precios»); **no pude sostener ningún monto con fecha**, por eso las celdas quedan en `[COMPLETAR]`. Lo estatal y lo de Google es gratis, pero **no resuelve** objetos perdidos, préstamos ni reservas de sectores (según las fuentes). Conversión a pesos: `[COMPLETAR: cotización del euro en la fecha en que se presente; no la puse para no inventarla]`.
+Lo que se ve en las fuentes: las plataformas comerciales de gestión escolar **se ofrecen por suscripción o por cotización** (e-Schooling: «bajo cotización»; Google Workspace Plus: «consultar precios»); **no pude sostener ningún monto con fecha**, por eso las celdas quedan en sin dato. Lo estatal y lo de Google es gratis, pero **no resuelve** objetos perdidos, préstamos ni reservas de sectores (según las fuentes). Conversión a pesos: No se convirtieron montos a pesos porque no se usó ningún precio en euros..
 
 ## 5. Costos de lo que usa IQUAL (para compararlo contra estos precios)
 | Componente | Dato verificado | Fuente |
 |---|---|---|
-| MySQL Community Edition | Se distribuye bajo licencia GPL y se descarga gratis | [9] (consultada 12/11/2026; fecha de la fuente `[COMPLETAR]`) |
+| MySQL Community Edition | Se distribuye bajo licencia GPL y se descarga gratis | [9] (consultada 12/11/2026; fecha de la fuente sin dato) |
 | MySQL: cuándo se paga | Según un artículo de asesoría de licencias (publicado 17/08/2026, actualizado 25/09/2026): el uso interno en producción de la edición Community no requiere pagar; se paga si se usan funciones exclusivas de Enterprise, si se **distribuye MySQL dentro de un producto** sin publicar bajo licencia compatible con GPL, o si se contrata soporte de Oracle. Lista de Oracle del 11/09/2025: Standard 2.140 USD por servidor por año (1 a 4 sockets). No es asesoramiento legal | [10] |
-| Qt | Doble licencia: Community (LGPL o GPL, sin compra, pero «tu software debe poder copiarse, modificarse y distribuirse») o comercial (precio en qt.io/pricing, no pude leer los montos). Acceso gratuito educativo con fines de aprendizaje | [11] (consultada 12/11/2026; fecha de la fuente `[COMPLETAR]`) |
+| Qt | Doble licencia: Community (LGPL o GPL, sin compra, pero «tu software debe poder copiarse, modificarse y distribuirse») o comercial (precio en qt.io/pricing, no pude leer los montos). Acceso gratuito educativo con fines de aprendizaje | [11] (consultada 12/11/2026; fecha de la fuente sin dato) |
 
-Consecuencia para IQUAL: usar Qt Community y MySQL Community no tiene costo de licencia para un proyecto escolar, pero **si IQUAL se vendiera como producto cerrado habría que revisar la licencia de Qt** (o comprar la comercial) y **no instalar MySQL dentro del paquete de IQUAL** (que lo instale la escuela, como hoy). `[COMPLETAR: consultar con el profesor y, si el proyecto se comercializara, con alguien que entienda de licencias]`.
+Consecuencia para IQUAL: usar Qt Community y MySQL Community no tiene costo de licencia para un proyecto escolar, pero **si IQUAL se vendiera como producto cerrado habría que revisar la licencia de Qt** (o comprar la comercial) y **no instalar MySQL dentro del paquete de IQUAL** (que lo instale la escuela, como hoy). Si el proyecto se comercializara, conviene consultar la licencia con un profesional..
 
 ## 6. Propuesta única de valor (PUV)
 **Qué nos diferencia:** las plataformas que encontré se concentran en lo **académico y administrativo** (matrícula, notas, asistencia, cobros, comunicación). IQUAL resuelve la **vida cotidiana de una escuela técnica**: lo que pasa entre el timbre y el timbre y casi nunca está en un sistema.
@@ -109,34 +109,37 @@ Consecuencia para IQUAL: usar Qt Community y MySQL Community no tiene costo de l
 - La competencia con presupuesto y años de desarrollo (Clickedu, Alexia) tiene soporte, apps y miles de centros; nosotros tenemos un prototipo funcional.
 
 ## 7. Fuentes
-Todas se consultaron el **12/11/2026**. La columna «Fecha de la fuente» es la que informa la página; si no la informa, queda `[COMPLETAR]`.
+Todas se consultaron el **12/11/2026**. La columna «Fecha de la fuente» es la que informa la página; si no la informa, queda sin dato.
 
 | N° | Fuente | Fecha de la fuente | Qué se tomó |
 |---|---|---|---|
-| 1 | [Conocé miEscuela — Ministerio de Educación de la Ciudad de Buenos Aires](https://buenosaires.gob.ar/gcaba_historico/educacion/conoce-miescuela) | `[COMPLETAR: la página no la informa]` | Funciones de miEscuela; no informa costo |
-| 2 | [Google Workspace for Education — ediciones](https://edu.google.com.co/products/workspace-for-education/editions) | `[COMPLETAR: la página no la informa]` | Fundamentals sin cargo para instituciones elegibles; Plus «Consultar precios»; Classroom incluido en todas las ediciones |
-| 3 | [Clickedu — SoftwareDoit](https://www.softwaredoit.es/clickedu/clickedu.html) | `[COMPLETAR: la página no la informa]` | Funciones de Clickedu; modelos de precio posibles |
+| 1 | [Conocé miEscuela — Ministerio de Educación de la Ciudad de Buenos Aires](https://buenosaires.gob.ar/gcaba_historico/educacion/conoce-miescuela) | sin dato | Funciones de miEscuela; no informa costo |
+| 2 | [Google Workspace for Education — ediciones](https://edu.google.com.co/products/workspace-for-education/editions) | sin dato | Fundamentals sin cargo para instituciones elegibles; Plus «Consultar precios»; Classroom incluido en todas las ediciones |
+| 3 | [Clickedu — SoftwareDoit](https://www.softwaredoit.es/clickedu/clickedu.html) | sin dato | Funciones de Clickedu; modelos de precio posibles |
 | 4a | [Plataformas de gestión escolar — Educación 3.0](https://www.educaciontrespuntocero.com/noticias/plataformas-gestion-escolar/12663.html) | Publicado 12/01/2014; actualizado 03/07/2026 | Funciones de Alexia, Cifra Educación, Clickedu, Educamos, Esemtia y Globaleduca; no da precios |
-| 4b | [Los mejores software educativos de 2026 — SoftwareDoit](https://www.softwaredoit.es/erp-educativo/erp-educativo.html) | `[COMPLETAR: la página no la informa; el título dice «2026»]` | Funciones de Alexia, Atenea, Playoff, Schooltivity, Dinantia, Brainbond; precios «orientativos» (**no usados**) |
-| 6 | [e-Schooling — ComparaSoftware](https://www.comparasoftware.com/e-schooling) | `[COMPLETAR: solo informa el año 2026]` | Funciones; precio «bajo cotización» |
+| 4b | [Los mejores software educativos de 2026 — SoftwareDoit](https://www.softwaredoit.es/erp-educativo/erp-educativo.html) | sin dato | Funciones de Alexia, Atenea, Playoff, Schooltivity, Dinantia, Brainbond; precios «orientativos» (**no usados**) |
+| 6 | [e-Schooling — ComparaSoftware](https://www.comparasoftware.com/e-schooling) | sin dato | Funciones; precio «bajo cotización» |
 | 7 | [Unitech presenta Tramix Gestión Educativa — Mercado](https://mercado.com.ar/varios/unitech-presenta-tramix-gestion-educativa) | 29/11/2012 (**nota antigua**: el producto pudo cambiar) | Funciones de Tramix |
-| 9 | [MySQL Community Edition — mysql.com](https://www.mysql.com/de/products/community/) | `[COMPLETAR: la página no la informa]` | Licencia GPL y descarga gratuita |
+| 9 | [MySQL Community Edition — mysql.com](https://www.mysql.com/de/products/community/) | sin dato | Licencia GPL y descarga gratuita |
 | 10 | [MySQL Community (GPL) vs Enterprise: cuándo hay que pagar — Redress Compliance](https://redresscompliance.com/mysql-community-gpl-vs-enterprise-when-you-must-pay) | Publicado 17/08/2026; actualizado 25/09/2026 (consultora, no es fuente oficial de Oracle) | Cuándo se paga MySQL; lista de Oracle del 11/09/2025 |
-| 11 | [Qt licensing — qt.io](https://www.qt.io/development/qt-framework/qt-licensing) | `[COMPLETAR: la página no la informa; pie «© 2026»]` | Licencias de Qt |
+| 11 | [Qt licensing — qt.io](https://www.qt.io/development/qt-framework/qt-licensing) | sin dato | Licencias de Qt |
 
 (Los números 5 y 8 de la versión anterior eran referencias a [4a] y [4b]: Alexia está en 4a y 4b; Esemtia y Cifra, en 4a.)
 
-## Desvíos
-- **Ronda final (13/11/2026):** revisé fuente y fecha de cada dato externo. Ningún monto de las fuentes sin fecha de publicación quedó como dato (Alexia, Atenea, Schooltivity, Playoff, Dinantia); la fecha de consulta (12/11/2026) la tienen todos. Las funciones que salen de páginas sin fecha se mantienen, con la fecha de la fuente marcada `[COMPLETAR]` en la sección 7. Saqué una referencia a una nota de Interempresas (700 colegios) que solo había visto como título en la búsqueda y nunca leí.
-- No pude abrir las páginas oficiales de Colegium ni de WebColegios (la primera no está permitida en mi herramienta de lectura y la segunda solo mostró una pantalla de verificación), por lo que **no están en la matriz**. Aparecieron en la búsqueda pero no tengo un dato leído de ellas.
-- Casi todos los precios salen de directorios españoles y son «orientativos»; ninguno es un precio oficial en pesos. No los convertí.
-- Dos fuentes tienen más años (Tramix 2012) o no traen fecha; lo aclaré en cada caso.
-- No encontré una fuente que diga qué sistema usa hoy E.T. N°3.
-- El plan dice «C/Qt»; el proyecto es C++17 con Qt, lo describí así.
+## 8. Qué no se pudo verificar
+- Las celdas «—» de las matrices significan que la página leída no lo menciona; confirmarlas exigiría una demo o consulta al proveedor.
+- Ningún precio comercial tiene fuente fechada, por eso la matriz de costos no trae montos de la competencia.
+- No se sabe si los productos españoles se venden en Argentina.
+- Colegium, Phidias y WebColegios no pudieron leerse (sitio no accesible desde la herramienta de lectura), por eso no integran la matriz.
 
-## Datos que faltan
-- `[COMPLETAR: sistema que usa hoy la escuela para notas y asistencia, si lo hay]` — lo informa el usuario o Linares.
-- `[COMPLETAR: confirmar con demo o con el proveedor las celdas «—» de las matrices (Clickedu, Alexia, Esemtia, e-Schooling)]`
-- `[COMPLETAR: precios vigentes con fecha de Alexia, Clickedu, Google Workspace Plus y e-Schooling (pedir cotización o leer la página oficial del proveedor)]` — usuario.
-- `[COMPLETAR: precios comerciales de Qt (qt.io/pricing)]` — usuario, si se quiere el costo de una licencia comercial.
-- `[COMPLETAR: disponibilidad en Argentina de los productos españoles]`
+## 9. Actualización respecto del informe entregado en la semana 4
+Este documento reemplaza al informe entregado en su momento. Cambios y motivos:
+
+| Tema | Informe entregado | Versión final | Motivo |
+|---|---|---|---|
+| Base de datos | SQLite | **MySQL** (47 tablas en 3FN, 27 procedimientos) | Se eliminó SQLite: la clase de Bases de Datos trabaja con MySQL |
+| Costo de IQUAL | «$0 en desarrollo y servidor», USD 20 de folletería, ~USD 50/año de red | Desarrollo valuado en 320 h × $10.000 = $3.200.000; precio propuesto $4.500.000 + $80.000/mes (ver `PRESUPUESTO_Y_MODELO_DE_NEGOCIO.md`) | El plan de la semana 5 pide costos de desarrollo y precio de venta. El costo de licencias sigue siendo $0 |
+| Competidores | AprendeBA, Colegium, Phidias, Alexia, papel/Excel | miEscuela, Google Workspace for Education/Classroom, Clickedu, Alexia, Esemtia, Cifra, e-Schooling, Tramix | Se releyeron fuentes con fecha; Colegium y Phidias no pudieron leerse de nuevo |
+| Línea base de tiempos | Se cronometraría una muestra real antes del Demo Day | No se midió; se presenta como hipótesis a medir | No hubo mediciones en la preceptoría |
+
+Lo que se mantiene: IQUAL complementa a los sistemas académicos y no los reemplaza; sus reglas propias son el bloqueo de reservas superpuestas, el cruce de horarios en Educación Física y la prueba de pertenencia para objetos perdidos.
