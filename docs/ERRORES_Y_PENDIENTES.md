@@ -5,7 +5,7 @@
 
 ## 1. Ya resuelto
 - La app compila (Qt 6, CMake) y cumple las reglas de código del profesor (sin comentarios, ternarios, `continue`, `findData`, `auto`, `std::` ni lambdas).
-- Base de datos: 47 tablas, 62 usuarios, 27 rutinas almacenadas (15 funcionalidades, 8 reportes, 1 auditoría, 2 tuneados y 1 auxiliar), 106 casos de prueba de SP ejecutados en MariaDB 10.11, todos PASS. Tuning medido en `db/TUNING_REPORTES.md`.
+- Base de datos: 47 tablas, 62 usuarios, 27 rutinas almacenadas (15 funcionalidades, 8 reportes, 1 auditoría, 2 tuneados y 1 auxiliar), 104 casos de prueba de SP ejecutados en MariaDB 10.11, todos PASS. Tuning medido en `db/TUNING_REPORTES.md`.
 - Diagramas Codd y Chen exportados (XML de draw.io y PNG con fondo blanco) y verificados contra el script, sin diferencias.
 - Los casos de prueba y manuales de la app se revisaron contra los datos de MySQL.
 

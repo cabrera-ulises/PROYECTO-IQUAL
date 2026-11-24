@@ -56,7 +56,7 @@ Los carga el script de la base. **Contraseña de todos: `1234`**.
 | `preceptor1` | Preceptor | |
 | `maestranza1` | Maestranza | |
 
-Para registrar cuentas de Profesor, Preceptor o Maestranza la app pide un PIN institucional. `[COMPLETAR: quién guarda y entrega el PIN en el colegio]`
+Para registrar cuentas de Profesor, Preceptor o Maestranza la app pide un PIN institucional. El PIN lo entrega la preceptoría o la dirección, en persona.
 
 ---
 
@@ -86,9 +86,9 @@ Para registrar cuentas de Profesor, Preceptor o Maestranza la app pide un PIN in
 6. **Plan de emergencia para una demostración:** tener la base cargada y probada en la PC de la demo con anticipación; como alternativa, mostrar los scripts y las consultas desde DBeaver.
 
 ### 4.3 Qué se probó y qué no
-* **Probado** (Linux, Qt 6.4, MariaDB 10.11): las pruebas automáticas internas de la v3 pasan con **0 fallas** con `QMYSQL`; las 131 consultas del código se validaron con `ONLY_FULL_GROUP_BY`; el script de 47 tablas, los 27 procedimientos (106 casos de prueba de SP en `db/06_PruebasSQL.xlsx`, todos PASS), las 10 consultas de la defensa y las 28 de verificación corren sin errores.
-* **No probado:** MySQL 8 de Oracle, SQL Server 2005 y Windows (compilación y los dos caminos de driver). `[COMPLETAR: resultado de probarlo en la PC del equipo]`
-* Los casos de prueba por pantalla están escritos pero **sin ejecutar**: la columna Resultado la completa el equipo. `[COMPLETAR: resultados de los casos de prueba]`
+* **Probado** (Linux, Qt 6.4, MariaDB 10.11): las pruebas automáticas internas de la v3 pasan con **0 fallas** con `QMYSQL`; las 131 consultas del código se validaron con `ONLY_FULL_GROUP_BY`; el script de 47 tablas, los 27 procedimientos (104 casos de prueba de SP en `db/06_PruebasSQL.xlsx`, todos PASS), las 10 consultas de la defensa y las 28 de verificación corren sin errores.
+* **No probado:** MySQL 8 de Oracle, SQL Server 2005 y Windows (compilación y los dos caminos de driver).
+* Los casos de prueba por pantalla están escritos pero **sin ejecutar**: la columna Resultado la completa el equipo. Los resultados se anotan en `docs/CASOS_PRUEBA_CONSOLIDADO.md`.
 
 ---
 
@@ -106,7 +106,7 @@ Para registrar cuentas de Profesor, Preceptor o Maestranza la app pide un PIN in
 └── db/              Scripts SQL, consultas, justificación de 3FN, diagramas y guías (db/guias/)
 ```
 Contenido de `/db`:
-* **Scripts (orden de carga 03, 04, 05):** `03_ModeloSQL_Grupo00.sql` (47 tablas), `04_DatosSQL_Grupo00.sql` (datos), `05_Backend_Grupo00.sql` (procedimientos almacenados: 15 funcionalidades, 8 reportes, 1 auditoría y 2 tuneados) y `06_PruebasSQL.xlsx` (106 casos de prueba). Versión SQL Server 2005 con schemas: `*_sqlserver.sql`.
+* **Scripts (orden de carga 03, 04, 05):** `03_ModeloSQL_Grupo00.sql` (47 tablas), `04_DatosSQL_Grupo00.sql` (datos), `05_Backend_Grupo00.sql` (procedimientos almacenados: 15 funcionalidades, 8 reportes, 1 auditoría y 2 tuneados) y `06_PruebasSQL.xlsx` (104 casos de prueba). Versión SQL Server 2005 con schemas: `*_sqlserver.sql`.
 * **Consultas:** `consultas_verificacion_mysql.sql` (y su versión para SQL Server) y `consultas_demo.sql` (consultas para mostrar en la defensa).
 * **Documentos:** `justificacion_3FN.md` y las guías en `db/guias/` (`GUIA_INSTALACION_MYSQL.md`, `GUIA_CONEXION_APP_MYSQL.md`, `REVISION_ESTATICA_MYSQL.md`).
 * **Diagramas:** los dos XML de draw.io y sus PNG (sección 6).
@@ -139,7 +139,7 @@ La documentación técnica de análisis, diagnóstico y maquetado del **3er Bime
 * 🔄 **[Cambios respecto al Diseño Inicial](./docs/cambios-respecto-al-diseno-inicial.md):** cada cambio, su motivo y el documento que afecta.
 * 🧾 **[Cambios a hacer en la Presentación](./docs/cambios-presentacion.md):** corrección lámina por lámina.
 * 🗓️ **[Bitácora de Trabajo](./docs/bitacora.md):** Registro de avances y decisiones del equipo.
-* 🌳 **Diagnósticos Visuales:** [Árbol de Problemas](./docs/arbol-de-problemas.png) y [Árbol de Objetivos](./docs/arbol-de-objetivos.drawio.xml) (editable en draw.io).
+* 🌳 **Diagnósticos Visuales:** [Árbol de Problemas](./docs/arbol-de-problemas.png) y [Árbol de Objetivos](./docs/arbol-de-objetivos.png).
 * 🧪📖 **Pruebas, errores y manuales** (carpetas [`docs/pruebas`](./docs/pruebas) y [`MANUAL_USUARIO.md`](./docs/MANUAL_USUARIO.md)):
 
 | Módulos | Casos de prueba | Errores | Manual de usuario |
@@ -158,7 +158,7 @@ Informe general: [`INFORME_PRUEBAS.md`](./docs/INFORME_PRUEBAS.md) y [`CASOS_PRU
 * Sin pagos reales: las reservas y donaciones de la tienda se coordinan en persona.
 * El cruce de horarios de Educación Física solo funciona para los cursos con horario cargado.
 * Sin notificaciones: para saber si una reserva fue aprobada o si un reporte se resolvió hay que entrar a la pantalla.
-* **Acceso:** 5 intentos fallidos bloquean hasta cerrar y volver a abrir la app; no hay recuperación de contraseña dentro de la app. `[COMPLETAR: quién restablece las contraseñas en el colegio]`
+* **Acceso:** 5 intentos fallidos bloquean hasta cerrar y volver a abrir la app; no hay recuperación de contraseña dentro de la app. Las contraseñas las restablece el responsable del sistema (soporte técnico de IQUAL), verificando el DNI.
 * Un Alumno puede crear desde Mi Cuenta un curso que todavía no existe en la base (decisión por defecto).
 * Los botones de acción (Aprobar, Rechazar, Cancelar, Marcar resuelto, etc.) están activos aunque no haya nada elegido: avisan al apretarlos (decisión por defecto).
 * El registro de auditoría se ve en la pestaña Auditoría de Objetos (solo Preceptor, últimos 50 registros) o consultando la base.
@@ -169,4 +169,4 @@ Informe general: [`INFORME_PRUEBAS.md`](./docs/INFORME_PRUEBAS.md) y [`CASOS_PRU
 > **Nota de Créditos (3er Bimestre):** La fase de diagnóstico, investigación, MML, requerimientos y maquetados de la Carpeta V1 fue realizada durante el 3er Bimestre por el equipo original: Arce Thiago, Cabrera Ulises, Denuble Franco y González Manuel.
 
 ## Actualización v7: base de datos de la consigna de BBDD
-Los scripts están en `db/`: `03_ModeloSQL_Grupo00.sql` (47 tablas), `04_DatosSQL_Grupo00.sql` (62 usuarios y datos de las demás tablas), `05_Backend_Grupo00.sql` (procedimientos almacenados) y `06_PruebasSQL.xlsx` (106 casos con resultado real). Orden de carga: 03, 04, 05, con Alt+X en DBeaver. Hay versión para SQL Server (`*_sqlserver.sql`, con schemas). El número de grupo `Grupo00` es provisorio hasta confirmarlo con el profesor. Si en algún documento aparece "5 usuarios", es el dato de ejemplo anterior: ahora son 62.
+Los scripts están en `db/`: `03_ModeloSQL_Grupo00.sql` (47 tablas), `04_DatosSQL_Grupo00.sql` (62 usuarios y datos de las demás tablas), `05_Backend_Grupo00.sql` (procedimientos almacenados) y `06_PruebasSQL.xlsx` (104 casos con resultado real). Orden de carga: 03, 04, 05, con Alt+X en DBeaver. Hay versión para SQL Server (`*_sqlserver.sql`, con schemas). El número de grupo `Grupo00` es provisorio hasta confirmarlo con el profesor. Si en algún documento aparece "5 usuarios", es el dato de ejemplo anterior: ahora son 62.

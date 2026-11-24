@@ -1408,7 +1408,6 @@ void MainWindow::on_btnHigieneResolver_clicked()
     }
     registrarLog("Resolución de reporte", QString("Reporte %1 resuelto").arg(reporte), "reporte_higiene", "Exitoso");
     cargarHigiene();
-    // El "Último mantenimiento" se muestra para el sector elegido arriba: pasamos al sector que se acaba de resolver
     if (sectorResuelto > 0) elegirPorId(ui->cbHigieneSector, sectorResuelto);
     actualizarUltimoMantenimiento();
 }
@@ -1416,7 +1415,8 @@ void MainWindow::on_btnHigieneResolver_clicked()
 void MainWindow::cargarGrupos()
 {
     bool primeraVez = (ui->cbBuffetVista->count() == 0);
-    int vista = primeraVez ? -1 : ui->cbBuffetVista->currentData().toInt();
+    int vista = -1;
+    if (!primeraVez) vista = ui->cbBuffetVista->currentData().toInt();
     int donar = ui->cbDonarGrupo->currentData().toInt();
     cargarCombo(ui->cbBuffetVista, "SELECT id_grupo, nombre_grupo FROM grupo_buffet ORDER BY nombre_grupo", "Productos sueltos de alumnos", "");
     ui->cbBuffetVista->blockSignals(true);
@@ -1469,7 +1469,7 @@ void MainWindow::cargarBuffet()
                   "JOIN categoria_producto c ON c.id_categoria_producto = p.id_categoria_producto ";
     if (grupo > 0) sql += "WHERE p.id_grupo = :grupo ";
     else if (grupo == 0) sql += "WHERE p.id_grupo IS NULL ";
-    else sql += "WHERE 1 = 1 ";  // TODOS: sueltos y de todos los grupos
+    else sql += "WHERE 1 = 1 ";
     if (categoria > 0) sql += "AND p.id_categoria_producto = :categoria ";
     if (vendedor > 0) sql += "AND p.id_usuario = :vendedor ";
     if (!busqueda.isEmpty()) sql += "AND (p.nombre_producto LIKE :texto OR u.nombre_completo LIKE :texto) ";
