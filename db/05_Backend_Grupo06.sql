@@ -10,12 +10,12 @@
 USE iqual;
 SET NAMES utf8mb4;
 
-DELIMITER //
-
 -- 1. sp_registrar_log: inserta un evento en log_auditoria con la fecha y hora actual.
 --    Busca tipo de evento, entidad y resultado por nombre. Si el usuario es NULL o no existe, id_usuario queda en NULL.
 --    Si p_ip viene vacía se guarda el host del cliente que ejecuta el CALL.
-DROP PROCEDURE IF EXISTS sp_registrar_log //
+DROP PROCEDURE IF EXISTS sp_registrar_log;
+
+DELIMITER //
 CREATE PROCEDURE sp_registrar_log(
     p_evento VARCHAR(80),
     p_descripcion VARCHAR(500),
@@ -24,8 +24,9 @@ CREATE PROCEDURE sp_registrar_log(
     p_resultado VARCHAR(30),
     p_ip VARCHAR(80))
 BEGIN
-    DECLARE v_codigo INT DEFAULT 0;
-    DECLARE v_mensaje VARCHAR(255) DEFAULT '';
+    -- Declaración de variables para captura de errores
+    DECLARE codigo_error INT DEFAULT 0;
+    DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_id_tipo INT DEFAULT NULL;
     DECLARE v_id_entidad INT DEFAULT NULL;
     DECLARE v_id_resultado INT DEFAULT NULL;
@@ -33,14 +34,21 @@ BEGIN
     DECLARE v_descripcion VARCHAR(200) DEFAULT '';
     DECLARE v_ip VARCHAR(80) DEFAULT '';
 
+    -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
-            v_codigo = MYSQL_ERRNO,
-            v_mensaje = MESSAGE_TEXT;
-        SELECT 'ERROR' AS estado, v_codigo AS codigo_sql, v_mensaje AS descripcion_error;
+            codigo_error = MYSQL_ERRNO,
+            mensaje_error = MESSAGE_TEXT;
+        -- Devolver una respuesta estructurada indicando el fallo
+        SELECT
+            'ERROR' AS estado,
+            codigo_error AS codigo_sql,
+            mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     SET v_descripcion = LEFT(TRIM(COALESCE(p_descripcion, '')), 200);
     IF v_descripcion = '' THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La descripción del evento es obligatoria.';
@@ -72,8 +80,12 @@ BEGIN
     VALUES (NOW(), v_ip, v_descripcion, v_id_entidad, v_id_usuario, v_id_tipo, v_id_resultado);
 END //
 
+DELIMITER ;
+
 -- Auxiliar: dice si un texto tiene solo dígitos y una cantidad de caracteres entre p_min y p_max (reemplaza al control con toLongLong de la app).
-DROP PROCEDURE IF EXISTS sp_aux_solo_digitos //
+DROP PROCEDURE IF EXISTS sp_aux_solo_digitos;
+
+DELIMITER //
 CREATE PROCEDURE sp_aux_solo_digitos(p_texto VARCHAR(100), p_min INT, p_max INT, OUT p_valido TINYINT)
 BEGIN
     DECLARE v_resto VARCHAR(100) DEFAULT '';
@@ -96,10 +108,14 @@ BEGIN
     END IF;
 END //
 
+DELIMITER ;
+
 -- 2. sp_registrar_usuario: alta de usuario con las validaciones del registro de la app.
 --    p_hash es el SHA-256 de la clave en hexadecimal (64 caracteres). Si el rol es Alumno se busca el curso (año, división, especialidad) y, si no existe, se crea.
 --    Para los demás roles el curso queda en NULL y se ignoran año, división y especialidad.
-DROP PROCEDURE IF EXISTS sp_registrar_usuario //
+DROP PROCEDURE IF EXISTS sp_registrar_usuario;
+
+DELIMITER //
 CREATE PROCEDURE sp_registrar_usuario(
     p_dni VARCHAR(20),
     p_nombre VARCHAR(100),
@@ -112,8 +128,9 @@ CREATE PROCEDURE sp_registrar_usuario(
     p_division INT,
     p_especialidad VARCHAR(50))
 BEGIN
-    DECLARE v_codigo INT DEFAULT 0;
-    DECLARE v_mensaje VARCHAR(255) DEFAULT '';
+    -- Declaración de variables para captura de errores
+    DECLARE codigo_error INT DEFAULT 0;
+    DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_dni VARCHAR(20) DEFAULT '';
     DECLARE v_nombre VARCHAR(100) DEFAULT '';
     DECLARE v_nick VARCHAR(50) DEFAULT '';
@@ -130,16 +147,23 @@ BEGIN
     DECLARE v_existe INT DEFAULT 0;
     DECLARE v_id_usuario INT DEFAULT 0;
 
+    -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
-            v_codigo = MYSQL_ERRNO,
-            v_mensaje = MESSAGE_TEXT;
+            codigo_error = MYSQL_ERRNO,
+            mensaje_error = MESSAGE_TEXT;
         ROLLBACK;
-        CALL sp_registrar_log('Registro de usuario', v_mensaje, 'usuario', NULL, 'Fallido', NULL);
-        SELECT 'ERROR' AS estado, v_codigo AS codigo_sql, v_mensaje AS descripcion_error;
+        CALL sp_registrar_log('Registro de usuario', mensaje_error, 'usuario', NULL, 'Fallido', NULL);
+        -- Devolver una respuesta estructurada indicando el fallo
+        SELECT
+            'ERROR' AS estado,
+            codigo_error AS codigo_sql,
+            mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     SET v_dni = TRIM(COALESCE(p_dni, ''));
     SET v_nombre = TRIM(COALESCE(p_nombre, ''));
     SET v_nick = LOWER(TRIM(COALESCE(p_nick, '')));
@@ -237,9 +261,13 @@ BEGIN
     SELECT 'OK' AS estado, v_id_usuario AS id_usuario, 'Cuenta creada. Ya podés iniciar sesión.' AS mensaje;
 END //
 
+DELIMITER ;
+
 -- 3. sp_publicar_objeto: alta de un objeto perdido. Solo el Preceptor publica. Estado inicial Disponible, fecha de hoy.
 --    Categoría y sector se buscan por nombre. Descripción, dato reservado y foto son opcionales (vacío = NULL).
-DROP PROCEDURE IF EXISTS sp_publicar_objeto //
+DROP PROCEDURE IF EXISTS sp_publicar_objeto;
+
+DELIMITER //
 CREATE PROCEDURE sp_publicar_objeto(
     p_nick VARCHAR(50),
     p_titulo VARCHAR(200),
@@ -249,8 +277,9 @@ CREATE PROCEDURE sp_publicar_objeto(
     p_detalle_reservado VARCHAR(500),
     p_ruta_foto VARCHAR(300))
 BEGIN
-    DECLARE v_codigo INT DEFAULT 0;
-    DECLARE v_mensaje VARCHAR(255) DEFAULT '';
+    -- Declaración de variables para captura de errores
+    DECLARE codigo_error INT DEFAULT 0;
+    DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_id_usuario INT DEFAULT NULL;
     DECLARE v_rol VARCHAR(30) DEFAULT NULL;
     DECLARE v_titulo VARCHAR(200) DEFAULT '';
@@ -262,16 +291,23 @@ BEGIN
     DECLARE v_id_estado INT DEFAULT NULL;
     DECLARE v_id_objeto INT DEFAULT 0;
 
+    -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
-            v_codigo = MYSQL_ERRNO,
-            v_mensaje = MESSAGE_TEXT;
+            codigo_error = MYSQL_ERRNO,
+            mensaje_error = MESSAGE_TEXT;
         ROLLBACK;
-        CALL sp_registrar_log('Publicación de objeto', v_mensaje, 'objeto_perdido', p_nick, 'Fallido', NULL);
-        SELECT 'ERROR' AS estado, v_codigo AS codigo_sql, v_mensaje AS descripcion_error;
+        CALL sp_registrar_log('Publicación de objeto', mensaje_error, 'objeto_perdido', p_nick, 'Fallido', NULL);
+        -- Devolver una respuesta estructurada indicando el fallo
+        SELECT
+            'ERROR' AS estado,
+            codigo_error AS codigo_sql,
+            mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     SELECT u.id_usuario, r.nombre_rol INTO v_id_usuario, v_rol
     FROM seguridad.usuario u JOIN seguridad.rol r ON r.id_rol = u.id_rol
     WHERE u.usuario_nick = TRIM(COALESCE(p_nick, ''));
@@ -327,16 +363,21 @@ BEGIN
     SELECT 'OK' AS estado, v_id_objeto AS id_objeto, 'Objeto publicado.' AS mensaje;
 END //
 
+DELIMITER ;
+
 -- 4. sp_reclamar_objeto: alta de un reclamo en estado Pendiente. Solo el Alumno reclama.
 --    No se puede reclamar un objeto Devuelto o Archivado, el detalle necesita 10 caracteres o más y se reclama una sola vez por objeto.
-DROP PROCEDURE IF EXISTS sp_reclamar_objeto //
+DROP PROCEDURE IF EXISTS sp_reclamar_objeto;
+
+DELIMITER //
 CREATE PROCEDURE sp_reclamar_objeto(
     p_nick VARCHAR(50),
     p_id_objeto INT,
     p_prueba VARCHAR(500))
 BEGIN
-    DECLARE v_codigo INT DEFAULT 0;
-    DECLARE v_mensaje VARCHAR(255) DEFAULT '';
+    -- Declaración de variables para captura de errores
+    DECLARE codigo_error INT DEFAULT 0;
+    DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_id_usuario INT DEFAULT NULL;
     DECLARE v_rol VARCHAR(30) DEFAULT NULL;
     DECLARE v_id_objeto INT DEFAULT NULL;
@@ -346,16 +387,23 @@ BEGIN
     DECLARE v_id_estado INT DEFAULT NULL;
     DECLARE v_id_reclamo INT DEFAULT 0;
 
+    -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
-            v_codigo = MYSQL_ERRNO,
-            v_mensaje = MESSAGE_TEXT;
+            codigo_error = MYSQL_ERRNO,
+            mensaje_error = MESSAGE_TEXT;
         ROLLBACK;
-        CALL sp_registrar_log('Reclamo de objeto', v_mensaje, 'reclamo_objeto', p_nick, 'Fallido', NULL);
-        SELECT 'ERROR' AS estado, v_codigo AS codigo_sql, v_mensaje AS descripcion_error;
+        CALL sp_registrar_log('Reclamo de objeto', mensaje_error, 'reclamo_objeto', p_nick, 'Fallido', NULL);
+        -- Devolver una respuesta estructurada indicando el fallo
+        SELECT
+            'ERROR' AS estado,
+            codigo_error AS codigo_sql,
+            mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     SELECT u.id_usuario, r.nombre_rol INTO v_id_usuario, v_rol
     FROM seguridad.usuario u JOIN seguridad.rol r ON r.id_rol = u.id_rol
     WHERE u.usuario_nick = TRIM(COALESCE(p_nick, ''));
@@ -406,17 +454,22 @@ BEGIN
     SELECT 'OK' AS estado, v_id_reclamo AS id_reclamo, 'Reclamo enviado. El preceptor lo va a revisar.' AS mensaje;
 END //
 
+DELIMITER ;
+
 -- 5. sp_resolver_reclamo: el Preceptor aprueba (p_aprobar = 1) o rechaza (p_aprobar = 0) un reclamo Pendiente.
 --    Aprobar: reclamo Aprobado, los otros reclamos Pendientes del objeto pasan a Rechazado y el objeto queda Devuelto.
 --    Rechazar: reclamo Rechazado; si el objeto estaba En reclamo y no le quedan reclamos Pendientes, vuelve a Disponible.
-DROP PROCEDURE IF EXISTS sp_resolver_reclamo //
+DROP PROCEDURE IF EXISTS sp_resolver_reclamo;
+
+DELIMITER //
 CREATE PROCEDURE sp_resolver_reclamo(
     p_nick_preceptor VARCHAR(50),
     p_id_reclamo INT,
     p_aprobar TINYINT)
 BEGIN
-    DECLARE v_codigo INT DEFAULT 0;
-    DECLARE v_mensaje VARCHAR(255) DEFAULT '';
+    -- Declaración de variables para captura de errores
+    DECLARE codigo_error INT DEFAULT 0;
+    DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_id_usuario INT DEFAULT NULL;
     DECLARE v_rol VARCHAR(30) DEFAULT NULL;
     DECLARE v_id_reclamo INT DEFAULT NULL;
@@ -432,16 +485,23 @@ BEGIN
     DECLARE v_resultado VARCHAR(20) DEFAULT '';
     DECLARE v_texto VARCHAR(120) DEFAULT '';
 
+    -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
-            v_codigo = MYSQL_ERRNO,
-            v_mensaje = MESSAGE_TEXT;
+            codigo_error = MYSQL_ERRNO,
+            mensaje_error = MESSAGE_TEXT;
         ROLLBACK;
-        CALL sp_registrar_log('Resolución de reclamo', v_mensaje, 'reclamo_objeto', p_nick_preceptor, 'Fallido', NULL);
-        SELECT 'ERROR' AS estado, v_codigo AS codigo_sql, v_mensaje AS descripcion_error;
+        CALL sp_registrar_log('Resolución de reclamo', mensaje_error, 'reclamo_objeto', p_nick_preceptor, 'Fallido', NULL);
+        -- Devolver una respuesta estructurada indicando el fallo
+        SELECT
+            'ERROR' AS estado,
+            codigo_error AS codigo_sql,
+            mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     SELECT u.id_usuario, r.nombre_rol INTO v_id_usuario, v_rol
     FROM seguridad.usuario u JOIN seguridad.rol r ON r.id_rol = u.id_rol
     WHERE u.usuario_nick = TRIM(COALESCE(p_nick_preceptor, ''));
@@ -503,17 +563,22 @@ BEGIN
     SELECT 'OK' AS estado, v_id_reclamo AS id_reclamo, v_resultado AS resultado, v_texto AS mensaje;
 END //
 
+DELIMITER ;
+
 -- 6. sp_prestar_equipo: registra un préstamo de un recurso Disponible y lo pasa a Prestado.
 --    Autoriza un Alumno (solo a su propio nombre), un Profesor o un Preceptor. El solicitante tiene que ser Alumno y no puede tener otro equipo sin devolver.
-DROP PROCEDURE IF EXISTS sp_prestar_equipo //
+DROP PROCEDURE IF EXISTS sp_prestar_equipo;
+
+DELIMITER //
 CREATE PROCEDURE sp_prestar_equipo(
     p_nick_solicitante VARCHAR(50),
     p_nick_autorizador VARCHAR(50),
     p_id_recurso INT,
     p_observaciones VARCHAR(500))
 BEGIN
-    DECLARE v_codigo INT DEFAULT 0;
-    DECLARE v_mensaje VARCHAR(255) DEFAULT '';
+    -- Declaración de variables para captura de errores
+    DECLARE codigo_error INT DEFAULT 0;
+    DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_id_autorizador INT DEFAULT NULL;
     DECLARE v_rol_autorizador VARCHAR(30) DEFAULT NULL;
     DECLARE v_id_solicitante INT DEFAULT NULL;
@@ -528,16 +593,23 @@ BEGIN
     DECLARE v_id_prestado INT DEFAULT NULL;
     DECLARE v_id_prestamo INT DEFAULT 0;
 
+    -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
-            v_codigo = MYSQL_ERRNO,
-            v_mensaje = MESSAGE_TEXT;
+            codigo_error = MYSQL_ERRNO,
+            mensaje_error = MESSAGE_TEXT;
         ROLLBACK;
-        CALL sp_registrar_log('Préstamo de recurso', v_mensaje, 'prestamo_ct', p_nick_autorizador, 'Fallido', NULL);
-        SELECT 'ERROR' AS estado, v_codigo AS codigo_sql, v_mensaje AS descripcion_error;
+        CALL sp_registrar_log('Préstamo de recurso', mensaje_error, 'prestamo_ct', p_nick_autorizador, 'Fallido', NULL);
+        -- Devolver una respuesta estructurada indicando el fallo
+        SELECT
+            'ERROR' AS estado,
+            codigo_error AS codigo_sql,
+            mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     SELECT u.id_usuario, r.nombre_rol INTO v_id_autorizador, v_rol_autorizador
     FROM seguridad.usuario u JOIN seguridad.rol r ON r.id_rol = u.id_rol
     WHERE u.usuario_nick = TRIM(COALESCE(p_nick_autorizador, ''));
@@ -612,17 +684,22 @@ BEGIN
     SELECT 'OK' AS estado, v_id_prestamo AS id_prestamo, v_codigo_recurso AS equipo, 'Préstamo registrado.' AS mensaje;
 END //
 
+DELIMITER ;
+
 -- 7. sp_devolver_equipo: cierra un préstamo activo con la hora actual y deja el recurso Disponible (p_funciona = 1) o Fuera de servicio (p_funciona = 0).
 --    Un Alumno solo devuelve sus propios préstamos. Si hay observaciones nuevas se agregan a las anteriores.
-DROP PROCEDURE IF EXISTS sp_devolver_equipo //
+DROP PROCEDURE IF EXISTS sp_devolver_equipo;
+
+DELIMITER //
 CREATE PROCEDURE sp_devolver_equipo(
     p_id_prestamo INT,
     p_nick_autorizador VARCHAR(50),
     p_funciona TINYINT,
     p_observaciones VARCHAR(500))
 BEGIN
-    DECLARE v_codigo INT DEFAULT 0;
-    DECLARE v_mensaje VARCHAR(255) DEFAULT '';
+    -- Declaración de variables para captura de errores
+    DECLARE codigo_error INT DEFAULT 0;
+    DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_id_autorizador INT DEFAULT NULL;
     DECLARE v_rol VARCHAR(30) DEFAULT NULL;
     DECLARE v_id_prestamo INT DEFAULT NULL;
@@ -635,16 +712,23 @@ BEGIN
     DECLARE v_nuevo_estado VARCHAR(50) DEFAULT '';
     DECLARE v_id_estado INT DEFAULT NULL;
 
+    -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
-            v_codigo = MYSQL_ERRNO,
-            v_mensaje = MESSAGE_TEXT;
+            codigo_error = MYSQL_ERRNO,
+            mensaje_error = MESSAGE_TEXT;
         ROLLBACK;
-        CALL sp_registrar_log('Devolución de recurso', v_mensaje, 'prestamo_ct', p_nick_autorizador, 'Fallido', NULL);
-        SELECT 'ERROR' AS estado, v_codigo AS codigo_sql, v_mensaje AS descripcion_error;
+        CALL sp_registrar_log('Devolución de recurso', mensaje_error, 'prestamo_ct', p_nick_autorizador, 'Fallido', NULL);
+        -- Devolver una respuesta estructurada indicando el fallo
+        SELECT
+            'ERROR' AS estado,
+            codigo_error AS codigo_sql,
+            mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     SELECT u.id_usuario, r.nombre_rol INTO v_id_autorizador, v_rol
     FROM seguridad.usuario u JOIN seguridad.rol r ON r.id_rol = u.id_rol
     WHERE u.usuario_nick = TRIM(COALESCE(p_nick_autorizador, ''));
@@ -709,10 +793,14 @@ BEGIN
     SELECT 'OK' AS estado, v_id_prestamo AS id_prestamo, v_nuevo_estado AS estado_recurso, 'Devolución registrada.' AS mensaje;
 END //
 
+DELIMITER ;
+
 -- 8. sp_reservar_sector: reserva de un sector Reservable. La hacen el Profesor y el Preceptor.
 --    Controla fecha (hoy o futura), hora fin > inicio, horario entre 07:00 y 19:00 y solapamiento con reservas Pendiente o Aprobada del mismo sector y día.
 --    El Preceptor queda con la reserva Aprobada y como autorizador; el Profesor la deja Pendiente.
-DROP PROCEDURE IF EXISTS sp_reservar_sector //
+DROP PROCEDURE IF EXISTS sp_reservar_sector;
+
+DELIMITER //
 CREATE PROCEDURE sp_reservar_sector(
     p_nick VARCHAR(50),
     p_sector VARCHAR(80),
@@ -720,8 +808,9 @@ CREATE PROCEDURE sp_reservar_sector(
     p_hora_inicio VARCHAR(10),
     p_hora_fin VARCHAR(10))
 BEGIN
-    DECLARE v_codigo INT DEFAULT 0;
-    DECLARE v_mensaje VARCHAR(255) DEFAULT '';
+    -- Declaración de variables para captura de errores
+    DECLARE codigo_error INT DEFAULT 0;
+    DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_apertura VARCHAR(5) DEFAULT '07:00';
     DECLARE v_cierre VARCHAR(5) DEFAULT '19:00';
     DECLARE v_id_usuario INT DEFAULT NULL;
@@ -741,16 +830,23 @@ BEGIN
     DECLARE v_texto VARCHAR(120) DEFAULT '';
     DECLARE v_id_reserva INT DEFAULT 0;
 
+    -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
-            v_codigo = MYSQL_ERRNO,
-            v_mensaje = MESSAGE_TEXT;
+            codigo_error = MYSQL_ERRNO,
+            mensaje_error = MESSAGE_TEXT;
         ROLLBACK;
-        CALL sp_registrar_log('Reserva de sector', v_mensaje, 'reserva_sector', p_nick, 'Fallido', NULL);
-        SELECT 'ERROR' AS estado, v_codigo AS codigo_sql, v_mensaje AS descripcion_error;
+        CALL sp_registrar_log('Reserva de sector', mensaje_error, 'reserva_sector', p_nick, 'Fallido', NULL);
+        -- Devolver una respuesta estructurada indicando el fallo
+        SELECT
+            'ERROR' AS estado,
+            codigo_error AS codigo_sql,
+            mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     SELECT u.id_usuario, r.nombre_rol INTO v_id_usuario, v_rol
     FROM seguridad.usuario u JOIN seguridad.rol r ON r.id_rol = u.id_rol
     WHERE u.usuario_nick = TRIM(COALESCE(p_nick, ''));
@@ -814,9 +910,9 @@ BEGIN
     ORDER BY r.hora_inicio
     LIMIT 1;
     IF v_ocupa_nombre IS NOT NULL THEN
-        SET v_mensaje = CONCAT('Ese horario está ocupado: ', v_ocupa_nombre, ' tiene el sector de ', v_ocupa_inicio, ' a ', v_ocupa_fin, '. Probá con otro.');
-        SET v_mensaje = LEFT(v_mensaje, 128);
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = v_mensaje;
+        SET mensaje_error = CONCAT('Ese horario está ocupado: ', v_ocupa_nombre, ' tiene el sector de ', v_ocupa_inicio, ' a ', v_ocupa_fin, '. Probá con otro.');
+        SET mensaje_error = LEFT(mensaje_error, 128);
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = mensaje_error;
     END IF;
 
     SET v_id_estado = v_id_pendiente;
@@ -854,12 +950,13 @@ DELIMITER ;
 
 USE iqual;
 
-DELIMITER //
-
 -- 9. Aprueba, rechaza o cancela una reserva de sector (Aprobar y Rechazar: Preceptor sobre reservas Pendiente; Cancelar: el dueño o un Preceptor)
-DROP PROCEDURE IF EXISTS sp_resolver_reserva_sector //
+DROP PROCEDURE IF EXISTS sp_resolver_reserva_sector;
+
+DELIMITER //
 CREATE PROCEDURE sp_resolver_reserva_sector(p_id_reserva INT, p_nick_autorizador VARCHAR(50), p_accion VARCHAR(20))
 BEGIN
+    -- Declaración de variables para captura de errores
     DECLARE codigo_error INT DEFAULT 0;
     DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_evento VARCHAR(80) DEFAULT 'Reserva de sector';
@@ -870,15 +967,22 @@ BEGIN
     DECLARE v_dueno INT DEFAULT NULL;
     DECLARE v_nuevo VARCHAR(50) DEFAULT NULL;
 
+    -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
         CALL sp_registrar_log(v_evento, LEFT(mensaje_error, 200), v_entidad, p_nick_autorizador, 'Fallido', @@hostname);
-        SELECT 'ERROR' AS estado, codigo_error AS codigo_sql, mensaje_error AS descripcion_error;
+        -- Devolver una respuesta estructurada indicando el fallo
+        SELECT
+            'ERROR' AS estado,
+            codigo_error AS codigo_sql,
+            mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     IF p_accion IS NULL OR p_accion NOT IN ('Aprobar', 'Rechazar', 'Cancelar') THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Acción inválida: usá Aprobar, Rechazar o Cancelar.';
     END IF;
@@ -932,10 +1036,15 @@ BEGIN
     SELECT 'OK' AS estado, p_id_reserva AS id_reserva, v_nuevo AS estado_reserva;
 END //
 
+DELIMITER ;
+
 -- 10. Alta de un reporte de higiene en estado Pendiente (cualquier rol)
-DROP PROCEDURE IF EXISTS sp_reportar_higiene //
+DROP PROCEDURE IF EXISTS sp_reportar_higiene;
+
+DELIMITER //
 CREATE PROCEDURE sp_reportar_higiene(p_nick VARCHAR(50), p_sector VARCHAR(80), p_tipo VARCHAR(50), p_observaciones VARCHAR(500))
 BEGIN
+    -- Declaración de variables para captura de errores
     DECLARE codigo_error INT DEFAULT 0;
     DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_evento VARCHAR(80) DEFAULT 'Reporte de higiene';
@@ -945,15 +1054,22 @@ BEGIN
     DECLARE v_tipo INT DEFAULT NULL;
     DECLARE v_id_reporte INT DEFAULT NULL;
 
+    -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
         CALL sp_registrar_log(v_evento, LEFT(mensaje_error, 200), v_entidad, p_nick, 'Fallido', @@hostname);
-        SELECT 'ERROR' AS estado, codigo_error AS codigo_sql, mensaje_error AS descripcion_error;
+        -- Devolver una respuesta estructurada indicando el fallo
+        SELECT
+            'ERROR' AS estado,
+            codigo_error AS codigo_sql,
+            mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     SET v_id_usuario = (SELECT id_usuario FROM seguridad.usuario WHERE usuario_nick = p_nick);
     IF v_id_usuario IS NULL THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El usuario no existe.';
@@ -988,10 +1104,15 @@ BEGIN
     SELECT 'OK' AS estado, v_id_reporte AS id_reporte;
 END //
 
+DELIMITER ;
+
 -- 11. Marca como Resuelto un reporte Pendiente con fecha, hora y resolutor (Profesor, Preceptor o Maestranza)
-DROP PROCEDURE IF EXISTS sp_resolver_reporte_higiene //
+DROP PROCEDURE IF EXISTS sp_resolver_reporte_higiene;
+
+DELIMITER //
 CREATE PROCEDURE sp_resolver_reporte_higiene(p_id_reporte INT, p_nick_resolutor VARCHAR(50))
 BEGIN
+    -- Declaración de variables para captura de errores
     DECLARE codigo_error INT DEFAULT 0;
     DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_evento VARCHAR(80) DEFAULT 'Resolución de reporte';
@@ -1000,15 +1121,22 @@ BEGIN
     DECLARE v_rol VARCHAR(30) DEFAULT NULL;
     DECLARE v_estado VARCHAR(50) DEFAULT NULL;
 
+    -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
         CALL sp_registrar_log(v_evento, LEFT(mensaje_error, 200), v_entidad, p_nick_resolutor, 'Fallido', @@hostname);
-        SELECT 'ERROR' AS estado, codigo_error AS codigo_sql, mensaje_error AS descripcion_error;
+        -- Devolver una respuesta estructurada indicando el fallo
+        SELECT
+            'ERROR' AS estado,
+            codigo_error AS codigo_sql,
+            mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     IF p_id_reporte IS NULL OR p_id_reporte < 1 THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Elegí un reporte de la lista.';
     END IF;
@@ -1038,10 +1166,15 @@ BEGIN
     SELECT 'OK' AS estado, p_id_reporte AS id_reporte;
 END //
 
+DELIMITER ;
+
 -- 12. Reserva un producto del buffet: crea la venta (Reservada) y su detalle y descuenta el stock; controla stock y que no sea un producto propio
-DROP PROCEDURE IF EXISTS sp_comprar_producto //
+DROP PROCEDURE IF EXISTS sp_comprar_producto;
+
+DELIMITER //
 CREATE PROCEDURE sp_comprar_producto(p_nick VARCHAR(50), p_id_producto INT, p_cantidad INT)
 BEGIN
+    -- Declaración de variables para captura de errores
     DECLARE codigo_error INT DEFAULT 0;
     DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_evento VARCHAR(80) DEFAULT 'Reserva de producto';
@@ -1053,16 +1186,23 @@ BEGIN
     DECLARE v_id_venta INT DEFAULT NULL;
     DECLARE v_mensaje VARCHAR(255) DEFAULT '';
 
+    -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
         ROLLBACK;
         CALL sp_registrar_log(v_evento, LEFT(mensaje_error, 200), v_entidad, p_nick, 'Fallido', @@hostname);
-        SELECT 'ERROR' AS estado, codigo_error AS codigo_sql, mensaje_error AS descripcion_error;
+        -- Devolver una respuesta estructurada indicando el fallo
+        SELECT
+            'ERROR' AS estado,
+            codigo_error AS codigo_sql,
+            mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     SET v_id_usuario = (SELECT id_usuario FROM seguridad.usuario WHERE usuario_nick = p_nick);
     IF v_id_usuario IS NULL THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El usuario no existe.';
@@ -1104,10 +1244,15 @@ BEGIN
     SELECT 'OK' AS estado, v_id_venta AS id_venta, p_cantidad * v_precio AS total;
 END //
 
+DELIMITER ;
+
 -- 13. Alta de una donación a un grupo del buffet (monto entero mayor a 0; cualquier rol)
-DROP PROCEDURE IF EXISTS sp_donar_grupo //
+DROP PROCEDURE IF EXISTS sp_donar_grupo;
+
+DELIMITER //
 CREATE PROCEDURE sp_donar_grupo(p_nick VARCHAR(50), p_id_grupo INT, p_monto INT)
 BEGIN
+    -- Declaración de variables para captura de errores
     DECLARE codigo_error INT DEFAULT 0;
     DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_evento VARCHAR(80) DEFAULT 'Donación';
@@ -1116,15 +1261,22 @@ BEGIN
     DECLARE v_grupo INT DEFAULT NULL;
     DECLARE v_id_donacion INT DEFAULT NULL;
 
+    -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
         CALL sp_registrar_log(v_evento, LEFT(mensaje_error, 200), v_entidad, p_nick, 'Fallido', @@hostname);
-        SELECT 'ERROR' AS estado, codigo_error AS codigo_sql, mensaje_error AS descripcion_error;
+        -- Devolver una respuesta estructurada indicando el fallo
+        SELECT
+            'ERROR' AS estado,
+            codigo_error AS codigo_sql,
+            mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     SET v_id_usuario = (SELECT id_usuario FROM seguridad.usuario WHERE usuario_nick = p_nick);
     IF v_id_usuario IS NULL THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El usuario no existe.';
@@ -1148,10 +1300,15 @@ BEGIN
     SELECT 'OK' AS estado, v_id_donacion AS id_donacion, p_monto AS monto;
 END //
 
+DELIMITER ;
+
 -- 14. Inscribe a un alumno a una oferta de Ed. Física si no tiene otra inscripción, hay cupo y no se superpone con el horario de su curso
-DROP PROCEDURE IF EXISTS sp_inscribir_ed_fisica //
+DROP PROCEDURE IF EXISTS sp_inscribir_ed_fisica;
+
+DELIMITER //
 CREATE PROCEDURE sp_inscribir_ed_fisica(p_nick VARCHAR(50), p_id_oferta INT)
 BEGIN
+    -- Declaración de variables para captura de errores
     DECLARE codigo_error INT DEFAULT 0;
     DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_evento VARCHAR(80) DEFAULT 'Inscripción a Ed. Física';
@@ -1164,15 +1321,22 @@ BEGIN
     DECLARE v_id_inscripcion INT DEFAULT NULL;
     DECLARE v_mensaje VARCHAR(255) DEFAULT '';
 
+    -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
         CALL sp_registrar_log(v_evento, LEFT(mensaje_error, 200), v_entidad, p_nick, 'Fallido', @@hostname);
-        SELECT 'ERROR' AS estado, codigo_error AS codigo_sql, mensaje_error AS descripcion_error;
+        -- Devolver una respuesta estructurada indicando el fallo
+        SELECT
+            'ERROR' AS estado,
+            codigo_error AS codigo_sql,
+            mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     SET v_id_usuario = (SELECT id_usuario FROM seguridad.usuario WHERE usuario_nick = p_nick);
     IF v_id_usuario IS NULL THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El usuario no existe.';
@@ -1215,10 +1379,15 @@ BEGIN
     SELECT 'OK' AS estado, v_id_inscripcion AS id_inscripcion, p_id_oferta AS id_oferta;
 END //
 
+DELIMITER ;
+
 -- 15. Cancela la inscripción de Ed. Física del alumno
-DROP PROCEDURE IF EXISTS sp_cancelar_inscripcion_ed_fisica //
+DROP PROCEDURE IF EXISTS sp_cancelar_inscripcion_ed_fisica;
+
+DELIMITER //
 CREATE PROCEDURE sp_cancelar_inscripcion_ed_fisica(p_nick VARCHAR(50))
 BEGIN
+    -- Declaración de variables para captura de errores
     DECLARE codigo_error INT DEFAULT 0;
     DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_evento VARCHAR(80) DEFAULT 'Inscripción a Ed. Física';
@@ -1227,15 +1396,22 @@ BEGIN
     DECLARE v_rol VARCHAR(30) DEFAULT NULL;
     DECLARE v_oferta INT DEFAULT NULL;
 
+    -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
         CALL sp_registrar_log(v_evento, LEFT(mensaje_error, 200), v_entidad, p_nick, 'Fallido', @@hostname);
-        SELECT 'ERROR' AS estado, codigo_error AS codigo_sql, mensaje_error AS descripcion_error;
+        -- Devolver una respuesta estructurada indicando el fallo
+        SELECT
+            'ERROR' AS estado,
+            codigo_error AS codigo_sql,
+            mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     SET v_id_usuario = (SELECT id_usuario FROM seguridad.usuario WHERE usuario_nick = p_nick);
     IF v_id_usuario IS NULL THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El usuario no existe.';
@@ -1255,7 +1431,6 @@ BEGIN
     SELECT 'OK' AS estado, v_oferta AS id_oferta;
 END //
 
-
 DELIMITER ;
 
 -- PROYECTO IQUAL (SGE) - 05b_Backend_reportes.sql (Arce Thiago y Cabrera Ulises, ronda BBDD 14/11/2026)
@@ -1271,14 +1446,15 @@ DELIMITER ;
 
 USE iqual;
 
-DELIMITER //
-
 -- 1. Prestamos de equipos por carro entre dos fechas.
 -- Pregunta: que carros se usan mas y cuantos prestamos siguen sin devolverse.
 -- GROUP BY por carro; JOIN prestamo -> recurso -> carro; fechas: rango, MIN/MAX y DATEDIFF.
-DROP PROCEDURE IF EXISTS sp_rep_prestamos_por_carro //
+DROP PROCEDURE IF EXISTS sp_rep_prestamos_por_carro;
+
+DELIMITER //
 CREATE PROCEDURE sp_rep_prestamos_por_carro(p_desde DATE, p_hasta DATE)
 BEGIN
+    -- Declaración de variables para captura de errores
     DECLARE codigo_error INT DEFAULT 0;
     DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_hasta_sig DATE;
@@ -1286,15 +1462,18 @@ BEGIN
     -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
+        -- Devolver una respuesta estructurada indicando el fallo
         SELECT
             'ERROR' AS estado,
             codigo_error AS codigo_sql,
             mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     -- Regla de negocio: el rango no puede estar invertido (si falta una punta, ese lado queda sin limite)
     IF p_desde IS NOT NULL AND p_hasta IS NOT NULL AND p_desde > p_hasta THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Rango de fechas invalido: desde es mayor que hasta';
@@ -1318,12 +1497,17 @@ BEGIN
     ORDER BY total_prestamos DESC, c.nombre_carro;
 END //
 
+DELIMITER ;
+
 -- 2. Objetos perdidos por categoria y estado, segun la fecha de registro.
 -- Pregunta: cuantos objetos hay de cada categoria en cada estado y cuanto hace que esta el mas antiguo.
 -- GROUP BY categoria y estado; JOIN con los dos catalogos; fechas: rango, MIN/MAX y DATEDIFF contra CURDATE().
-DROP PROCEDURE IF EXISTS sp_rep_objetos_por_categoria_estado //
+DROP PROCEDURE IF EXISTS sp_rep_objetos_por_categoria_estado;
+
+DELIMITER //
 CREATE PROCEDURE sp_rep_objetos_por_categoria_estado(p_desde DATE, p_hasta DATE)
 BEGIN
+    -- Declaración de variables para captura de errores
     DECLARE codigo_error INT DEFAULT 0;
     DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_hasta_sig DATE;
@@ -1331,15 +1515,18 @@ BEGIN
     -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
+        -- Devolver una respuesta estructurada indicando el fallo
         SELECT
             'ERROR' AS estado,
             codigo_error AS codigo_sql,
             mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     -- Regla de negocio: el rango no puede estar invertido (si falta una punta, ese lado queda sin limite)
     IF p_desde IS NOT NULL AND p_hasta IS NOT NULL AND p_desde > p_hasta THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Rango de fechas invalido: desde es mayor que hasta';
@@ -1362,13 +1549,18 @@ BEGIN
     ORDER BY ca.nombre_categoria, es.nombre_estado;
 END //
 
+DELIMITER ;
+
 -- 3. Reportes de higiene por sector y tipo de reporte, segun la fecha del reporte (DATETIME).
 -- Pregunta: donde se acumulan los problemas y cuanto tardan en resolverse.
 -- GROUP BY sector y tipo; JOIN con sector y tipo_reporte; fechas: rango con dia inclusivo y DATEDIFF entre reporte y resolucion.
 -- COUNT(columna) no cuenta los NULL: resueltos = reportes con fecha de resolucion.
-DROP PROCEDURE IF EXISTS sp_rep_higiene_por_sector //
+DROP PROCEDURE IF EXISTS sp_rep_higiene_por_sector;
+
+DELIMITER //
 CREATE PROCEDURE sp_rep_higiene_por_sector(p_desde DATE, p_hasta DATE)
 BEGIN
+    -- Declaración de variables para captura de errores
     DECLARE codigo_error INT DEFAULT 0;
     DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_hasta_sig DATE;
@@ -1376,15 +1568,18 @@ BEGIN
     -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
+        -- Devolver una respuesta estructurada indicando el fallo
         SELECT
             'ERROR' AS estado,
             codigo_error AS codigo_sql,
             mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     -- Regla de negocio: el rango no puede estar invertido (si falta una punta, ese lado queda sin limite)
     IF p_desde IS NOT NULL AND p_hasta IS NOT NULL AND p_desde > p_hasta THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Rango de fechas invalido: desde es mayor que hasta';
@@ -1409,13 +1604,18 @@ BEGIN
     ORDER BY pendientes DESC, total_reportes DESC, s.nombre_sector, t.nombre_tipo;
 END //
 
+DELIMITER ;
+
 -- 4. Ocupacion de sectores: reservas por sector y estado, segun la fecha reservada.
 -- Pregunta: que sectores se reservan mas, cuantas horas y cuantas reservas se cancelaron o rechazaron.
 -- GROUP BY sector, tipo y estado; JOIN con sector, tipo_sector y estado_reserva; fechas: rango, MIN/MAX y duracion en horas
 -- (las horas se guardan como texto HH:MM; TIME_TO_SEC las pasa a segundos).
-DROP PROCEDURE IF EXISTS sp_rep_ocupacion_sectores //
+DROP PROCEDURE IF EXISTS sp_rep_ocupacion_sectores;
+
+DELIMITER //
 CREATE PROCEDURE sp_rep_ocupacion_sectores(p_desde DATE, p_hasta DATE)
 BEGIN
+    -- Declaración de variables para captura de errores
     DECLARE codigo_error INT DEFAULT 0;
     DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_hasta_sig DATE;
@@ -1423,15 +1623,18 @@ BEGIN
     -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
+        -- Devolver una respuesta estructurada indicando el fallo
         SELECT
             'ERROR' AS estado,
             codigo_error AS codigo_sql,
             mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     -- Regla de negocio: el rango no puede estar invertido (si falta una punta, ese lado queda sin limite)
     IF p_desde IS NOT NULL AND p_hasta IS NOT NULL AND p_desde > p_hasta THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Rango de fechas invalido: desde es mayor que hasta';
@@ -1457,13 +1660,18 @@ BEGIN
     ORDER BY s.nombre_sector, es.nombre_estado;
 END //
 
+DELIMITER ;
+
 -- 5. Ventas del buffet por producto (solo ventas Entregadas), segun la fecha y hora de la venta (DATETIME).
 -- Pregunta: que productos venden mas, en unidades y en pesos.
 -- GROUP BY producto; JOIN detalle -> venta -> estado, producto y categoria; fechas: rango con dia inclusivo, DATE(), MIN/MAX.
 -- Version SIN tuning (reune las 5 tablas y recien despues filtra): la optimizada es sp_rep_ventas_por_producto_tuneado.
-DROP PROCEDURE IF EXISTS sp_rep_ventas_por_producto //
+DROP PROCEDURE IF EXISTS sp_rep_ventas_por_producto;
+
+DELIMITER //
 CREATE PROCEDURE sp_rep_ventas_por_producto(p_desde DATE, p_hasta DATE)
 BEGIN
+    -- Declaración de variables para captura de errores
     DECLARE codigo_error INT DEFAULT 0;
     DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_hasta_sig DATE;
@@ -1471,15 +1679,18 @@ BEGIN
     -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
+        -- Devolver una respuesta estructurada indicando el fallo
         SELECT
             'ERROR' AS estado,
             codigo_error AS codigo_sql,
             mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     -- Regla de negocio: el rango no puede estar invertido (si falta una punta, ese lado queda sin limite)
     IF p_desde IS NOT NULL AND p_hasta IS NOT NULL AND p_desde > p_hasta THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Rango de fechas invalido: desde es mayor que hasta';
@@ -1507,13 +1718,18 @@ BEGIN
     ORDER BY monto_total DESC, p.nombre_producto, p.id_producto;
 END //
 
+DELIMITER ;
+
 -- 6. Recaudado por grupo del buffet en un rango: donaciones + ventas Entregadas de los productos del grupo (regla vigente, CONTEXTO).
 -- Pregunta: cuanto junto cada grupo en el periodo y que porcentaje de su meta representa.
 -- GROUP BY grupo; JOIN grupo con la UNION ALL de sus dos fuentes de ingreso; fechas: rango con dia inclusivo, MAX(DATE()).
 -- Solo aparecen los grupos con movimientos en el rango.
-DROP PROCEDURE IF EXISTS sp_rep_recaudado_por_grupo //
+DROP PROCEDURE IF EXISTS sp_rep_recaudado_por_grupo;
+
+DELIMITER //
 CREATE PROCEDURE sp_rep_recaudado_por_grupo(p_desde DATE, p_hasta DATE)
 BEGIN
+    -- Declaración de variables para captura de errores
     DECLARE codigo_error INT DEFAULT 0;
     DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_hasta_sig DATE;
@@ -1521,15 +1737,18 @@ BEGIN
     -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
+        -- Devolver una respuesta estructurada indicando el fallo
         SELECT
             'ERROR' AS estado,
             codigo_error AS codigo_sql,
             mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     -- Regla de negocio: el rango no puede estar invertido (si falta una punta, ese lado queda sin limite)
     IF p_desde IS NOT NULL AND p_hasta IS NOT NULL AND p_desde > p_hasta THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Rango de fechas invalido: desde es mayor que hasta';
@@ -1562,13 +1781,18 @@ BEGIN
     ORDER BY recaudado DESC, g.nombre_grupo;
 END //
 
+DELIMITER ;
+
 -- 7. Inscriptos de Educacion Fisica por oferta (deporte + dia + franja), segun la fecha de inscripcion.
 -- Pregunta: cuantos alumnos se anotaron en cada deporte y cuantos cupos quedan.
 -- GROUP BY oferta; JOIN inscripcion -> oferta -> deporte, dia y franja; fechas: rango, MIN/MAX.
 -- Los cupos libres comparan los inscriptos DEL RANGO con el cupo maximo: para el cupo real hay que usar el rango completo (NULL, NULL).
-DROP PROCEDURE IF EXISTS sp_rep_inscriptos_por_deporte //
+DROP PROCEDURE IF EXISTS sp_rep_inscriptos_por_deporte;
+
+DELIMITER //
 CREATE PROCEDURE sp_rep_inscriptos_por_deporte(p_desde DATE, p_hasta DATE)
 BEGIN
+    -- Declaración de variables para captura de errores
     DECLARE codigo_error INT DEFAULT 0;
     DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_hasta_sig DATE;
@@ -1576,15 +1800,18 @@ BEGIN
     -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
+        -- Devolver una respuesta estructurada indicando el fallo
         SELECT
             'ERROR' AS estado,
             codigo_error AS codigo_sql,
             mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     -- Regla de negocio: el rango no puede estar invertido (si falta una punta, ese lado queda sin limite)
     IF p_desde IS NOT NULL AND p_hasta IS NOT NULL AND p_desde > p_hasta THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Rango de fechas invalido: desde es mayor que hasta';
@@ -1612,14 +1839,19 @@ BEGIN
     ORDER BY inscriptos DESC, d.nombre_deporte, ds.id_dia, f.hora_inicio;
 END //
 
+DELIMITER ;
+
 -- 8. Actividad por usuario: prestamos de equipos (como solicitante), reservas de sectores y reclamos de objetos en el rango.
 -- Pregunta: quienes usan mas el sistema y en que.
 -- GROUP BY usuario; JOIN seguridad.usuario -> rol y 3 LEFT JOIN (uno por tipo de actividad); fechas: rango aplicado en cada ON.
 -- HAVING: la condicion es sobre un agregado (suma de conteos), no se puede poner en WHERE; deja afuera a los usuarios sin actividad.
 -- Version SIN tuning: los 3 LEFT JOIN se multiplican entre si (por eso COUNT DISTINCT). La optimizada es sp_rep_actividad_por_usuario_tuneado.
-DROP PROCEDURE IF EXISTS sp_rep_actividad_por_usuario //
+DROP PROCEDURE IF EXISTS sp_rep_actividad_por_usuario;
+
+DELIMITER //
 CREATE PROCEDURE sp_rep_actividad_por_usuario(p_desde DATE, p_hasta DATE)
 BEGIN
+    -- Declaración de variables para captura de errores
     DECLARE codigo_error INT DEFAULT 0;
     DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_hasta_sig DATE;
@@ -1627,15 +1859,18 @@ BEGIN
     -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
+        -- Devolver una respuesta estructurada indicando el fallo
         SELECT
             'ERROR' AS estado,
             codigo_error AS codigo_sql,
             mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     -- Regla de negocio: el rango no puede estar invertido (si falta una punta, ese lado queda sin limite)
     IF p_desde IS NOT NULL AND p_hasta IS NOT NULL AND p_desde > p_hasta THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Rango de fechas invalido: desde es mayor que hasta';
@@ -1666,15 +1901,20 @@ BEGIN
     ORDER BY total_actividad DESC, u.usuario_nick;
 END //
 
+DELIMITER ;
+
 -- 9. Auditoria: eventos del log agrupados por dia, evento, entidad, resultado y usuario.
 -- Pregunta: que paso, quien lo hizo y con que resultado en un periodo.
 -- Rango de fechas OBLIGATORIO (NULL = error de negocio). p_evento (nombre del tipo de evento), p_nick y p_resultado son opcionales:
 -- NULL o cadena vacia = sin filtro. Un valor que no existe devuelve 0 filas (no es error).
 -- GROUP BY; JOIN con tipo_log, entidad_log, resultado_log y LEFT JOIN seguridad.usuario (hay eventos sin usuario, p. ej. login con nick inexistente);
 -- fechas: DATE(), TIME(), rango con dia inclusivo.
-DROP PROCEDURE IF EXISTS sp_rep_auditoria //
+DROP PROCEDURE IF EXISTS sp_rep_auditoria;
+
+DELIMITER //
 CREATE PROCEDURE sp_rep_auditoria(p_desde DATE, p_hasta DATE, p_evento VARCHAR(80), p_nick VARCHAR(50), p_resultado VARCHAR(30))
 BEGIN
+    -- Declaración de variables para captura de errores
     DECLARE codigo_error INT DEFAULT 0;
     DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_hasta_sig DATE;
@@ -1682,15 +1922,18 @@ BEGIN
     -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
+        -- Devolver una respuesta estructurada indicando el fallo
         SELECT
             'ERROR' AS estado,
             codigo_error AS codigo_sql,
             mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     -- Regla de negocio: el rango no puede estar invertido (si falta una punta, ese lado queda sin limite)
     IF p_desde IS NOT NULL AND p_hasta IS NOT NULL AND p_desde > p_hasta THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Rango de fechas invalido: desde es mayor que hasta';
@@ -1726,11 +1969,16 @@ BEGIN
     ORDER BY fecha, t.nombre_evento, rl.nombre_resultado, nick;
 END //
 
+DELIMITER ;
+
 -- 10. TUNEADO de sp_rep_ventas_por_producto: mismas filas, columnas y orden. Ver TUNING_REPORTES.md.
 -- Tecnica de la clase 004: seleccion y proyeccion antes de la reunion (tabla temporal) + pre-agregado + indices.
-DROP PROCEDURE IF EXISTS sp_rep_ventas_por_producto_tuneado //
+DROP PROCEDURE IF EXISTS sp_rep_ventas_por_producto_tuneado;
+
+DELIMITER //
 CREATE PROCEDURE sp_rep_ventas_por_producto_tuneado(p_desde DATE, p_hasta DATE)
 BEGIN
+    -- Declaración de variables para captura de errores
     DECLARE codigo_error INT DEFAULT 0;
     DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_hasta_sig DATE;
@@ -1738,16 +1986,19 @@ BEGIN
     -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
         DROP TEMPORARY TABLE IF EXISTS tmp_ventas_entregadas;
+        -- Devolver una respuesta estructurada indicando el fallo
         SELECT
             'ERROR' AS estado,
             codigo_error AS codigo_sql,
             mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     -- Regla de negocio: el rango no puede estar invertido (si falta una punta, ese lado queda sin limite)
     IF p_desde IS NOT NULL AND p_hasta IS NOT NULL AND p_desde > p_hasta THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Rango de fechas invalido: desde es mayor que hasta';
@@ -1791,12 +2042,17 @@ BEGIN
     DROP TEMPORARY TABLE IF EXISTS tmp_ventas_entregadas;
 END //
 
+DELIMITER ;
+
 -- 11. TUNEADO de sp_rep_actividad_por_usuario: mismas filas, columnas y orden. Ver TUNING_REPORTES.md.
 -- Tecnica de la clase 004: seleccion y agrupamiento en subconsultas ANTES de la reunion + indices.
 -- El HAVING del original pasa a WHERE: ya no hay GROUP BY en la consulta externa (cada subconsulta ya devuelve una fila por usuario).
-DROP PROCEDURE IF EXISTS sp_rep_actividad_por_usuario_tuneado //
+DROP PROCEDURE IF EXISTS sp_rep_actividad_por_usuario_tuneado;
+
+DELIMITER //
 CREATE PROCEDURE sp_rep_actividad_por_usuario_tuneado(p_desde DATE, p_hasta DATE)
 BEGIN
+    -- Declaración de variables para captura de errores
     DECLARE codigo_error INT DEFAULT 0;
     DECLARE mensaje_error VARCHAR(255) DEFAULT '';
     DECLARE v_hasta_sig DATE;
@@ -1804,15 +2060,18 @@ BEGIN
     -- MANEJADOR DE EXCEPCIONES: se activa si ocurre cualquier error SQL (SQLEXCEPTION)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        -- Capturar el número y mensaje exacto del error que ocurrió
         GET DIAGNOSTICS CONDITION 1
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
+        -- Devolver una respuesta estructurada indicando el fallo
         SELECT
             'ERROR' AS estado,
             codigo_error AS codigo_sql,
             mensaje_error AS descripcion_error;
     END;
 
+    -- CÓDIGO PRINCIPAL
     -- Regla de negocio: el rango no puede estar invertido (si falta una punta, ese lado queda sin limite)
     IF p_desde IS NOT NULL AND p_hasta IS NOT NULL AND p_desde > p_hasta THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Rango de fechas invalido: desde es mayor que hasta';
@@ -1851,3 +2110,4 @@ BEGIN
 END //
 
 DELIMITER ;
+

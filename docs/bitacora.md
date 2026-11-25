@@ -132,4 +132,5 @@
   * Ejecución de los 104 casos de prueba de los procedimientos (4 por cada uno de los 26 SP) en MariaDB 10.11, con resultado real en `06_PruebasSQL.xlsx`: 104 PASS. Guía para repetirlos en MySQL Workbench.
   * Revisión de los diagramas de Chen y Codd contra el script `03` (sin diferencias) y exportación en PNG con fondo blanco.
   * División real en **7 schemas también en MySQL** (`seguridad`, `academico`, `objetos`, `instalaciones`, `tienda`, `equipos`, `deportes`): cada schema es una base, las tablas se nombran `schema.tabla` en los scripts, las pruebas y la app, y la base `iqual` guarda los procedimientos. Se volvieron a correr los 104 casos (104 PASS) y la app con los 5 roles.
+  * Procedimientos llevados al formato exacto de la clase 006: `DROP PROCEDURE IF EXISTS` y `DELIMITER //` por cada uno, variables `codigo_error` y `mensaje_error`, y el handler con los mismos comentarios. Las 104 pruebas dan el mismo resultado.
 * **Entregables / Artefactos:** Hito 2 de BBDD (diagramas PNG, scripts 03, 04 y 05, planilla 06_PruebasSQL.xlsx).
