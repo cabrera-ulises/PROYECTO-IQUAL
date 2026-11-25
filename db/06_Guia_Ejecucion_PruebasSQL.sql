@@ -1,5 +1,6 @@
 -- 06_Guia_Ejecucion_PruebasSQL.sql - PROYECTO IQUAL (SGE) - Grupo 00
--- Guia para ejecutar a mano los 104 casos de 06_PruebasSQL.xlsx en DBeaver (o MySQL Workbench).
+-- Guia para ejecutar a mano los 104 casos de 06_PruebasSQL.xlsx en MySQL Workbench (o DBeaver).
+-- Todo en la MISMA pestaña de consulta: las variables (@l, @obj, ...) viven solo en esa conexion.
 -- 1. Cargar desde cero 03_ModeloSQL, 04_DatosSQL y 05_Backend (Alt+X en cada uno).
 -- 2. Abrir este archivo con la conexion a la base iqual.
 -- 3. Ir caso por caso: poner el cursor en cada sentencia y ejecutarla con Ctrl+Enter, en orden.
@@ -10,6 +11,7 @@
 -- Si algo queda raro, volver a cargar 04_DatosSQL y seguir desde el caso donde estabas.
 
 USE iqual;
+SET SQL_SAFE_UPDATES = 0;
 
 -- ====================================================================================================
 -- TC_SP_REGISTRAR_LOG_01 · Éxito: evento válido con usuario existente
