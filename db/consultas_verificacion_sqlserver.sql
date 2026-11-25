@@ -226,7 +226,7 @@ GROUP BY o.id_objeto, o.titulo, eo.nombre_estado, o.detalle_reservado
 ORDER BY o.id_objeto;
 
 -- 14. Filas de cada catálogo (24 catálogos). Con los datos de ejemplo:
---     rol 4, especialidad 3, turno 2, dia_semana 5, categoria_objeto 6, estado_objeto 4, estado_reclamo 3, tipo_reporte 2, estado_reporte 2, estado_reserva 4, estado_venta 3, tipo_recurso 2, estado_recurso 3, carro 5, deporte 4, tipo_log 16, resultado_log 2, entidad_log 12, tipo_sector 2, anio 7, division 9, franja_horaria 5, categoria_producto 5, software 6.
+--     rol 4, especialidad 3, turno 2, dia_semana 5, categoria_objeto 6, estado_objeto 4, estado_reclamo 3, tipo_reporte 2, estado_reporte 2, estado_reserva 4, estado_venta 3, tipo_recurso 2, estado_recurso 3, carro 5, deporte 4, tipo_log 14, resultado_log 2, entidad_log 12, tipo_sector 2, anio 7, division 9, franja_horaria 5, categoria_producto 5, software 6.
 SELECT 'rol' AS catalogo, COUNT(*) AS filas FROM seguridad.rol
 UNION ALL
 SELECT 'especialidad' AS catalogo, COUNT(*) AS filas FROM academico.especialidad
@@ -379,7 +379,7 @@ WHERE (e.nombre_estado = 'Resuelto' AND (r.fecha_hora_resolucion IS NULL OR r.id
 SELECT COUNT(*) AS tablas FROM sys.tables;
 
 -- 17. Filas de cada tabla justo despues de cargar 03 y 04 (47 filas de resultado). log_auditoria queda en 0 hasta que se usen los procedimientos.
---     Valores esperados: rol 4, especialidad 3, turno 2, dia_semana 5, categoria_objeto 6, estado_objeto 4, estado_reclamo 3, tipo_reporte 2, estado_reporte 2, estado_reserva 4, estado_venta 3, tipo_recurso 2, estado_recurso 3, carro 5, deporte 4, tipo_log 16, resultado_log 2, entidad_log 12, tipo_sector 2, categoria_producto 5, software 6, anio 7, division 9, franja_horaria 5, curso 24, usuario 62, materia 21, horario_escolar 137, horario_dia 229, sector 22, objeto_perdido 23, reclamo_objeto 25, consulta_objeto 22, reporte_higiene 22, grupo_buffet 21, integrante_grupo 62, producto_buffet 30, venta_buffet 28, detalle_venta 37, donacion_buffet 26, recursos_ct 60, recurso_software 160, prestamo_ct 24, reserva_sector 28, oferta_deporte 20, inscripcion_ed_fisica 37, log_auditoria 0.
+--     Valores esperados: rol 4, especialidad 3, turno 2, dia_semana 5, categoria_objeto 6, estado_objeto 4, estado_reclamo 3, tipo_reporte 2, estado_reporte 2, estado_reserva 4, estado_venta 3, tipo_recurso 2, estado_recurso 3, carro 5, deporte 4, tipo_log 14, resultado_log 2, entidad_log 12, tipo_sector 2, categoria_producto 5, software 6, anio 7, division 9, franja_horaria 5, curso 24, usuario 62, materia 21, horario_escolar 137, horario_dia 229, sector 22, objeto_perdido 23, reclamo_objeto 25, consulta_objeto 22, reporte_higiene 22, grupo_buffet 21, integrante_grupo 62, producto_buffet 30, venta_buffet 28, detalle_venta 37, donacion_buffet 26, recursos_ct 60, recurso_software 160, prestamo_ct 24, reserva_sector 28, oferta_deporte 20, inscripcion_ed_fisica 37, log_auditoria 0.
 SELECT 'rol' AS tabla, COUNT(*) AS filas FROM seguridad.rol
 UNION ALL SELECT 'especialidad' AS tabla, COUNT(*) AS filas FROM academico.especialidad
 UNION ALL SELECT 'turno' AS tabla, COUNT(*) AS filas FROM academico.turno

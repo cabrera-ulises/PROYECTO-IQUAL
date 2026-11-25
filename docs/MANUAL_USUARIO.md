@@ -83,18 +83,7 @@ Los marcadores `[CAPTURA: …]` indican dónde va una imagen. Los que llevan car
 - En el usuario no importan las mayúsculas ni los espacios al principio o al final. **La contraseña sí distingue mayúsculas**.
 - Si te equivocás, ves "Usuario o contraseña incorrectos" y cuántos intentos te quedan. El mensaje es el mismo si el usuario no existe.
 - **Si se falla 5 veces seguidas** (en cualquier cuenta), la aplicación pide cerrarla y volver a abrirla para intentar de nuevo. Mientras tanto nadie puede ingresar.
-- **Si olvidaste tu contraseña,** tocá **Olvidé mi contraseña** (o la pestaña **Recuperar contraseña**) y seguí los pasos de la sección 1.3 bis.
-
-### 1.3 bis Recuperar tu contraseña
-1. En la pantalla de acceso, tocá **Olvidé mi contraseña**. Se abre la pestaña **Recuperar contraseña** con tu usuario ya escrito, si lo habías puesto.
-2. Escribí tu **usuario**, tu **DNI** y el **correo** con el que creaste la cuenta.
-3. Escribí la **contraseña nueva** (4 caracteres o más, distinta de la actual) y repetila.
-4. Tocá **Cambiar contraseña** (o apretá Enter en el último campo). Ves "Contraseña cambiada" y volvés a **Iniciar sesión** con tu usuario ya escrito.
-
-- Si el usuario, el DNI y el correo no son de la misma cuenta, ves "Los datos no coinciden con ninguna cuenta" y cuántos intentos te quedan. El mensaje no dice cuál de los tres está mal.
-- **Se permiten 5 intentos.** Después hay que cerrar y volver a abrir la aplicación, o pedirle al responsable del sistema que te restablezca la contraseña (ver sección 12).
-- Si habías llegado al máximo de intentos del inicio de sesión, al cambiar la contraseña ese contador también se reinicia.
-- Cada intento, bueno o malo, queda en la auditoría.
+- **La aplicación no tiene recuperación de contraseña.** Si la olvidaste, no la podés recuperar desde la pantalla: pedí que te la restablezcan (ver sección 12).
 
 ### 1.4 Moverte por la aplicación
 Una vez adentro, tenés dos barras:
@@ -152,21 +141,20 @@ Acá se publican los objetos que se encuentran en el colegio y los alumnos puede
 ### 3.1 Ver los objetos y buscar (todos los roles)
 1. Abrí **Objetos perdidos** desde la barra lateral.
 2. En la pestaña **Objetos** ves una tarjeta por objeto con su nombre, su categoría y el sector donde se encontró, su estado y cuántos reclamos tiene, por ejemplo "Disponible · (2 reclamos)".
-   - En **verde** están los que se pueden reclamar: "Disponible" (nadie lo reclamó todavía) y "En reclamo" (ya tiene reclamos en revisión, pero igual lo podés reclamar).
+   - En **verde** están los que se pueden reclamar.
    - En **gris** y con "Ya devuelto" están los que ya volvieron a su dueño.
-   - El resumen de arriba ("Objetos para reclamar") cuenta los que están en verde.
+   - En **gris** y con "En reclamo" están los que ya tienen reclamos en revisión; igual se pueden reclamar.
+   - El resumen de arriba ("Objetos para reclamar") cuenta solo los que están en verde.
 3. Para buscar, escribí en el cuadro de búsqueda (busca por nombre, descripción, categoría y sector) o elegí una **categoría**.
 4. Para ver un objeto con más detalle, hacé **doble clic** en su tarjeta: se abre una ventana con la descripción y la foto. Tocá **Cerrar** (o apretá Enter o Esc) para volver.
 
 `[CAPTURA: capturas/alumno_c_p3_t0.png]` · `[CAPTURA: objetos_detalle]`
 
-### 3.2 Cómo reclamar un objeto (Alumno, Profesor y Maestranza)
+### 3.2 Cómo reclamar un objeto (Alumno)
 1. En la pestaña **Objetos**, tocá la tarjeta del objeto que creés tuyo.
 2. En **Reclamar el objeto elegido**, escribí **un detalle que no se vea en la foto ni en la descripción**: algo que solo su dueño sabría (por ejemplo, "tiene una cinta celeste en la cabeza"). Necesitás 10 caracteres o más.
 3. Tocá **Reclamar objeto** (o apretá Enter).
-4. Ves "Reclamo enviado. El preceptor lo va a revisar." El objeto **sigue en la lista**: ahora muestra un reclamo más y, si era el primero, pasa a "En reclamo".
-
-**¿Cuánto se espera antes de entregar un objeto?** No hay un plazo automático. El preceptor ve todos los reclamos de cada objeto, con el detalle que escribió cada persona y el dato reservado que cargó al publicarlo, y decide cuándo resolver. Si hay más de un reclamo, compara los detalles o habla con cada uno antes de aprobar. Al aprobar uno, los demás se rechazan solos; si rechaza todos, el objeto vuelve a "Disponible".
+4. Ves "Reclamo enviado. El preceptor lo va a revisar." El objeto **sigue en la lista**: ahora muestra un reclamo más.
 
 Es bueno saber que:
 - **Cada objeto se reclama una sola vez por persona.** Si lo intentás de nuevo, ves "Ya reclamaste este objeto. Solo se puede reclamar una vez."
@@ -317,8 +305,7 @@ La pantalla tiene pestañas; cuáles ves depende de tu rol:
 ### 5.2 Reservar un producto (todos los roles)
 1. Tocá el producto. La franja de abajo te dice si lo podés reservar.
 2. Elegí la **cantidad** (el selector no deja pasar del stock disponible).
-3. Tocá **Reservar**. Ves **"Reserva hecha. Coordiná la entrega en persona con el vendedor. Tenés 2 días para retirarla…"** El stock del producto baja en lo que reservaste y la reserva aparece en **Mis reservas** con la fecha en que **vence**.
-4. **La reserva vence a los 2 días.** Si para entonces el vendedor no la marcó como entregada, la próxima vez que alguien abre la aplicación se cancela sola y el stock vuelve al producto. Queda registrado en la auditoría.
+3. Tocá **Reservar**. Ves **"Reserva hecha. Coordiná la entrega en persona con el vendedor."** El stock del producto baja en lo que reservaste y la reserva aparece en **Mis reservas**.
 
 | Mensaje | Qué significa |
 |---|---|
@@ -342,8 +329,7 @@ Solo se pueden cancelar las reservas **tuyas** y **activas** ("Esa reserva no es
    - **Precio** y **stock**: números enteros mayores a 0, sin centavos.
    - **Venta individual** o un grupo: en la lista de grupos solo aparecen aquellos de los que sos integrante.
 3. Si querés, elegí una **foto** (opcional, pero ayuda a vender). Con **Quitar foto** la sacás antes de publicar.
-4. Tocá **Publicar**. Ves "Producto publicado. Se va a ver en la tienda cuando un preceptor lo apruebe." y los campos se limpian.
-5. El producto queda **pendiente**: no aparece en la tienda ni se puede reservar hasta que un Preceptor lo apruebe. En **Mis productos** lo ves marcado como "PENDIENTE DE APROBACIÓN". Si el Preceptor lo rechaza, ves "RECHAZADO" y podés eliminarlo y publicarlo de nuevo corregido.
+4. Tocá **Publicar**. Ves "Producto publicado." y los campos se limpian.
 
 La foto se elige al publicar y después no se puede cambiar. Si querés otra, eliminá el producto y publicalo de nuevo.
 
@@ -353,12 +339,6 @@ La foto se elige al publicar y después no se puede cambiar. Si querés otra, el
 | "Precio y stock: escribí números enteros mayores a 0." | Revisá que no haya letras, centavos ni ceros |
 | "Elegí la categoría del producto." | Elegí una categoría |
 | "Para vender en un grupo tenés que ser integrante." | Unite al grupo primero (sección 5.6) |
-
-### 5.4 bis Aprobar los productos (Preceptor)
-El Preceptor tiene la pestaña **Por aprobar**, que muestra entre paréntesis cuántos productos están esperando.
-1. Elegí un producto de la lista (se ve el nombre, el precio, el stock, la categoría, quién lo vende y si es de un grupo).
-2. Tocá **Aprobar** para que se vea en la tienda, o **Rechazar** (pide confirmación) para que no se publique.
-3. La revisión queda registrada con tu usuario y en la auditoría. Un producto ya revisado sale de la lista.
 
 ### 5.5 Mis productos (Alumno)
 En **Mis productos** ves solo lo que publicaste vos. Elegí un producto y usá:
@@ -436,14 +416,12 @@ Acá se registra el préstamo y la devolución de computadoras (de los carros C1
 
 ### 6.3 Prestarle un equipo a un alumno (Profesor y Preceptor)
 1. Tocá el equipo en **Equipos disponibles**.
-2. En **Pedir un equipo**, elegí el **alumno** que se lo lleva (el desplegable los lista por orden alfabético de nombre). También podés escribir su **ID de usuario** en el campo **ID del alumno**: el alumno se elige solo. Cada usuario ve su ID en **Mi cuenta**. Si el ID no existe o no es de un alumno, el desplegable vuelve a "Elegí el alumno".
+2. En **Pedir un equipo**, elegí el **alumno** que se lo lleva (el desplegable los lista por orden alfabético de nombre).
 3. Tocá **Registrar préstamo**. En la lista queda anotado que lo autorizaste vos.
 4. Si el alumno ya tiene un equipo, ves "Ese alumno ya tiene un equipo prestado. Tiene que devolverlo antes de retirar otro."
 
-### 6.4 Registrar la devolución de un equipo (Profesor y Preceptor)
-La devolución la registra siempre un profesor o un preceptor, que revisa el equipo antes de decir si funciona. **El alumno no puede devolver desde la aplicación**: lleva el equipo y quien lo recibe registra la devolución.
-
-1. En **Préstamos**, tocá el préstamo que querés cerrar (los activos están en verde).
+### 6.4 Devolver un equipo (Alumno, Profesor y Preceptor)
+1. En **Préstamos**, tocá el préstamo que querés cerrar (los activos están en verde). Un alumno solo ve y puede devolver los suyos.
 2. En **¿Cómo vuelve el equipo?**, elegí **Funciona** o **No funciona**. **Ojo: el desplegable arranca en "Funciona"**, así que fijate de cambiarlo si el equipo tiene un problema.
 3. Si querés, escribí una observación en el campo de **Observaciones** (el mismo que se usa al pedir): se guarda con la devolución.
 4. Tocá **Devolver equipo**. Ves "Devolución registrada."
@@ -456,7 +434,7 @@ La devolución la registra siempre un profesor o un preceptor, que revisa el equ
 | "Elegí quién se lleva el equipo." | Elegí el alumno (profesor y preceptor) |
 | "Elegí un préstamo de la lista." | Tocá primero un préstamo |
 | "Ese préstamo ya fue devuelto." | Elegí un préstamo activo |
-| "Esta acción es solo para estos roles: Profesor, Preceptor." | Llevá el equipo a un profesor o preceptor para que registre la devolución |
+| "Solo podés devolver tus propios préstamos." | Pedile a quien lo retiró que lo devuelva |
 
 ### 6.5 Equipos fuera de servicio (Preceptor y Maestranza)
 1. En **Fuera de servicio** ves los equipos rotos, en rojo.
@@ -505,7 +483,6 @@ Es igual que para el Profesor, con una diferencia: tu reserva queda **Aprobada**
 2. Hacé clic en la reserva que querés resolver.
 3. Para aceptarla, **Aprobar**. Pasa a **Aprobada** (verde).
 4. Para no aceptarla, **Rechazar**. La aplicación pregunta **"¿Querés rechazar la reserva de …? El horario queda libre."** Elegí **Sí** o **No**. Con **Sí** pasa a **Rechazada** (rojo) y el horario queda libre.
-5. **Si nadie aprueba una reserva antes de su horario, se rechaza sola** la próxima vez que alguien abre la aplicación, para que no quede trabando el sector. En la base queda sin autorizador y en la auditoría dice que fue automático.
 
 `[CAPTURA: sectores_aprobar_rechazar_preceptor]`
 
@@ -587,7 +564,7 @@ Acá ves tus datos y podés cambiar tu curso (si sos Alumno), tu contraseña y t
 `[CAPTURA: capturas/alumno_c_p9.png]` (vista de Alumno) · `[CAPTURA: capturas/preceptor_c_p9.png]` (Profesor, Preceptor o Maestranza: sin curso)
 
 ### 9.1 Qué ves en la pantalla
-- **Mis datos:** tu nombre completo, usuario, **ID de usuario**, DNI, correo, teléfono y rol. El **ID de usuario** es tu número personal: si un profesor o preceptor te presta un equipo en persona, decíselo y lo registra a tu nombre. Si sos Alumno, también tu **curso** (por ejemplo, "4° 1° Computación"). No se pueden editar desde ahí.
+- **Mis datos:** tu nombre completo, usuario, DNI, correo, teléfono y rol. Si sos Alumno, también tu **curso** (por ejemplo, "4° 1° Computación"). No se pueden editar desde ahí.
 - **Cambiar mi curso** (solo Alumnos).
 - **Cambiar contraseña** y **Cambiar teléfono** (todos los roles).
 
@@ -617,14 +594,6 @@ Acá ves tus datos y podés cambiar tu curso (si sos Alumno), tu contraseña y t
 `[CAPTURA: cuenta_cambiar_telefono]`
 
 Avisos: **"Escribí el teléfono nuevo."** (campo vacío) y **"Escribí el teléfono solo con números (entre 8 y 15), sin espacios ni guiones."** (formato incorrecto).
-
-### 9.3 bis Cambiar el PIN de personal (Preceptor)
-El PIN de personal es el que piden las cuentas nuevas de Profesor, Preceptor y Maestranza. No está escrito en el programa: se guarda **cifrado** en el archivo `iqual.ini` de cada computadora.
-1. En **Mi cuenta**, tarjeta **PIN de personal**, escribí el PIN nuevo (6 caracteres o más) y repetilo.
-2. Tocá **Cambiar PIN** (o apretá Enter). Ves "PIN de personal cambiado…".
-
-- **Cambialo antes de usar IQUAL en el colegio**: la primera vez la aplicación guarda el PIN inicial del proyecto, que figura en la documentación.
-- El cambio vale para la computadora donde lo hiciste. Si IQUAL está instalado en varias, hay que cambiarlo en cada una (o copiar la línea `pin_personal` de `iqual.ini`).
 
 ### 9.4 Cambiar tu curso (Alumno)
 Tu curso se usa para ver si una actividad de **Educación Física** choca con tus clases, así que conviene mantenerlo al día.
@@ -669,7 +638,7 @@ Tu curso se usa para ver si una actividad de **Educación Física** choca con tu
 | Un botón no hace nada | Fijate si tenés que elegir antes un elemento de la lista; si no, la aplicación te lo avisa al apretarlo |
 | Aparece "No se pudo usar MySQL" al abrir | La aplicación no se puede usar hasta que se arregle la conexión con la base de datos: cerrala y avisá al responsable del sistema |
 | Bloqueo por intentos de contraseña | Cerrá y abrí la aplicación |
-| Olvidé mi contraseña | Se recupera desde **Olvidé mi contraseña** en la pantalla de acceso (ver 1.3 bis); si no funciona, ver la sección 12 |
+| Olvidé mi contraseña | No se recupera desde la aplicación (ver 1.3 y la sección 12) |
 | Un producto, objeto o reporte que veía ya no está | Otra persona lo eliminó, archivó o resolvió: volvé a abrir la pantalla para actualizar la lista |
 
 ---
@@ -679,5 +648,5 @@ Tu curso se usa para ver si una actividad de **Educación Física** choca con tu
 | Necesito… | Pedíselo a… |
 |---|---|
 | El PIN de personal (profesores, preceptores y maestranza, para crear la cuenta) | Preceptoría o dirección, en persona |
-| Que me restablezcan la contraseña (si falló la recuperación de la pantalla de acceso) | El responsable del sistema, con tu DNI como verificación |
+| Que me restablezcan la contraseña | El responsable del sistema, con tu DNI como verificación |
 | Ayuda si la aplicación no abre o no conecta con la base de datos | El responsable del sistema (soporte técnico de IQUAL) |

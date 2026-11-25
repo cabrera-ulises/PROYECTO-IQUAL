@@ -123,5 +123,4 @@
   * Ejecución de pruebas: 80 de los 104 casos planificados de la base y 306 de los 337 casos por pantalla (285 OK, 21 con observación, 31 sin probar).
   * Preparación del pitch: ensayos con cronómetro, capturas y video de respaldo de la demo.
   * Demo Day: martes 24/11/2026.
-  * Después del Demo Day se agregaron las tres funciones que la presentación daba como pendientes: recuperación de contraseña (RF24), aprobación de productos por el Preceptor (RF25) e ID de usuario para registrar préstamos en persona (RF26). Quedan para más adelante las notificaciones, medir el uso con muchos usuarios y la versión web o celular.
 * **Entregables / Artefactos:** software final, defensa en formato pitch, manual técnico y manual de usuario.

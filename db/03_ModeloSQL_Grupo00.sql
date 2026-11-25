@@ -393,17 +393,12 @@ CREATE TABLE producto_buffet (
   id_grupo INT NULL,
   id_categoria_producto INT NOT NULL DEFAULT 1,
   ruta_foto VARCHAR(150) NULL,
-  aprobado TINYINT NOT NULL DEFAULT 0,
-  id_usuario_revisor INT NULL,
   CONSTRAINT pk_producto_buffet PRIMARY KEY (id_producto),
   CONSTRAINT fk_producto_buffet_id_usuario FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario),
   CONSTRAINT fk_producto_buffet_id_grupo FOREIGN KEY (id_grupo) REFERENCES grupo_buffet (id_grupo),
   CONSTRAINT fk_producto_buffet_id_categoria_producto FOREIGN KEY (id_categoria_producto) REFERENCES categoria_producto (id_categoria_producto),
-  CONSTRAINT fk_producto_buffet_id_usuario_revisor FOREIGN KEY (id_usuario_revisor) REFERENCES usuario (id_usuario),
   CONSTRAINT ck_producto_precio CHECK (precio > 0),
-  CONSTRAINT ck_producto_stock CHECK (stock >= 0),
-  CONSTRAINT ck_producto_aprobado CHECK (aprobado IN (0, 1)),
-  CONSTRAINT ck_producto_aprobado_revisor CHECK (aprobado = 0 OR id_usuario_revisor IS NOT NULL)
+  CONSTRAINT ck_producto_stock CHECK (stock >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE venta_buffet (

@@ -30,8 +30,7 @@
 #include <QProgressBar>
 #include <QVariant>
 
-const QString PIN_PERSONAL_INICIAL = "1d720c20dcf3f321fa35cc139f9c6f4e661b939482df0fe0e9b2cb6842bbbb62";
-const int DIAS_RESERVA = 2;
+const QString PIN_PERSONAL = "IQUAL2026";
 const QString HORA_APERTURA = "07:00";
 const QString HORA_CIERRE = "19:00";
 const int MAX_INTENTOS = 5;
@@ -43,7 +42,6 @@ MainWindow::MainWindow(QWidget *parent)
     , temaOscuro(false)
     , idActual(0)
     , intentosFallidos(0)
-    , intentosRecuperacion(0)
 {
     ui->setupUi(this);
     ui->stackedWidget->setCurrentIndex(PAG_LANDING);
@@ -98,7 +96,6 @@ bool MainWindow::abrirBase()
     if (!cfg.contains("base/usuario")) cfg.setValue("base/usuario", "root");
     if (!cfg.contains("base/clave")) cfg.setValue("base/clave", "12341234");
     if (!cfg.contains("base/nombre")) cfg.setValue("base/nombre", "iqual");
-    if (!cfg.contains("seguridad/pin_personal")) cfg.setValue("seguridad/pin_personal", PIN_PERSONAL_INICIAL);
     cfg.sync();
 
     QString error;
@@ -227,90 +224,11 @@ void MainWindow::cargarCursoCombos(QComboBox *anio, QComboBox *division, QComboB
     cargarCombo(especialidad, "SELECT id_especialidad, nombre_especialidad FROM especialidad ORDER BY nombre_especialidad", "Especialidad", "");
 }
 
-bool MainWindow::pinPersonalValido(const QString &pin)
-{
-    QSettings cfg(QCoreApplication::applicationDirPath() + "/iqual.ini", QSettings::IniFormat);
-    QString guardado = cfg.value("seguridad/pin_personal", PIN_PERSONAL_INICIAL).toString();
-    return hashClave(pin) == guardado;
-}
-
-void MainWindow::on_btnCuentaPin_clicked()
-{
-    if (!exigir("Preceptor", "", "")) return;
-    QString nuevo = ui->leCuentaPinNuevo->text();
-    QString repetido = ui->leCuentaPinRepetir->text();
-    if (nuevo.trimmed().size() < 6) {
-        ui->leCuentaPinNuevo->setFocus();
-        fallar("", "", "El PIN nuevo necesita 6 caracteres o más.");
-        return;
-    }
-    if (nuevo != repetido) {
-        ui->leCuentaPinRepetir->setFocus();
-        fallar("", "", "Los dos PIN no son iguales.");
-        return;
-    }
-    if (pinPersonalValido(nuevo)) {
-        fallar("", "", "Ese ya es el PIN de personal. Elegí otro.");
-        return;
-    }
-    QSettings cfg(QCoreApplication::applicationDirPath() + "/iqual.ini", QSettings::IniFormat);
-    cfg.setValue("seguridad/pin_personal", hashClave(nuevo));
-    cfg.sync();
-    if (cfg.status() != QSettings::NoError) {
-        fallar("", "", "No se pudo guardar el PIN en iqual.ini. Revisá que el archivo no sea de solo lectura.");
-        return;
-    }
-    ui->leCuentaPinNuevo->clear();
-    ui->leCuentaPinRepetir->clear();
-    info("PIN de personal cambiado. Desde ahora las cuentas de Profesor, Preceptor y Maestranza piden el PIN nuevo en esta computadora.");
-}
-
-void MainWindow::on_leCuentaPinRepetir_returnPressed() { on_btnCuentaPin_clicked(); }
-
-void MainWindow::vencerPendientes()
-{
-    int usuario = idActual;
-    idActual = 0;
-    QSqlQuery q;
-    q.prepare("SELECT id_venta FROM venta_buffet WHERE id_estado_venta = :reservada AND fecha_hora < :limite ORDER BY id_venta");
-    q.bindValue(":reservada", idEstado("estado_venta", "Reservada"));
-    q.bindValue(":limite", QDateTime::currentDateTime().addDays(-DIAS_RESERVA));
-    q.exec();
-    QList<int> ventas;
-    while (q.next()) ventas << q.value(0).toInt();
-    for (int i = 0; i < ventas.size(); i++) {
-        if (cancelarReserva(ventas[i])) {
-            registrarLog("Reserva de producto", QString("Reserva %1 vencida: nadie la retiró en %2 días y se canceló sola").arg(ventas[i]).arg(DIAS_RESERVA), "venta_buffet", "Exitoso");
-        }
-    }
-    q.prepare("SELECT id_reserva FROM reserva_sector WHERE id_estado_reserva = :pendiente "
-              "AND (fecha_reserva < :hoy OR (fecha_reserva = :hoyMismo AND hora_inicio <= :hora)) ORDER BY id_reserva");
-    q.bindValue(":pendiente", idEstado("estado_reserva", "Pendiente"));
-    q.bindValue(":hoy", valorFecha(QDate::currentDate()));
-    q.bindValue(":hoyMismo", valorFecha(QDate::currentDate()));
-    q.bindValue(":hora", QTime::currentTime().toString("HH:mm"));
-    q.exec();
-    QList<int> reservas;
-    while (q.next()) reservas << q.value(0).toInt();
-    for (int i = 0; i < reservas.size(); i++) {
-        QSqlQuery r;
-        r.prepare("UPDATE reserva_sector SET id_estado_reserva = :rechazada WHERE id_reserva = :reserva AND id_estado_reserva = :pendiente");
-        r.bindValue(":rechazada", idEstado("estado_reserva", "Rechazada"));
-        r.bindValue(":reserva", reservas[i]);
-        r.bindValue(":pendiente", idEstado("estado_reserva", "Pendiente"));
-        if (r.exec()) {
-            registrarLog("Reserva de sector", QString("Reserva %1: Rechazada sola porque nadie la aprobó antes del horario").arg(reservas[i]), "reserva_sector", "Exitoso");
-        }
-    }
-    idActual = usuario;
-}
-
 void MainWindow::cargarTodo()
 {
     ui->tabObjetos->setCurrentIndex(0);
     ui->tabBuffet->setCurrentIndex(0);
     aplicarPermisos();
-    vencerPendientes();
     cargarCuenta();
     cargarResumen();
     cargarObjetos();
@@ -322,7 +240,6 @@ void MainWindow::cargarTodo()
     cargarBuffet();
     cargarMisReservas();
     cargarMisProductos();
-    cargarAprobacion();
     cargarMisVentas();
     cargarCombo(ui->cbPlanillasAlumno, "SELECT u.id_usuario, u.nombre_completo FROM usuario u JOIN rol r ON r.id_rol = u.id_rol "
                                        "WHERE r.nombre_rol = 'Alumno' ORDER BY u.nombre_completo", "Elegí el alumno", "");
@@ -354,7 +271,7 @@ void MainWindow::aplicarPermisos()
     ui->tabObjetos->setTabVisible(3, preceptor);
     ui->tabObjetos->setTabVisible(4, preceptor);
     habilitar(preceptor, QList<QWidget *>() << ui->btnObjArchivar);
-    habilitar(!preceptor, QList<QWidget *>() << ui->frmObjReclamo);
+    habilitar(alumno, QList<QWidget *>() << ui->frmObjReclamo);
 
     habilitar(personal, QList<QWidget *>() << ui->btnHigieneResolver);
 
@@ -365,10 +282,9 @@ void MainWindow::aplicarPermisos()
     habilitar(alumno, QList<QWidget *>() << ui->btnBuffetEntregar << ui->btnBuffetCancelarVenta
               << ui->sbProdReponer << ui->btnProdReponer << ui->btnProdQuitar << ui->btnProdEliminar);
 
-    habilitar(prestamos, QList<QWidget *>() << ui->frmPlanillasPrestar);
-    habilitar(docente, QList<QWidget *>() << ui->lblPlanillasEstadoEt << ui->cbPlanillasEstado << ui->btnPlanillasDevolver);
+    habilitar(prestamos, QList<QWidget *>() << ui->frmPlanillasPrestar << ui->lblPlanillasEstadoEt
+              << ui->cbPlanillasEstado << ui->btnPlanillasDevolver);
     ui->cbPlanillasAlumno->setEnabled(docente);
-    ui->lePlanillasId->setVisible(docente);
     habilitar(reparador, QList<QWidget *>() << ui->frmPlanillasFuera);
 
     habilitar(docente, QList<QWidget *>() << ui->widgetSectoresReservar << ui->teSectoresInicio << ui->teSectoresFin << ui->btnSectoresReservar
@@ -380,7 +296,6 @@ void MainWindow::aplicarPermisos()
 
     habilitar(alumno, QList<QWidget *>() << ui->tarjetaCuentaCurso << ui->lblCuentaCambio << ui->cbCuentaAnio << ui->cbCuentaDivision
               << ui->cbCuentaEspecialidad << ui->btnCuentaGuardar << ui->lblCuentaCursoTit << ui->lblCuentaCurso);
-    habilitar(preceptor, QList<QWidget *>() << ui->tarjetaCuentaPin);
 }
 
 void MainWindow::habilitar(bool si, QList<QWidget *> widgets)
@@ -671,8 +586,6 @@ void MainWindow::cerrarSesion()
     ui->leCuentaClaveNueva->clear();
     ui->leCuentaClaveRepetir->clear();
     ui->leCuentaTelefono->clear();
-    ui->leCuentaPinNuevo->clear();
-    ui->leCuentaPinRepetir->clear();
     ui->cbHigieneSector->setCurrentIndex(0);
     ui->cbHigieneTipo->setCurrentIndex(0);
     ui->cbObjCategoria->setCurrentIndex(0);
@@ -767,7 +680,7 @@ void MainWindow::on_btnRegistrar_clicked()
     else if (!soloDigitos(dni, 7, 8)) problema = "El DNI tiene que tener 7 u 8 números, sin puntos.";
     else if (!QRegularExpression("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$").match(mail).hasMatch()) problema = "El correo no es válido. Tiene que ser algo como nombre@dominio.com.";
     else if (!soloDigitos(telefono, 8, 15)) problema = "El teléfono tiene que tener entre 8 y 15 números.";
-    else if (!alumno && !pinPersonalValido(ui->leRegPin->text())) problema = "El PIN de personal es incorrecto.";
+    else if (!alumno && ui->leRegPin->text() != PIN_PERSONAL) problema = "El PIN de personal es incorrecto.";
     else if (existe("usuario", "LOWER(usuario_nick)", nick)) problema = "Ese usuario ya existe, probá con otro.";
     else if (existe("usuario", "dni", dni)) problema = "Ya hay una cuenta con ese DNI.";
     else if (existe("usuario", "email", mail)) problema = "Ya hay una cuenta con ese correo.";
@@ -806,80 +719,6 @@ void MainWindow::on_btnRegistrar_clicked()
     ui->tabAcceso->setCurrentIndex(0);
     info("Cuenta creada. Ya podés iniciar sesión.");
 }
-
-void MainWindow::on_btnLoginOlvide_clicked()
-{
-    ui->tabAcceso->setCurrentIndex(2);
-    ui->leRecUsuario->setText(ui->leUsuario->text().trimmed());
-    ui->leRecUsuario->setFocus();
-}
-
-void MainWindow::on_btnRecuperar_clicked()
-{
-    if (intentosRecuperacion >= MAX_INTENTOS) {
-        aviso("Superaste el máximo de intentos de recuperación. Cerrá y volvé a abrir la aplicación, o pedile al responsable del sistema que restablezca tu contraseña.");
-        return;
-    }
-    QString nick = ui->leRecUsuario->text().trimmed().toLower();
-    QString dni = ui->leRecDni->text().trimmed();
-    QString mail = ui->leRecMail->text().trimmed().toLower();
-    QString nueva = ui->leRecClave->text();
-    QString repetida = ui->leRecClaveRepetir->text();
-    QString problema = "";
-    if (nick.isEmpty() || dni.isEmpty() || mail.isEmpty()) problema = "Completá el usuario, el DNI y el correo.";
-    else if (nueva.size() < 4) problema = "La contraseña nueva necesita 4 caracteres o más.";
-    else if (nueva.trimmed().isEmpty()) problema = "La contraseña no puede estar en blanco.";
-    else if (nueva != repetida) problema = "Las contraseñas nuevas no son iguales.";
-    if (!problema.isEmpty()) {
-        aviso(problema);
-        return;
-    }
-    QSqlQuery q;
-    q.prepare("SELECT id_usuario, password_hash FROM usuario WHERE LOWER(usuario_nick) = :nick AND dni = :dni AND LOWER(email) = :mail");
-    q.bindValue(":nick", nick);
-    q.bindValue(":dni", dni);
-    q.bindValue(":mail", mail);
-    q.exec();
-    if (!q.next()) {
-        intentosRecuperacion++;
-        registrarLog("Recuperación de contraseña", QString("Intento fallido de recuperación con el usuario %1").arg(nick), "usuario", "Fallido");
-        if (intentosRecuperacion >= MAX_INTENTOS) {
-            aviso("Los datos no coinciden y superaste el máximo de intentos. Cerrá y volvé a abrir la aplicación, o pedile al responsable del sistema que restablezca tu contraseña.");
-        } else {
-            aviso(QString("Los datos no coinciden con ninguna cuenta. Intentos restantes: %1.").arg(MAX_INTENTOS - intentosRecuperacion));
-        }
-        return;
-    }
-    int usuario = q.value(0).toInt();
-    if (q.value(1).toString() == hashClave(nueva)) {
-        aviso("Elegí una contraseña distinta de la actual.");
-        return;
-    }
-    q.prepare("UPDATE usuario SET password_hash = :hash WHERE id_usuario = :usuario");
-    q.bindValue(":hash", hashClave(nueva));
-    q.bindValue(":usuario", usuario);
-    if (!q.exec()) {
-        aviso("No se pudo cambiar la contraseña. Probá de nuevo.");
-        return;
-    }
-    idActual = usuario;
-    registrarLog("Recuperación de contraseña", QString("Se restableció la contraseña del usuario %1").arg(nick), "usuario", "Exitoso");
-    idActual = 0;
-    intentosRecuperacion = 0;
-    intentosFallidos = 0;
-    ui->btnLoginIngresar->setEnabled(true);
-    ui->leRecUsuario->clear();
-    ui->leRecDni->clear();
-    ui->leRecMail->clear();
-    ui->leRecClave->clear();
-    ui->leRecClaveRepetir->clear();
-    ui->tabAcceso->setCurrentIndex(0);
-    ui->leUsuario->setText(nick);
-    ui->leClave->setFocus();
-    info("Contraseña cambiada. Ya podés iniciar sesión con la nueva.");
-}
-
-void MainWindow::on_leRecClaveRepetir_returnPressed() { on_btnRecuperar_clicked(); }
 
 void MainWindow::on_btnLoginIngresar_clicked()
 {
@@ -936,7 +775,6 @@ void MainWindow::cargarCuenta()
     ui->lblBienvenida->setText(QString("Hola, %1").arg(q.value(0).toString().split(" ").first()));
     ui->lblUsuarioChip->setText(QString("%1 · %2").arg(q.value(0).toString()).arg(q.value(5).toString()));
     ui->lblCuentaNombre->setText(q.value(0).toString());
-    ui->lblCuentaId->setText(QString::number(idActual));
     ui->lblCuentaUsuario->setText(q.value(1).toString());
     ui->lblCuentaDni->setText(q.value(2).toString());
     ui->lblCuentaMail->setText(q.value(3).toString());
@@ -1135,10 +973,9 @@ void MainWindow::cargarObjetos()
             QPixmap foto(carpeta + q.value(3).toString());
             if (!q.value(3).toString().isEmpty() && !foto.isNull()) miniatura = foto.scaled(96, 96, Qt::KeepAspectRatio, Qt::SmoothTransformation);
             item->setIcon(QIcon(miniatura));
-            bool reclamable = estado == "Disponible" || estado == "En reclamo";
-            if (reclamable) item->setForeground(QBrush(colorToken("ok")));
+            if (estado == "Disponible") item->setForeground(QBrush(colorToken("ok")));
             else item->setForeground(QBrush(colorToken("suave")));
-            if (reclamable) disponibles++;
+            if (estado == "Disponible") disponibles++;
             if (estado == "Devuelto") devueltos++;
             if (q.value(0).toInt() == elegido) ui->listObjetos->setCurrentRow(ui->listObjetos->count() - 1);
         }
@@ -1197,7 +1034,7 @@ void MainWindow::cargarReclamos()
 
 void MainWindow::on_btnObjReclamar_clicked()
 {
-    if (!exigir("Alumno,Profesor,Maestranza", "Reclamo de objeto", "reclamo_objeto")) return;
+    if (!exigir("Alumno", "Reclamo de objeto", "reclamo_objeto")) return;
     int objeto = seleccionado(ui->listObjetos);
     QString detalle = ui->leObjPrueba->text().trimmed();
     if (objeto == 0) {
@@ -1214,7 +1051,6 @@ void MainWindow::on_btnObjReclamar_clicked()
         fallar("Reclamo de objeto", "reclamo_objeto", "Contanos un poco más: el detalle necesita 10 caracteres o más.");
         return;
     }
-    db.transaction();
     QSqlQuery q;
     q.prepare("INSERT INTO reclamo_objeto (prueba_pertenencia, fecha_reclamo, id_usuario, id_objeto, id_estado_reclamo) "
               "VALUES (:prueba, :fecha, :usuario, :objeto, :estado)");
@@ -1223,15 +1059,7 @@ void MainWindow::on_btnObjReclamar_clicked()
     q.bindValue(":usuario", idActual);
     q.bindValue(":objeto", objeto);
     q.bindValue(":estado", idEstado("estado_reclamo", "Pendiente"));
-    bool ok = q.exec();
-    if (ok && estado == "Disponible") {
-        q.prepare("UPDATE objeto_perdido SET id_estado_objeto = :estado WHERE id_objeto = :objeto");
-        q.bindValue(":estado", idEstado("estado_objeto", "En reclamo"));
-        q.bindValue(":objeto", objeto);
-        ok = q.exec();
-    }
-    if (!ok) {
-        db.rollback();
+    if (!q.exec()) {
         q.prepare("SELECT COUNT(*) FROM reclamo_objeto WHERE id_usuario = :usuario AND id_objeto = :objeto");
         q.bindValue(":usuario", idActual);
         q.bindValue(":objeto", objeto);
@@ -1241,7 +1069,6 @@ void MainWindow::on_btnObjReclamar_clicked()
         else fallar("Reclamo de objeto", "reclamo_objeto", "No se pudo enviar el reclamo. Probá de nuevo.");
         return;
     }
-    db.commit();
     registrarLog("Reclamo de objeto", QString("Reclamo sobre el objeto %1").arg(objeto), "reclamo_objeto", "Exitoso");
     ui->leObjPrueba->clear();
     cargarObjetos();
@@ -1288,15 +1115,6 @@ void MainWindow::resolverReclamo(const QString &estadoReclamo, const QString &ev
         q.prepare("UPDATE objeto_perdido SET id_estado_objeto = :estado WHERE id_objeto = :objeto");
         q.bindValue(":estado", idEstado("estado_objeto", "Devuelto"));
         q.bindValue(":objeto", objeto);
-        ok = ok && q.exec();
-    } else {
-        q.prepare("UPDATE objeto_perdido SET id_estado_objeto = :disponible WHERE id_objeto = :objeto AND id_estado_objeto = :enReclamo "
-                  "AND NOT EXISTS (SELECT 1 FROM reclamo_objeto r WHERE r.id_objeto = :mismo AND r.id_estado_reclamo = :pendiente)");
-        q.bindValue(":disponible", idEstado("estado_objeto", "Disponible"));
-        q.bindValue(":objeto", objeto);
-        q.bindValue(":enReclamo", idEstado("estado_objeto", "En reclamo"));
-        q.bindValue(":mismo", objeto);
-        q.bindValue(":pendiente", idEstado("estado_reclamo", "Pendiente"));
         ok = ok && q.exec();
     }
     if (!ok) {
@@ -1654,7 +1472,6 @@ void MainWindow::cargarBuffet()
     if (grupo > 0) sql += "WHERE p.id_grupo = :grupo ";
     else if (grupo == 0) sql += "WHERE p.id_grupo IS NULL ";
     else sql += "WHERE 1 = 1 ";
-    sql += "AND p.aprobado = 1 ";
     if (categoria > 0) sql += "AND p.id_categoria_producto = :categoria ";
     if (vendedor > 0) sql += "AND p.id_usuario = :vendedor ";
     if (!busqueda.isEmpty()) sql += "AND (p.nombre_producto LIKE :texto OR u.nombre_completo LIKE :texto) ";
@@ -1737,7 +1554,6 @@ void MainWindow::cargarMisReservas()
         QString estado = q.value(7).toString();
         QString texto = QString("%1 · %2 x%3 · $%4 · vende %5 (tel. %6) · %7").arg(estado).arg(q.value(1).toString()).arg(q.value(2).toInt())
                 .arg(q.value(3).toInt()).arg(q.value(4).toString()).arg(q.value(5).toString()).arg(formatoCorto(q.value(6).toString()));
-        if (estado == "Reservada") texto += " · vence " + q.value(6).toDateTime().addDays(DIAS_RESERVA).toString("dd/MM HH:mm");
         agregarItem(ui->listMisReservas, texto, q.value(0).toInt());
         pintarEstadoVenta(ui->listMisReservas->item(ui->listMisReservas->count() - 1), estado);
         if (estado == "Reservada") activas++;
@@ -1756,15 +1572,11 @@ void MainWindow::on_btnBuffetReservar_clicked()
         return;
     }
     QSqlQuery q;
-    q.prepare("SELECT stock, precio, id_usuario, aprobado FROM producto_buffet WHERE id_producto = :producto");
+    q.prepare("SELECT stock, precio, id_usuario FROM producto_buffet WHERE id_producto = :producto");
     q.bindValue(":producto", producto);
     q.exec();
     if (!q.next()) {
         fallar("Reserva de producto", "venta_buffet", "Ese producto ya no existe.");
-        return;
-    }
-    if (q.value(3).toInt() == 0) {
-        fallar("Reserva de producto", "venta_buffet", "Ese producto todavía no fue aprobado por un preceptor.");
         return;
     }
     int stock = q.value(0).toInt();
@@ -1806,7 +1618,7 @@ void MainWindow::on_btnBuffetReservar_clicked()
     ui->sbBuffetCantidad->setValue(1);
     cargarBuffet();
     cargarMisReservas();
-    info(QString("Reserva hecha. Coordiná la entrega en persona con el vendedor. Tenés %1 días para retirarla: si no, se cancela sola y el stock vuelve al producto.").arg(DIAS_RESERVA));
+    info("Reserva hecha. Coordiná la entrega en persona con el vendedor.");
 }
 
 void MainWindow::on_btnBuffetCancelar_clicked()
@@ -1899,7 +1711,6 @@ void MainWindow::cargarMisVentas()
         QString estado = q.value(7).toString();
         QString texto = QString("%1 · %2 x%3 · $%4 · reservó %5 (tel. %6) · %7").arg(estado).arg(q.value(1).toString()).arg(q.value(2).toInt())
                 .arg(q.value(3).toInt()).arg(q.value(4).toString()).arg(q.value(5).toString()).arg(formatoCorto(q.value(6).toString()));
-        if (estado == "Reservada") texto += " · vence " + q.value(6).toDateTime().addDays(DIAS_RESERVA).toString("dd/MM HH:mm");
         agregarItem(ui->listMisVentas, texto, q.value(0).toInt());
         pintarEstadoVenta(ui->listMisVentas->item(ui->listMisVentas->count() - 1), estado);
         if (estado == "Reservada") pendientes++;
@@ -1914,7 +1725,7 @@ void MainWindow::cargarMisProductos()
     ui->tabBuffet->setTabVisible(5, rolEs("Alumno"));
     ui->listMisProductos->clear();
     QSqlQuery q;
-    q.prepare("SELECT p.id_producto, p.nombre_producto, p.precio, p.stock, COALESCE(g.nombre_grupo, 'Venta individual'), p.aprobado, p.id_usuario_revisor "
+    q.prepare("SELECT p.id_producto, p.nombre_producto, p.precio, p.stock, COALESCE(g.nombre_grupo, 'Venta individual') "
               "FROM producto_buffet p LEFT JOIN grupo_buffet g ON g.id_grupo = p.id_grupo "
               "WHERE p.id_usuario = :usuario ORDER BY p.nombre_producto");
     q.bindValue(":usuario", idActual);
@@ -1923,14 +1734,8 @@ void MainWindow::cargarMisProductos()
         QString texto = QString("%1 · $%2 · stock %3 · %4").arg(q.value(1).toString()).arg(q.value(2).toInt())
                 .arg(q.value(3).toInt()).arg(q.value(4).toString());
         if (q.value(3).toInt() == 0) texto += " · SIN STOCK";
-        bool pendiente = q.value(5).toInt() == 0 && q.value(6).isNull();
-        bool rechazado = q.value(5).toInt() == 0 && !q.value(6).isNull();
-        if (pendiente) texto += " · PENDIENTE DE APROBACIÓN";
-        if (rechazado) texto += " · RECHAZADO";
         agregarItem(ui->listMisProductos, texto, q.value(0).toInt());
-        QListWidgetItem *item = ui->listMisProductos->item(ui->listMisProductos->count() - 1);
-        if (pendiente) item->setForeground(QBrush(colorToken("suave")));
-        if (rechazado || q.value(3).toInt() == 0) item->setForeground(QBrush(colorToken("peligro")));
+        if (q.value(3).toInt() == 0) ui->listMisProductos->item(ui->listMisProductos->count() - 1)->setForeground(QBrush(colorToken("peligro")));
     }
     alternarVacio(ui->listMisProductos, ui->lblProdMisVacio);
 }
@@ -2059,92 +1864,6 @@ void MainWindow::on_btnProdReponer_clicked()
     cargarBuffet();
     cargarMisProductos();
     info(QString("Sumaste %1. Ahora hay %2.").arg(plural(cantidad, "unidad", "unidades")).arg(stock + cantidad));
-}
-
-void MainWindow::cargarAprobacion()
-{
-    bool preceptor = rolEs("Preceptor");
-    ui->tabBuffet->setTabVisible(6, preceptor);
-    ui->listAprobar->clear();
-    if (!preceptor) return;
-    QSqlQuery q;
-    q.prepare("SELECT p.id_producto, p.nombre_producto, p.precio, p.stock, c.nombre_categoria, u.nombre_completo, "
-              "COALESCE(g.nombre_grupo, 'Venta individual') FROM producto_buffet p "
-              "JOIN usuario u ON u.id_usuario = p.id_usuario "
-              "JOIN categoria_producto c ON c.id_categoria_producto = p.id_categoria_producto "
-              "LEFT JOIN grupo_buffet g ON g.id_grupo = p.id_grupo "
-              "WHERE p.aprobado = 0 AND p.id_usuario_revisor IS NULL ORDER BY p.id_producto");
-    q.exec();
-    int cantidad = 0;
-    while (q.next()) {
-        QString texto = QString("%1 · $%2 · stock %3").arg(q.value(1).toString()).arg(q.value(2).toInt()).arg(q.value(3).toInt());
-        texto += QString("\n%1 · vende %2 · %3").arg(q.value(4).toString()).arg(q.value(5).toString()).arg(q.value(6).toString());
-        agregarItem(ui->listAprobar, texto, q.value(0).toInt());
-        cantidad++;
-    }
-    alternarVacio(ui->listAprobar, ui->lblAprobarVacio);
-    QString titulo = "Por aprobar";
-    if (cantidad > 0) titulo = QString("Por aprobar (%1)").arg(cantidad);
-    ui->tabBuffet->setTabText(6, titulo);
-}
-
-void MainWindow::resolverProducto(bool aprobar)
-{
-    if (!exigir("Preceptor", "Revisión de producto", "producto_buffet")) return;
-    int producto = seleccionado(ui->listAprobar);
-    if (producto == 0) {
-        fallar("Revisión de producto", "producto_buffet", "Elegí un producto de la lista.");
-        return;
-    }
-    if (valorUnico("SELECT COUNT(*) FROM producto_buffet WHERE id_producto = :id AND id_usuario_revisor IS NULL", producto).toInt() == 0) {
-        fallar("Revisión de producto", "producto_buffet", "Ese producto ya fue revisado o ya no existe.");
-        cargarAprobacion();
-        return;
-    }
-    QString nombre = valorUnico("SELECT nombre_producto FROM producto_buffet WHERE id_producto = :id", producto);
-    if (!aprobar && !confirmar("Rechazar producto", QString("¿Querés rechazar “%1”? No se va a publicar en la tienda.").arg(nombre))) return;
-    int valor = 0;
-    if (aprobar) valor = 1;
-    QSqlQuery q;
-    q.prepare("UPDATE producto_buffet SET aprobado = :aprobado, id_usuario_revisor = :revisor "
-              "WHERE id_producto = :producto AND id_usuario_revisor IS NULL");
-    q.bindValue(":aprobado", valor);
-    q.bindValue(":revisor", idActual);
-    q.bindValue(":producto", producto);
-    if (!q.exec()) {
-        fallar("Revisión de producto", "producto_buffet", "No se pudo guardar la revisión. Probá de nuevo.");
-        return;
-    }
-    QString resultado = "rechazado";
-    if (aprobar) resultado = "aprobado";
-    registrarLog("Revisión de producto", QString("Producto %1 (%2): %3").arg(producto).arg(nombre).arg(resultado), "producto_buffet", "Exitoso");
-    cargarBuffet();
-    cargarMisProductos();
-    cargarAprobacion();
-    info(QString("Producto %1.").arg(resultado));
-}
-
-void MainWindow::on_btnProdAprobar_clicked() { resolverProducto(true); }
-
-void MainWindow::on_btnProdRechazar_clicked() { resolverProducto(false); }
-
-void MainWindow::on_lePlanillasId_textChanged(const QString &texto)
-{
-    int id = texto.trimmed().toInt();
-    int indice = 0;
-    for (int i = 0; i < ui->cbPlanillasAlumno->count(); i++) {
-        if (id > 0 && ui->cbPlanillasAlumno->itemData(i).toInt() == id) indice = i;
-    }
-    ui->cbPlanillasAlumno->setCurrentIndex(indice);
-}
-
-void MainWindow::on_lePlanillasId_returnPressed()
-{
-    if (ui->cbPlanillasAlumno->currentData().toInt() == 0) {
-        fallar("Préstamo de recurso", "prestamo_ct", "No hay ningún alumno con ese ID.");
-        return;
-    }
-    on_btnPlanillasPrestar_clicked();
 }
 
 void MainWindow::on_btnProdEliminar_clicked()
@@ -2346,8 +2065,7 @@ void MainWindow::on_btnProdPublicar_clicked()
     mostrarFotoProducto();
     cargarBuffet();
     cargarMisProductos();
-    cargarAprobacion();
-    info("Producto publicado. Se va a ver en la tienda cuando un preceptor lo apruebe.");
+    info("Producto publicado.");
 }
 
 void MainWindow::on_btnGrupoCrear_clicked()
@@ -2585,7 +2303,7 @@ void MainWindow::on_btnPlanillasPrestar_clicked()
 
 void MainWindow::on_btnPlanillasDevolver_clicked()
 {
-    if (!exigir("Profesor,Preceptor", "Devolución de recurso", "prestamo_ct")) return;
+    if (!exigir("Alumno,Profesor,Preceptor", "Devolución de recurso", "prestamo_ct")) return;
     int prestamo = seleccionado(ui->listPrestamos);
     QString observaciones = ui->lePlanillasObs->text().trimmed();
     if (prestamo == 0) {
@@ -2599,6 +2317,10 @@ void MainWindow::on_btnPlanillasDevolver_clicked()
     q.next();
     if (!q.value(0).isNull()) {
         fallar("Devolución de recurso", "prestamo_ct", "Ese préstamo ya fue devuelto.");
+        return;
+    }
+    if (rolActual() == "Alumno" && q.value(2).toInt() != idActual) {
+        fallar("Devolución de recurso", "prestamo_ct", "Solo podés devolver tus propios préstamos.");
         return;
     }
     int recurso = q.value(1).toInt();
@@ -3378,7 +3100,7 @@ void MainWindow::cargarVendedores()
 {
     int actual = ui->cbBuffetVendedor->currentData().toInt();
     cargarCombo(ui->cbBuffetVendedor, "SELECT DISTINCT u.id_usuario, u.nombre_completo FROM usuario u "
-                                      "JOIN producto_buffet p ON p.id_usuario = u.id_usuario WHERE p.aprobado = 1 ORDER BY u.nombre_completo",
+                                      "JOIN producto_buffet p ON p.id_usuario = u.id_usuario ORDER BY u.nombre_completo",
                 "Todos los vendedores", "");
     elegirPorId(ui->cbBuffetVendedor, actual);
 }

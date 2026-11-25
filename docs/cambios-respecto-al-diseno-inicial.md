@@ -180,14 +180,6 @@ Durante el 4° Bimestre la aplicación se desvió del diseño inicial del 3er Bi
 | 101 | Nivel de código | La app tenía comentarios, ternarios, un `continue`, `findData` y `.arg` con varios parámetros | Aplicada la revisión de código: sin comentarios, sin ternarios, sin `continue`, sin `findData`, `.arg` encadenados; la fecha de «hoy» del Inicio se pasa por parámetro (`valorUnicoHoy`) | Revisión de código de Arce Thiago y Cabrera Ulises (R-01, R-02, E-15) y de Arce Thiago y Cabrera Ulises | `REVISION_CODIGO_*`, `MANUAL_TECNICO.md` |
 | 102 | Pantalla de inicio (splash) | — | Sin cambios: sigue como está (ERR-23, decisión: no tocar) | CONTEXTO §20 | `MANUAL_TECNICO.md` |
 | 103 | Motor de respaldo | Si MySQL fallaba, la app seguía con una base local de respaldo (SQLite, `iqual.db`, creada con un script embebido en el `.qrc`) | **Se saca el respaldo: la app usa solo MySQL** (`QMYSQL` o, en Windows, `QODBC`). Si no puede conectar, muestra «No se pudo usar MySQL: …» y la ventana queda deshabilitada. Desaparecen el script embebido, la variable de entorno y la clave `motor` del `.ini`, y las pruebas automáticas con ese motor; las pruebas de la app son los casos por pantalla y los 104 casos de los procedimientos | Ningún material de clase usa ese motor; la clase de Bases de Datos conecta con MySQL y ejecuta `CALL` de procedimientos (CONTEXTO §23) | README, REQ (RNF04, sección 4), MANUAL_TECNICO, casos de prueba, errores y manuales |
-| 104 | Recuperar contraseña | No había (decisión U04) | Pestaña «Recuperar contraseña» con usuario, DNI y correo (RF24) | Pendiente de la lámina «Qué le falta», 25/11/2026 | REQ, US07, manuales |
-| 105 | Aprobación de productos | Lo publicado se veía enseguida | Queda pendiente hasta que un Preceptor lo aprueba (RF25); columnas `aprobado` e `id_usuario_revisor` | Ídem | REQ, US03, modelo, manuales |
-| 106 | ID de usuario | No había | ID visible en Mi cuenta y campo «ID del alumno» al prestar (RF26) | Ídem | REQ, US04, manuales |
-| 107 | Quién reclama un objeto (cambio 62) | Solo el Alumno | Alumno, Profesor y Maestranza; el objeto pasa a «En reclamo» con el primer reclamo y vuelve a «Disponible» si se rechazan todos | Revisión de puntos débiles, 25/11/2026 | RF02, US01, SP 4, manual |
-| 108 | Devolución de equipos | La registraba también el Alumno | Solo Profesor o Preceptor (el Alumno sigue pidiendo a su nombre) | Ídem | RF07, US04, SP 7, manual |
-| 109 | Reservas de la tienda | No vencían | Vencen a los 2 días: se cancelan solas y devuelven el stock | Ídem | RF05, US03, manual |
-| 110 | Reservas de sectores pendientes | Quedaban pendientes para siempre | Si llega el horario sin aprobar, se rechazan solas | Ídem | RF16, US05, manual |
-| 111 | PIN de personal | Escrito en el código (`IQUAL2026`) | Cifrado en `iqual.ini`; el Preceptor lo cambia desde Mi cuenta | Ídem | RF13, US07, manual |
 
 ---
 

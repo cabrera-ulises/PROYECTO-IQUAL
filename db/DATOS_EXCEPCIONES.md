@@ -21,7 +21,7 @@ Regla de la consigna (CONTEXTO_IQUAL §21): toda tabla que admita 20 o más fila
 | `estado_recurso` | 3 | Disponible, Prestado, Fuera de servicio | No |
 | `carro` | 5 | C1 a C5: los carros de computadoras de la escuela (dato a confirmar con la escuela) | No |
 | `deporte` | 4 | Los deportes de Educación Física que ofrece la escuela | No |
-| `tipo_log` | 16 | Un tipo por cada evento que registran los procedimientos y la aplicación | No: cada uno corresponde a un procedimiento |
+| `tipo_log` | 14 | Un tipo por cada evento que registran los procedimientos | No: cada uno corresponde a un procedimiento |
 | `resultado_log` | 2 | Exitoso y Fallido | No |
 | `entidad_log` | 12 | Una por cada entidad auditada | No |
 | `tipo_sector` | 2 | Reservable y Uso común | No |

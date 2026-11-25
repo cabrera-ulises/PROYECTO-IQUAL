@@ -108,8 +108,6 @@ INSERT INTO tipo_log (nombre_evento) VALUES ('Préstamo de recurso');
 INSERT INTO tipo_log (nombre_evento) VALUES ('Devolución de recurso');
 INSERT INTO tipo_log (nombre_evento) VALUES ('Reserva de sector');
 INSERT INTO tipo_log (nombre_evento) VALUES ('Inscripción a Ed. Física');
-INSERT INTO tipo_log (nombre_evento) VALUES ('Recuperación de contraseña');
-INSERT INTO tipo_log (nombre_evento) VALUES ('Revisión de producto');
 INSERT INTO resultado_log (nombre_resultado) VALUES ('Exitoso');
 INSERT INTO resultado_log (nombre_resultado) VALUES ('Fallido');
 INSERT INTO entidad_log (nombre_entidad) VALUES ('usuario');
@@ -1156,4 +1154,3 @@ INSERT INTO inscripcion_ed_fisica (fecha_inscripcion, id_usuario, id_oferta) VAL
 INSERT INTO inscripcion_ed_fisica (fecha_inscripcion, id_usuario, id_oferta) VALUES ('2026-10-31', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'federico.alvarez'), (SELECT id_oferta FROM oferta_deporte WHERE id_deporte = (SELECT id_deporte FROM deporte WHERE nombre_deporte = 'Handball') AND id_dia = (SELECT id_dia FROM dia_semana WHERE nombre_dia = 'Viernes') AND id_franja = (SELECT id_franja FROM franja_horaria WHERE hora_inicio = '12:00' AND hora_fin = '14:00')));
 INSERT INTO inscripcion_ed_fisica (fecha_inscripcion, id_usuario, id_oferta) VALUES ('2026-11-01', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'antonella.gimenez'), (SELECT id_oferta FROM oferta_deporte WHERE id_deporte = (SELECT id_deporte FROM deporte WHERE nombre_deporte = 'Vóley') AND id_dia = (SELECT id_dia FROM dia_semana WHERE nombre_dia = 'Miércoles') AND id_franja = (SELECT id_franja FROM franja_horaria WHERE hora_inicio = '10:00' AND hora_fin = '12:00')));
 INSERT INTO inscripcion_ed_fisica (fecha_inscripcion, id_usuario, id_oferta) VALUES ('2026-11-02', (SELECT id_usuario FROM usuario WHERE usuario_nick = 'lisandro.rios'), (SELECT id_oferta FROM oferta_deporte WHERE id_deporte = (SELECT id_deporte FROM deporte WHERE nombre_deporte = 'Vóley') AND id_dia = (SELECT id_dia FROM dia_semana WHERE nombre_dia = 'Lunes') AND id_franja = (SELECT id_franja FROM franja_horaria WHERE hora_inicio = '14:00' AND hora_fin = '16:00')));
-UPDATE producto_buffet SET aprobado = 1, id_usuario_revisor = (SELECT id_usuario FROM usuario WHERE usuario_nick = 'preceptor1');

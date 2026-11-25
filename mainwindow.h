@@ -48,11 +48,6 @@ private slots:
     void on_btnLandingRegister_clicked();
     void on_btnLoginIngresar_clicked();
     void on_btnRegistrar_clicked();
-    void on_btnLoginOlvide_clicked();
-    void on_btnRecuperar_clicked();
-    void on_leRecClaveRepetir_returnPressed();
-    void on_btnCuentaPin_clicked();
-    void on_leCuentaPinRepetir_returnPressed();
     void on_leUsuario_returnPressed();
     void on_leClave_returnPressed();
     void on_leRegContacto_returnPressed();
@@ -105,10 +100,6 @@ private slots:
     void on_btnProdReponer_clicked();
     void on_btnProdQuitar_clicked();
     void on_btnProdEliminar_clicked();
-    void on_btnProdAprobar_clicked();
-    void on_btnProdRechazar_clicked();
-    void on_lePlanillasId_textChanged(const QString &texto);
-    void on_lePlanillasId_returnPressed();
     void on_leBuffetMonto_returnPressed();
     void on_leBuffetPin_returnPressed();
     void on_leGrupoPin_returnPressed();
@@ -159,7 +150,6 @@ private:
     QSqlDatabase db;
     int idActual;
     int intentosFallidos;
-    int intentosRecuperacion;
     QString fotoElegida;
     QString fotoProducto;
 
@@ -223,10 +213,6 @@ private:
     bool productoEsMio(int producto);
     void cargarMisVentas();
     void cargarMisProductos();
-    void cargarAprobacion();
-    void vencerPendientes();
-    bool pinPersonalValido(const QString &pin);
-    void resolverProducto(bool aprobar);
     void cargarPlanillas();
     void cargarFueraServicio();
     void cargarAuditoria();
