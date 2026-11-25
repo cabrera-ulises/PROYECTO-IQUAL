@@ -5,7 +5,7 @@
 **Establecimiento:** Escuela Técnica N°3 D.E.9 Reg 8ª "María Sánchez de Thompson"  
 **Marco Pedagógico:** Buenos Aires Aprende  
 **Plataforma:** Aplicación de escritorio (C++17 · Qt 6 Widgets · CMake)  
-**Versión de la aplicación:** v3 (`iqual_integrado_v3`)  
+**Versión de la aplicación:** v7 (`iqual_integrado_v7`)  
 
 ---
 

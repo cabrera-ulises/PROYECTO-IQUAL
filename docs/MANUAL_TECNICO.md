@@ -2,7 +2,7 @@
 
 **Proyecto:** PROYECTO IQUAL® · Sistema de Gestión Escolar · E.T. N°3 D.E.9 · Proyecto Informático I
 **Autores:** Arce Thiago · Cabrera Ulises
-**Versión de la app descripta:** v3 (24/11/2026): la app usa solo MySQL.
+**Versión de la app descripta:** v7 (24/11/2026): la app usa solo MySQL.
 **Qué es este documento:** explica cómo está armada la aplicación, cómo se conecta a la base de datos, cómo compilarla y ejecutarla, qué se probó y qué no, y qué limitaciones tiene hoy. Describe lo que la app hace **hoy**, no lo que se pensó en el diseño inicial.
 **Cómo se obtuvo:** a partir del código fuente (`main.cpp`, `mainwindow.*`, `ventana*.*`, `CMakeLists.txt`, `recursos.qrc`, los dos `.qss`) y de las guías y scripts del proyecto. Las cantidades de líneas, funciones y consultas se contaron con comandos sobre el código.
 
@@ -18,9 +18,9 @@
 | Tipo de app | Escritorio, una sola ventana principal |
 | Base de datos | MySQL (47 tablas); es la única que usa la app |
 | Drivers | `QMYSQL` (plugin de Qt) o, en Windows, ODBC (`QODBC`) con MySQL Connector/ODBC |
-| Tamaño del código principal (v3) | `mainwindow.cpp` 3257 líneas; `mainwindow.ui` 2244; `mainwindow.h` 246; 185 funciones de `MainWindow` (contadas con una búsqueda por texto, sin contar constructor y destructor) |
+| Tamaño del código principal (v7) | `mainwindow.cpp` 3257 líneas; `mainwindow.ui` 2244; `mainwindow.h` 246; 185 funciones de `MainWindow` (contadas con una búsqueda por texto, sin contar constructor y destructor) |
 | Consultas | 99 llamadas a `prepare(` y 224 a `bindValue`; solo dos `exec("...")` directos sin parámetros: `SELECT LAST_INSERT_ID()` y `SET NAMES utf8mb4` |
-| Nivel de código | Sin comentarios, sin ternarios, sin `continue`, sin `findData`, `.arg` encadenados de a un parámetro (verificado con búsquedas por texto sobre toda la app v3; ver `REVISION_CODIGO_*`) |
+| Nivel de código | Sin comentarios, sin ternarios, sin `continue`, sin `findData`, `.arg` encadenados de a un parámetro (verificado con búsquedas por texto sobre toda la app v7; ver `REVISION_CODIGO_*`) |
 
 ---
 
@@ -258,7 +258,7 @@ Recursos embebidos (`recursos.qrc`): `/imagenes` (logo y GIF del splash, sin uso
 | Educación Física | Inscribirme se deshabilita cuando la opción no se puede elegir; no se genera «Fallido» desde la pantalla |
 
 ### 8.3 Errores corregidos 
-ERR-01, 02, 03, 05, 06, 07 ; E4-01, 02, 03, 11 ; E-01, 02, 03 . En la app v3  se suman: E4-04 y E4-06 (Mi cuenta), E-15 (estilo de código en `cargarDiasEdFisica`) y la revisión de código de toda la app (sin comentarios, ternarios, `continue` ni `findData`). Además, se retiró la pantalla de presentación (splash) del arranque (ERR-23).
+ERR-01, 02, 03, 05, 06, 07 ; E4-01, 02, 03, 11 ; E-01, 02, 03 . En la app v7  se suman: E4-04 y E4-06 (Mi cuenta), E-15 (estilo de código en `cargarDiasEdFisica`) y la revisión de código de toda la app (sin comentarios, ternarios, `continue` ni `findData`). Además, se retiró la pantalla de presentación (splash) del arranque (ERR-23).
 
 ---
 

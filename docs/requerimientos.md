@@ -5,7 +5,7 @@
 **Plataforma:** Aplicación de escritorio (C++17 · Qt 6)  
 **Base de datos:** modelo de **47 tablas**. El motor de la app es **MySQL** (como en la clase de Bases de Datos), y **no tiene base de respaldo**: si no puede conectar, avisa el motivo y no abre; la elección de MySQL la tomó el equipo y **falta que la confirme el profesor Linares**. El modelo también se entrega en scripts para SQL Server 2005 y MySQL  
 
-> **Actualizada a la app v3 (`iqual_integrado_v3`, CONTEXTO §20, 13/11/2026):** se reflejan los cambios de comportamiento de la ronda final (ver cambios 97 a 102 de `cambios-respecto-al-diseno-inicial.md`).
+> **Actualizada a la app v7 (`iqual_integrado_v7`, CONTEXTO §20, 13/11/2026):** se reflejan los cambios de comportamiento de la ronda final (ver cambios 97 a 102 de `cambios-respecto-al-diseno-inicial.md`).
 >
 > **Versión del 4° Bimestre.** Esta especificación se actualizó para describir lo que realmente se construye. Cada cambio respecto del diseño inicial (3er Bimestre) está justificado en [`cambios-respecto-al-diseno-inicial.md`](./cambios-respecto-al-diseno-inicial.md); la relación entre requerimientos, historias, pantallas y tablas está en [`matriz-trazabilidad.md`](./matriz-trazabilidad.md).
 

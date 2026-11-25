@@ -1,5 +1,5 @@
 # Matriz de Trazabilidad
-> Revisada contra la app v3 (`iqual_integrado_v3`, CONTEXTO §20, 13/11/2026): no cambian las relaciones entre requerimientos, historias, pantallas y tablas (los cambios de la ronda final son de comportamiento dentro de RF01, RF03, RF14 y RF17).
+> Revisada contra la app v7 (`iqual_integrado_v7`, CONTEXTO §20, 13/11/2026): no cambian las relaciones entre requerimientos, historias, pantallas y tablas (los cambios de la ronda final son de comportamiento dentro de RF01, RF03, RF14 y RF17).
 
 **Sistema:** PROYECTO IQUAL® (Sistema de Gestión Escolar-SGE)  
 **Materia:** Proyecto Informático I-4° Año Computación  

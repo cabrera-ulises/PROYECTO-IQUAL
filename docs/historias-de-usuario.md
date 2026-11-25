@@ -1,5 +1,5 @@
 # Historias de Usuario (Backlog Ágil)
-> Actualizada a la app v3 (`iqual_integrado_v3`, CONTEXTO §20, 13/11/2026). Los números de criterio no cambian.
+> Actualizada a la app v7 (`iqual_integrado_v7`, CONTEXTO §20, 13/11/2026). Los números de criterio no cambian.
 
 **Sistema:** PROYECTO IQUAL® (Sistema de Gestión Escolar-SGE)  
 **Materia:** Proyecto Informático I-4° Año Computación  

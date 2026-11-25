@@ -1,7 +1,7 @@
 # Errores y pendientes — PROYECTO IQUAL® (SGE)
 
 **Proyecto:** PROYECTO IQUAL® · SGE · E.T. N°3 D.E.9 · Proyecto Informático I · Arce Thiago y Cabrera Ulises
-**Fecha:** 19/11/2026 · **Estado:** app v3 con registro de log por `sp_registrar_log`; base de datos v7 (`03` a `06`, 47 tablas, 62 usuarios)
+**Fecha:** 19/11/2026 · **Estado:** app v7 con registro de log por `sp_registrar_log`; base de datos v7 (`03` a `06`, 47 tablas, 62 usuarios)
 
 ## 1. Ya resuelto
 - La app compila (Qt 6, CMake) y cumple las reglas de código del profesor (sin comentarios, ternarios, `continue`, `findData`, `auto`, `std::` ni lambdas).

@@ -2,7 +2,7 @@
 
 **Proyecto:** PROYECTO IQUAL® · SGE · E.T. N°3 D.E.9 · Proyecto Informático I
 **Autores:** Arce Thiago · Cabrera Ulises
-**Fecha de este informe:** 24/11/2026 · **App evaluada:** v3 con las correcciones de la última ronda
+**Fecha de este informe:** 24/11/2026 · **App evaluada:** v7 con las correcciones de la última ronda
 
 > **Estado en una línea:** hay **337 casos de prueba por pantalla escritos** y **104 casos de prueba planificados para los procedimientos de la base**, de los cuales **80 se ejecutaron a mano en la aplicación**. De los 337 casos por pantalla se probaron 306: **285 salieron OK, 21 con observación y 31 quedaron sin probar**. Se detectaron **55 errores** (por lectura de código y por las pruebas); no hay ninguno de gravedad alta. Dos errores hallados al probar (REG-22: usuario con espacios y contraseña en blanco; SEC-25: la cancelación de una reserva no quedaba en la auditoría) se corrigieron en el código.
 >
@@ -26,7 +26,7 @@ Los casos se relacionan con las historias de usuario (US) y los requerimientos (
 |---|---|
 | Probado por Arce Thiago y Cabrera Ulises (CONTEXTO §19.1 y §20) | Linux, Qt 6.4, MariaDB 10.11: 131 consultas validadas con `ONLY_FULL_GROUP_BY`; `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql`, procedimientos, `consultas_demo.sql` y `consultas_verificacion.sql` sin errores |
 | **No probado** | MySQL 8 de Oracle · SQL Server 2005 · Windows (ni ODBC ni plugin `QMYSQL` compilado) |
-| Entorno de ejecución de los casos | Windows, Qt 6.12.0 MinGW 64-bit, conexión a MySQL con MySQL Connector/ODBC 26.10 (64 bits), app v3 con las correcciones de la última ronda |
+| Entorno de ejecución de los casos | Windows, Qt 6.12.0 MinGW 64-bit, conexión a MySQL con MySQL Connector/ODBC 26.10 (64 bits), app v7 con las correcciones de la última ronda |
 | Datos | Base de demostración recién cargada. Usuarios y claves: script de datos y `GUIA_CONEXION_APP_MYSQL.md` (no se copian acá) |
 
 ## 3. Método
@@ -74,10 +74,10 @@ Controles del conteo: no hay IDs repetidos dentro de los casos (172, 78 y 87 IDs
 **Casos de procedimientos de la base:** 104 planificados (`db/06_PruebasSQL.xlsx`), 80 ejecutados a mano en la aplicación.
 
 ## 5. Errores por módulo y estado
-**Cómo se asignó el estado.** Arce Thiago y Cabrera Ulises tiene columna «Estado» en su documento. Los documentos de Arce Thiago y Cabrera Ulises y de Arce Thiago y Cabrera Ulises no la tienen, así que el estado sale de CONTEXTO §19.2 (errores corregidos), §19.3 (decisiones por defecto) y §20 (app v3):
+**Cómo se asignó el estado.** Arce Thiago y Cabrera Ulises tiene columna «Estado» en su documento. Los documentos de Arce Thiago y Cabrera Ulises y de Arce Thiago y Cabrera Ulises no la tienen, así que el estado sale de CONTEXTO §19.2 (errores corregidos), §19.3 (decisiones por defecto) y §20 (app v7):
 - **Corregido:** figura en §19.2.
 - **Decisión por defecto:** figura en §19.3 (se dejó así a propósito, el usuario puede cambiarlo).
-- **Corregido (app v3):** lo dice CONTEXTO §20 (E4-04 y E4-06) o lo verifiqué en el código v3 (E-15).
+- **Corregido (app v7):** lo dice CONTEXTO §20 (E4-04 y E4-06) o lo verifiqué en el código v7 (E-15).
 - **Abierto:** no figura en ninguno de los anteriores; se asume que sigue igual. El estado de los errores «Abierto» no se verificó uno por uno.
 - Excepción: ERR-19 (función de fecha propia de otro motor en el resumen del Profesor) no figura en §19.2, pero busqué en el `mainwindow.cpp` actual `date('now')`, `datetime('now')`, `strftime`, `julianday`, `last_insert_rowid`, `INSERT OR` y `PRAGMA` y no hay ninguno. Lo marco **Corregido (verificado en el código)**.
 
@@ -96,8 +96,8 @@ Ronda del 19/11/2026 (CONTEXTO §23): la fila de la Tienda y Educación Física 
 |---|---|---|---|---|
 | Dashboard | ERR-01 | Media | Corregido | Los números del Inicio no se actualizaban |
 | Dashboard | ERR-02 | Media | Corregido | «Tus reservas de sectores» (Profesor) contaba reservas que ya no valen |
-| Objetos perdidos | ERR-20 | Baja | Corregido (app v3) | Categoría y sector no volvían a «Elegí…» después de publicar |
-| Objetos perdidos | ERR-22 | Baja | Corregido (app v3) | La fecha de las consultas se mostraba completa; ahora dd/MM |
+| Objetos perdidos | ERR-20 | Baja | Corregido (app v7) | Categoría y sector no volvían a «Elegí…» después de publicar |
+| Objetos perdidos | ERR-22 | Baja | Corregido (app v7) | La fecha de las consultas se mostraba completa; ahora dd/MM |
 | Préstamo de equipos | ERR-21 | Baja | A verificar (MySQL) | Tipo de las columnas de hora de préstamo y devolución |
 | Inicio | ERR-23 | Baja | Corregido | La pantalla de presentación (splash) se retiró del arranque |
 | Dashboard | ERR-19 | Baja | Corregido (verificado en el código) | Resumen del Profesor usaba una función de fecha propia de otro motor |
@@ -128,9 +128,9 @@ Ronda del 19/11/2026 (CONTEXTO §23): la fila de la Tienda y Educación Física 
 | Sectores | E4-13 | Baja | Abierto | Una reserva que empieza en el minuto actual se rechaza |
 | Sectores | E4-14 | Baja | Decisión por defecto | Botones activos sin reserva elegida (avisan al tocarlos) |
 | Sectores / Higiene | E4-11 | Baja | Corregido | Cerrar sesión no limpiaba selecciones |
-| Mi cuenta | E4-04 | Baja | Corregido (app v3, §20) | Guardar el mismo curso decía «Cambiaste tu curso.»; ahora dice «Ese ya es tu curso.» |
+| Mi cuenta | E4-04 | Baja | Corregido (app v7, §20) | Guardar el mismo curso decía «Cambiaste tu curso.»; ahora dice «Ese ya es tu curso.» |
 | Mi cuenta | E4-05 | Media | Decisión por defecto | El Alumno puede crear cursos que no existen |
-| Mi cuenta | E4-06 | Baja | Corregido (app v3, §20) | Tras responder «No» los combos quedaban con el curso rechazado; ahora vuelven al curso anterior |
+| Mi cuenta | E4-06 | Baja | Corregido (app v7, §20) | Tras responder «No» los combos quedaban con el curso rechazado; ahora vuelven al curso anterior |
 | Tienda | E-01 | Media | Corregido | Cerrar sesión no limpiaba los formularios (ni el PIN) |
 | Tienda | E-04 | Baja | Abierto | Releer y reescalar las fotos con cada letra del buscador (no medido) |
 | Tienda | E-05 | Baja | Abierto | Buscar «%» o «_» los toma como comodines |
@@ -147,10 +147,10 @@ Ronda del 19/11/2026 (CONTEXTO §23): la fila de la Tienda y Educación Física 
 | Educación Física | E-03 | Media | Corregido | Un día cuyas horas chocan quedaba habilitado |
 | Educación Física | E-11 | Baja | Abierto | «(choca con …)» nombra una sola materia |
 | Educación Física | E-12 | Baja | Decisión por defecto | Los errores «Fallido» no se alcanzan desde la pantalla |
-| Educación Física | E-15 | Baja | Corregido (app v3, verificado en el código) | Un comentario `//` y un ternario en `cargarDiasEdFisica` |
+| Educación Física | E-15 | Baja | Corregido (app v7, verificado en el código) | Un comentario `//` y un ternario en `cargarDiasEdFisica` |
 | Educación Física | E-16 | Baja | Abierto | Redacción distinta entre la franja y el mensaje de error |
 
-Los estados de Arce Thiago y Cabrera Ulises son los que ellos mismos escribieron en la columna «Estado» de sus `ERRORES_*.md` de la ronda final (verificados en el código v3). ERR-20 y ERR-22 (Corregidos en v3) y ERR-23 (decisión por defecto: no tocar el splash) y ERR-21 (a verificar en MySQL) se suman a la tabla 5.2 como filas nuevas; ERR-09 pasó de Abierto a Decisión por defecto y ERR-15 figura «Corregido en MySQL, abierto solo en SQLite» (se cuenta como Corregido).
+Los estados de Arce Thiago y Cabrera Ulises son los que ellos mismos escribieron en la columna «Estado» de sus `ERRORES_*.md` de la ronda final (verificados en el código v7). ERR-20 y ERR-22 (Corregidos en v3) y ERR-23 (decisión por defecto: no tocar el splash) y ERR-21 (a verificar en MySQL) se suman a la tabla 5.2 como filas nuevas; ERR-09 pasó de Abierto a Decisión por defecto y ERR-15 figura «Corregido en MySQL, abierto solo en SQLite» (se cuenta como Corregido).
 
 **Pendientes propios de Arce Thiago y Cabrera Ulises y 4** (no son errores de la tabla anterior): la pregunta sobre separar las observaciones de pedir y devolver un equipo (U11, decisión por defecto: un solo campo) y las listas de defectos visuales y de microcopy de las capturas (Arce Thiago y Cabrera Ulises sección 4b; Arce Thiago y Cabrera Ulises «Pendientes propios (b)», ítems V1–V13). Quedan registrados en sus documentos y en `docs/pruebas`.
 
