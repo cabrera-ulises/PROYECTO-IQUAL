@@ -1101,6 +1101,7 @@ BEGIN
     DECLARE v_stock INT DEFAULT NULL;
     DECLARE v_precio INT DEFAULT NULL;
     DECLARE v_vendedor INT DEFAULT NULL;
+    DECLARE v_aprobado TINYINT DEFAULT NULL;
     DECLARE v_id_venta INT DEFAULT NULL;
     DECLARE v_mensaje VARCHAR(255) DEFAULT '';
 
@@ -1132,6 +1133,10 @@ BEGIN
     END IF;
     SET v_precio = (SELECT precio FROM producto_buffet WHERE id_producto = p_id_producto);
     SET v_vendedor = (SELECT id_usuario FROM producto_buffet WHERE id_producto = p_id_producto);
+    SET v_aprobado = (SELECT aprobado FROM producto_buffet WHERE id_producto = p_id_producto);
+    IF v_aprobado = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Ese producto todavía no fue aprobado por un preceptor.';
+    END IF;
     IF v_vendedor = v_id_usuario THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No podés reservar tus propios productos.';
     END IF;

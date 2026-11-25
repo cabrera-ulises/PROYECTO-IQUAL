@@ -13,7 +13,7 @@
 
 ## 1.Requerimientos Funcionales (RF) 🔵
 
-*Procesos, tareas y funciones operativas obligatorias del software (RF01-RF23).*
+*Procesos, tareas y funciones operativas obligatorias del software (RF01-RF26).*
 
 | ID | Nombre | Descripción |
 | :--- | :--- | :--- |
@@ -40,6 +40,9 @@
 | **RF21** | Visibilidad de Funciones por Rol | El sistema debe **ocultar** (no solo deshabilitar) las pestañas, botones y módulos que el rol no puede usar: por ejemplo, Educación Física solo aparece para el Alumno; en Objetos, las pestañas Reclamos, Publicar y Auditoría solo para el Preceptor; en la Tienda, Publicar, Mis ventas y Mis productos solo para el Alumno; crear grupo y unirse, solo para el Alumno. El Dashboard muestra tres indicadores distintos según el rol. |
 | **RF22** | Reparación de Equipos | El sistema debe mostrar la lista de equipos "Fuera de servicio" y permitir al Preceptor y a la Maestranza marcarlos como **reparados**, con lo que vuelven a "Disponible". La acción no genera registro de auditoría (no existe un tipo de evento para ella). |
 | **RF23** | Cancelación Automática de Inscripción por Cambio de Curso | Cuando un Alumno cambia su curso en Mi Cuenta y su inscripción a Educación Física choca con el horario del curso nuevo, el sistema avisa con una confirmación Sí/No ("…tu inscripción a Educación Física choca con X y se va a cancelar. ¿Querés cambiar de curso igual?"). Si acepta, cambia el curso, cancela la inscripción y lo registra en la auditoría; si no acepta, no cambia nada. |
+| **RF24** | Recuperación de Contraseña | El sistema debe permitir, desde la pestaña "Recuperar contraseña" de la pantalla de acceso (sin iniciar sesión), restablecer la contraseña de una cuenta escribiendo el usuario, el DNI y el correo registrados y una contraseña nueva (4 caracteres o más, repetida igual y distinta de la actual). Si los tres datos no coinciden con una misma cuenta se avisa sin decir cuál falló y se cuenta como intento: después de 5 intentos fallidos hay que cerrar y abrir la aplicación. Cada intento queda en la auditoría ("Recuperación de contraseña", Exitoso o Fallido). |
+| **RF25** | Aprobación de Productos por el Preceptor | Los productos que publica un Alumno quedan **pendientes** y no se ven ni se pueden reservar en la tienda hasta que un Preceptor los apruebe. El Alumno los ve en "Mis productos" como "PENDIENTE DE APROBACIÓN" o "RECHAZADO". El Preceptor tiene la pestaña "Por aprobar (n)" con la lista de pendientes y los botones Aprobar y Rechazar (este último con confirmación). Cada revisión guarda el Preceptor que la hizo (`id_usuario_revisor`) y queda en la auditoría ("Revisión de producto"). El procedimiento `sp_comprar_producto` también rechaza los productos sin aprobar. |
+| **RF26** | ID de Usuario para Préstamos en Persona | Cada usuario ve su **ID de usuario** (el número de su cuenta) en "Mi cuenta". Al prestar un equipo, el Profesor o el Preceptor puede escribir ese ID en el campo "ID del alumno" y el alumno se elige solo; si el ID no existe o no es de un Alumno, no se elige a nadie. Con Enter en ese campo se registra el préstamo. |
 
 ---
 
@@ -88,6 +91,9 @@
 | Inscribirse a Educación Física | sí | no | no | no |
 | Cambiar curso | sí | no | no | no |
 | Cambiar contraseña y teléfono | sí | sí | sí | sí |
+| Recuperar la contraseña (sin sesión) | sí | sí | sí | sí |
+| Aprobar/rechazar productos de la tienda | no | no | sí | no |
+| Elegir al alumno por ID al prestar un equipo | no | sí | sí | no |
 
 ---
 
@@ -100,7 +106,7 @@
 * **Sin notificaciones en pantalla:** el sistema no avisa a los usuarios de lo que ocurre (por ejemplo, el resultado de un reclamo se ve al entrar a la pantalla).
 * **Motor de base de datos:** la app usa solo MySQL (`iqual.ini`, `abrirBase()` → `abrirMySql()`). La app **no crea las tablas en MySQL**: se carga `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql` (47 tablas) desde DBeaver o Workbench. Qt 6.12 MinGW no trae el driver `QMYSQL`: el camino recomendado en Windows es el driver ODBC (*MySQL Connector/ODBC*), el alternativo es compilar el plugin (pasos en `GUIA_CONEXION_APP_MYSQL.md`). **Se probó** en Linux (Qt 6.4, MariaDB 10.11): las 131 consultas con `ONLY_FULL_GROUP_BY` y los 104 casos de los procedimientos almacenados (`db/06_PruebasSQL.xlsx`). Las pruebas automáticas internas con el motor de respaldo ya no existen: las pruebas de la app son los casos por pantalla. **No se probó** con MySQL 8 de Oracle, con SQL Server 2005 ni en Windows (ninguno de los dos caminos del driver). MySQL no distingue mayúsculas ni tildes (por ejemplo, `ALUMNO1` entra igual que `alumno1`).
 * **Auditoría:** la pantalla muestra solo los últimos 50 registros y solo al Preceptor; el resto se consulta desde la base de datos. Cambiar la contraseña, el teléfono o marcar un equipo como reparado no se audita.
-* **Sin recuperación de contraseña** y sin bloqueo temporal del login: después de 5 intentos fallidos hay que cerrar y abrir la app (decisión por defecto U04; `[COMPLETAR: quién restablece la contraseña en el colegio]`).
+* **Recuperación de contraseña por datos personales:** se verifica con usuario, DNI y correo; no se manda ningún código ni mensaje (no hay servidor de correo). Quien conozca esos tres datos de otra persona podría cambiarle la contraseña. Tampoco hay bloqueo temporal del login: después de 5 intentos fallidos hay que cerrar y abrir la app.
 * **Datos de ejemplo:** los cursos, carros, programas, deportes, horarios y especialidades de la base de demostración no son los reales del colegio; los reales (especialidades Computación, Óptica y Geografía-Matemática) se cargan al final.
 * **Un solo campo de observaciones** para pedir y devolver un equipo (decisión por defecto U11).
 * **Cursos inexistentes:** un Alumno puede crear desde Mi cuenta un curso que no existe en la base (decisión por defecto E4-05).

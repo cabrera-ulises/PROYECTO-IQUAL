@@ -26,7 +26,7 @@ En esta etapa, el proyecto avanza en la programación e implementación técnica
 | Kit de compilación | Desktop Qt 6.12.0 MinGW 64-bit (Windows) |
 | Target CMake | `PROYECTO_IQUAL` |
 | Base de datos | MySQL (por defecto `localhost:3306`, base `iqual`). Los datos de conexión viven en `iqual.ini`, que la app crea sola junto al ejecutable. Driver `QMYSQL` o, si Qt no lo tiene, ODBC.|
-| Seguridad y auditoría | Contraseñas con hash SHA-256, consultas SQL preparadas (`bindValue`) y registro de auditoría en la base (`log_auditoria`, 14 tipos de evento, con resultado Exitoso o Fallido) |
+| Seguridad y auditoría | Contraseñas con hash SHA-256, consultas SQL preparadas (`bindValue`) y registro de auditoría en la base (`log_auditoria`, 16 tipos de evento, con resultado Exitoso o Fallido) |
 | Estructura de la interfaz | Una ventana con un `QStackedWidget` de 10 páginas: Landing, Acceso, Dashboard y una por módulo, más Mi Cuenta |
 
 ### 👥 Integrantes del Repositorio (4° Bimestre)
@@ -39,12 +39,12 @@ En esta etapa, el proyecto avanza en la programación e implementación técnica
 Los nombres son los que muestra hoy la aplicación; entre paréntesis, cómo se llamaban en el diseño inicial.
 1. **Objetos Perdidos:** catálogo de pertenencias acumuladas en preceptoría, con foto opcional. El alumno reclama con una prueba de pertenencia (un dato que no se vea en la foto) y el Preceptor la compara con el dato reservado del objeto para aprobar o rechazar el reclamo. Incluye consultas "¿Vieron tal cosa?". El Preceptor, además, publica y archiva objetos y ve la auditoría (últimos 50 registros).
 2. **Higiene y Mantenimiento (Higiene e Infraestructura):** reportes de roturas y limpieza que puede hacer cualquier rol (hasta 200 caracteres de observaciones), con el **último mantenimiento** de cada sector (fecha, hora y responsable). Profesores, Preceptores y Maestranza marcan los reportes como resueltos.
-3. **Tienda de alumnos (Buffet Paralelo):** venta estudiantil de productos con foto opcional, categorías, stock y reservas; grupos de recaudación con PIN, metas y donaciones; pestañas "Mis reservas", "Mis ventas" y "Mis productos" (reponer y quitar stock). Sin pagos reales: las entregas se coordinan en persona.
+3. **Tienda de alumnos (Buffet Paralelo):** venta estudiantil de productos con foto opcional, categorías, stock y reservas; grupos de recaudación con PIN, metas y donaciones; los productos que publica un alumno esperan la aprobación de un Preceptor (pestaña "Por aprobar") antes de verse en la tienda; pestañas "Mis reservas", "Mis ventas" y "Mis productos" (reponer y quitar stock). Sin pagos reales: las entregas se coordinan en persona.
 4. **Préstamo de equipos (Planillas de Taller):** registro y devolución de las computadoras de los carros (C1 a C5 en el catálogo) y de los tableros de dibujo técnico, con los programas instalados en cada equipo, lista de equipos fuera de servicio y "Marcar reparado" (Preceptor y Maestranza).
 5. **Reserva de Sectores:** reserva de sectores de tipo Reservable (hoy Laboratorio 1, Biblioteca y SUM) con selector de fecha, horas de 07:00 a 19:00, lista de ocupación del día y aprobación del Preceptor. Solo reservan Profesores y Preceptores.
 6. **Educación Física:** inscripción a ofertas deportivas (deporte + día + franja + cupo). Los días y las horas que chocan con el horario de teoría y taller del curso se marcan en gris y no se pueden elegir.
 
-Además: **Acceso** (inicio de sesión y registro con roles Alumno, Profesor, Preceptor y Maestranza; 5 intentos fallidos bloquean el acceso hasta reabrir la app), **Inicio** con un resumen según el rol y **Mi Cuenta** (datos, cambio de curso para alumnos, cambio de contraseña y de teléfono).
+Además: **Acceso** (inicio de sesión y registro con roles Alumno, Profesor, Preceptor y Maestranza; 5 intentos fallidos bloquean el acceso hasta reabrir la app; si olvidás la contraseña, la cambiás con tu usuario, DNI y correo desde «Olvidé mi contraseña»), **Inicio** con un resumen según el rol y **Mi Cuenta** (datos, cambio de curso para alumnos, cambio de contraseña y de teléfono).
 
 ### Usuarios de demostración
 Los carga el script de la base. **Contraseña de todos: `1234`**.
@@ -88,6 +88,7 @@ Para registrar cuentas de Profesor, Preceptor o Maestranza la app pide un PIN in
 ### 4.3 Qué se probó y qué no
 * **Pruebas de la base de datos:** el script de 47 tablas y los 27 procedimientos se integraron en MariaDB 10.11 (104 casos de prueba planificados en `db/06_PruebasSQL.xlsx`).
 * **Pruebas de la aplicación:** se hicieron a mano, en Windows con Qt 6.12 (MinGW) y MySQL por ODBC. De los 104 casos planificados se ejecutaron 80 en la aplicación. Los casos por pantalla suman 337: 285 OK, 21 con observación y 31 sin probar (detalle en `docs/CASOS_PRUEBA_CONSOLIDADO.md` y `docs/pdf/CASOS_PRUEBA_CON_RESULTADOS.pdf`).
+* **Funciones nuevas (RF24 a RF26):** 36 comprobaciones automáticas en Linux (`tests/`); sin probar a mano en Windows.
 * **No probado:** MySQL 8 de Oracle y SQL Server 2005.
 
 ---
@@ -133,7 +134,7 @@ La documentación técnica de análisis, diagnóstico y maquetado del **3er Bime
 * 🛠️ **Maquetado Funcional y Usabilidad:**
   * 📐 **[Maquetado Funcional y Usabilidad](./docs/maquetado-y-usabilidad.xlsx):** Especificación de pantallas y aplicación de las 10 Heurísticas de Jakob Nielsen (H1 a H10), con el estado de cada pantalla.
   * 🎨 **[Maquetado de Pantallas en Canva](https://canva.link/o7k6tqoyn125gn7):** Prototipo visual del diseño inicial (maquetas de celular).
-* 📋 **[Especificación de Requerimientos](./docs/requerimientos.md):** Requerimientos Funcionales (RF01-RF23) y No Funcionales (RNF01-RNF04).
+* 📋 **[Especificación de Requerimientos](./docs/requerimientos.md):** Requerimientos Funcionales (RF01-RF26) y No Funcionales (RNF01-RNF04).
 * 🟡 **[Historias de Usuario (Backlog)](./docs/historias-de-usuario.md):** US01 a US13 con sus Criterios de Aceptación (3 C de Agile).
 * 🔗 **[Matriz de Trazabilidad](./docs/matriz-trazabilidad.md):** RF → historia → módulo → tablas → pantalla.
 * 🔄 **[Cambios respecto al Diseño Inicial](./docs/cambios-respecto-al-diseno-inicial.md):** cada cambio, su motivo y el documento que afecta.
@@ -167,6 +168,14 @@ Informe general: [`INFORME_PRUEBAS.md`](./docs/INFORME_PRUEBAS.md) y [`CASOS_PRU
 ---
 
 > **Nota de Créditos (3er Bimestre):** La fase de diagnóstico, investigación, MML, requerimientos y maquetados de la Carpeta V1 fue realizada durante el 3er Bimestre por el equipo original: Arce Thiago, Cabrera Ulises, Denuble Franco y González Manuel.
+
+## Funciones agregadas después del Demo Day (24/11/2026)
+La presentación terminaba con una lámina «Qué le falta a IQUAL». Se implementaron tres de esas cosas:
+* **Recuperar la contraseña (RF24):** pestaña «Recuperar contraseña» en la pantalla de acceso; se verifica con usuario, DNI y correo (no se manda ningún mensaje porque no hay servidor de correo).
+* **Aprobación de productos (RF25):** los productos de la tienda de alumnos quedan pendientes hasta que un Preceptor los aprueba o rechaza. Nuevas columnas `aprobado` e `id_usuario_revisor` en `producto_buffet` (siguen siendo 47 tablas; hay que **volver a cargar `03`, `04` y `05`**) y dos tipos de evento nuevos en la auditoría.
+* **ID de usuario (RF26):** cada usuario ve su ID en «Mi cuenta»; el Profesor o el Preceptor lo escribe al prestar un equipo y el alumno se elige solo.
+
+Siguen sin hacerse: notificaciones, medir el uso con muchos usuarios y la versión web o celular. Pruebas: [`tests/`](./tests/LEEME.md) y [`docs/pruebas/CASOS_PRUEBA_NUEVAS_FUNCIONES.md`](./docs/pruebas/CASOS_PRUEBA_NUEVAS_FUNCIONES.md) (36 comprobaciones automáticas en Linux; falta probar a mano en Windows).
 
 ## Actualización v7: base de datos de la consigna de BBDD
 Los scripts están en `db/`: `03_ModeloSQL_Grupo00.sql` (47 tablas), `04_DatosSQL_Grupo00.sql` (62 usuarios y datos de las demás tablas), `05_Backend_Grupo00.sql` (procedimientos almacenados) y `06_PruebasSQL.xlsx` (104 casos con resultado real). Orden de carga: 03, 04, 05, con Alt+X en DBeaver. Hay versión para SQL Server (`*_sqlserver.sql`, con schemas). El número de grupo `Grupo00` es provisorio hasta confirmarlo con el profesor. Si en algún documento aparece "5 usuarios", es el dato de ejemplo anterior: ahora son 62.

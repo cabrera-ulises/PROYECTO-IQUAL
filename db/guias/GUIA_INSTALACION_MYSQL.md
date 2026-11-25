@@ -84,7 +84,7 @@ Filas esperadas en los catálogos (con los datos de ejemplo cargados):
 | `rol` | 4 | `estado_recurso` | 3 |
 | `especialidad` | 3 | `carro` | 5 |
 | `turno` | 2 | `deporte` | 4 |
-| `dia_semana` | 5 | `tipo_log` | 14 |
+| `dia_semana` | 5 | `tipo_log` | 16 |
 | `categoria_objeto` | 6 | `resultado_log` | 2 |
 | `estado_objeto` | 4 | `entidad_log` | 12 |
 | `estado_reclamo` | 3 | `tipo_sector` | 2 |

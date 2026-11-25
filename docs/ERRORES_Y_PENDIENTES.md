@@ -19,7 +19,7 @@
 | E-05 | Completar en `db/06_PruebasSQL.xlsx` la fecha de revisión del encabezado | Se corrió en MariaDB; falta repetir en MySQL 8 |
 | E-06 | Reemplazar `Grupo00` por el número de grupo con `renombrar_grupo.sh` | Los archivos de la consigna llevan el número |
 | E-07 | Sacar capturas reales de la app para los manuales | Las capturas actuales son de la etapa anterior |
-| E-08 | Decidir y escribir quién restablece contraseñas y quién entrega el PIN institucional | La app no tiene recuperación de clave |
+| E-08 | Decidir y escribir quién restablece contraseñas y quién entrega el PIN institucional | La clave se recupera desde la pantalla de acceso con usuario, DNI y correo (RF24); falta decidir quién la restablece si eso no alcanza |
 | E-09 | Buscar `COMPLETAR` en todo el repo y, en cada caso, completar el dato o borrar la línea (sobre todo presupuesto, análisis de competencia y guion del pitch) | No deben quedar marcas en la entrega |
 
 ## 3. Preguntas para Linares

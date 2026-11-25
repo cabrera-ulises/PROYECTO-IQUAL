@@ -153,6 +153,8 @@ INSERT INTO seguridad.tipo_log (nombre_evento) VALUES (N'Préstamo de recurso');
 INSERT INTO seguridad.tipo_log (nombre_evento) VALUES (N'Devolución de recurso');
 INSERT INTO seguridad.tipo_log (nombre_evento) VALUES (N'Reserva de sector');
 INSERT INTO seguridad.tipo_log (nombre_evento) VALUES (N'Inscripción a Ed. Física');
+INSERT INTO seguridad.tipo_log (nombre_evento) VALUES (N'Recuperación de contraseña');
+INSERT INTO seguridad.tipo_log (nombre_evento) VALUES (N'Revisión de producto');
 INSERT INTO seguridad.resultado_log (nombre_resultado) VALUES (N'Exitoso');
 INSERT INTO seguridad.resultado_log (nombre_resultado) VALUES (N'Fallido');
 INSERT INTO seguridad.entidad_log (nombre_entidad) VALUES (N'usuario');
@@ -1199,4 +1201,5 @@ INSERT INTO deportes.inscripcion_ed_fisica (fecha_inscripcion, id_usuario, id_of
 INSERT INTO deportes.inscripcion_ed_fisica (fecha_inscripcion, id_usuario, id_oferta) VALUES ('20261031', (SELECT id_usuario FROM seguridad.usuario WHERE usuario_nick = N'federico.alvarez'), (SELECT id_oferta FROM deportes.oferta_deporte WHERE id_deporte = (SELECT id_deporte FROM deportes.deporte WHERE nombre_deporte = N'Handball') AND id_dia = (SELECT id_dia FROM academico.dia_semana WHERE nombre_dia = N'Viernes') AND id_franja = (SELECT id_franja FROM academico.franja_horaria WHERE hora_inicio = N'12:00' AND hora_fin = N'14:00')));
 INSERT INTO deportes.inscripcion_ed_fisica (fecha_inscripcion, id_usuario, id_oferta) VALUES ('20261101', (SELECT id_usuario FROM seguridad.usuario WHERE usuario_nick = N'antonella.gimenez'), (SELECT id_oferta FROM deportes.oferta_deporte WHERE id_deporte = (SELECT id_deporte FROM deportes.deporte WHERE nombre_deporte = N'Vóley') AND id_dia = (SELECT id_dia FROM academico.dia_semana WHERE nombre_dia = N'Miércoles') AND id_franja = (SELECT id_franja FROM academico.franja_horaria WHERE hora_inicio = N'10:00' AND hora_fin = N'12:00')));
 INSERT INTO deportes.inscripcion_ed_fisica (fecha_inscripcion, id_usuario, id_oferta) VALUES ('20261102', (SELECT id_usuario FROM seguridad.usuario WHERE usuario_nick = N'lisandro.rios'), (SELECT id_oferta FROM deportes.oferta_deporte WHERE id_deporte = (SELECT id_deporte FROM deportes.deporte WHERE nombre_deporte = N'Vóley') AND id_dia = (SELECT id_dia FROM academico.dia_semana WHERE nombre_dia = N'Lunes') AND id_franja = (SELECT id_franja FROM academico.franja_horaria WHERE hora_inicio = N'14:00' AND hora_fin = N'16:00')));
+UPDATE tienda.producto_buffet SET aprobado = 1, id_usuario_revisor = (SELECT id_usuario FROM seguridad.usuario WHERE usuario_nick = 'preceptor1');
 GO

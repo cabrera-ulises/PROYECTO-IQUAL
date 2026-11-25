@@ -31,7 +31,7 @@ Alcance: `03_ModeloSQL_Grupo00_sqlserver.sql`, `04_DatosSQL_Grupo00_sqlserver.sq
 | seguridad | `log_auditoria` | 0 | 0 |
 | seguridad | `resultado_log` | 2 | 2 |
 | seguridad | `rol` | 4 | 4 |
-| seguridad | `tipo_log` | 14 | 14 |
+| seguridad | `tipo_log` | 16 | 16 |
 | seguridad | `usuario` | 62 | 62 |
 | academico | `anio` | 7 | 7 |
 | academico | `curso` | 24 | 24 |

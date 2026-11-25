@@ -41,7 +41,7 @@
 
 ## 12. `sp_comprar_producto(p_nick, p_id_producto, p_cantidad)`
 **Qué hace:** reserva un producto del buffet: crea la venta en estado `Reservada`, su detalle (con el precio del momento) y descuenta el stock. El total no se guarda: se devuelve calculado (`cantidad * precio`).
-**Reglas:** cantidad 1 o más; producto existente; no se puede reservar un producto propio («No podés reservar tus propios productos.»); stock suficiente («No hay stock suficiente: quedan N unidades.»).
+**Reglas:** cantidad 1 o más; producto existente; producto aprobado por un preceptor («Ese producto todavía no fue aprobado por un preceptor.»); no se puede reservar un producto propio («No podés reservar tus propios productos.»); stock suficiente («No hay stock suficiente: quedan N unidades.»).
 **Transacción:** los tres pasos (venta, detalle, stock) van dentro de `START TRANSACTION … COMMIT`; si algo falla, el handler hace `ROLLBACK` y no queda nada a medias (igual que la app con `db.transaction()`).
 **Tablas:** `venta_buffet`, `detalle_venta`, `producto_buffet`, `estado_venta`, `usuario`. **Log:** `Reserva de producto`, entidad `venta_buffet`.
 **Devuelve:** `estado, id_venta, total`.

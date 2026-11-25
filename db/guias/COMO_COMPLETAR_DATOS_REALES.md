@@ -4,7 +4,7 @@ Para PROYECTO IQUAL (SGE). Revisada el 19/11/2026 con el flujo actual: `03_Model
 
 > **Qué cambió respecto de la versión anterior (12/11/2026).** La versión anterior describía un flujo con `plantilla_datos_reales`, 11 planillas CSV, `generar_sql.py` y un script armado `iqual_mysql_armado.sql`. **Nada de eso está en el paquete actual** (ni la carpeta `plantilla_datos_reales`, ni `generar_sql.py`, ni los CSV, ni `iqual_mysql.sql`). Ese flujo queda **obsoleto** y lo saqué de la guía. Lo que sigue es un procedimiento que se hace solo con los archivos que sí existen. La lista de «qué pedir en el colegio» (sección 1) se mantiene porque sigue valiendo.
 
-**Qué se probó y qué no.** El punto de corte de la sección 2 (línea 148 de `04_DatosSQL_Grupo00.sql`) lo verifiqué por texto: antes de esa línea están solo los 19 catálogos fijos (rol, turno, dia_semana, categoria_objeto, estado_objeto, estado_reclamo, tipo_reporte, estado_reporte, estado_reserva, estado_venta, tipo_recurso, estado_recurso, tipo_log, resultado_log, entidad_log, tipo_sector, categoria_producto, anio, division); desde ahí, todo lo que depende del colegio. **No ejecuté nada en MySQL** (no hay MySQL en el entorno donde se revisó). Los pasos de DBeaver están escritos de lo que sé del programa, no de verlo: 🔶.
+**Qué se probó y qué no.** El punto de corte de la sección 2 (línea 145 de `04_DatosSQL_Grupo00.sql`) lo verifiqué por texto: antes de esa línea están solo los 19 catálogos fijos (rol, turno, dia_semana, categoria_objeto, estado_objeto, estado_reclamo, tipo_reporte, estado_reporte, estado_reserva, estado_venta, tipo_recurso, estado_recurso, tipo_log, resultado_log, entidad_log, tipo_sector, categoria_producto, anio, division); desde ahí, todo lo que depende del colegio. **No ejecuté nada en MySQL** (no hay MySQL en el entorno donde se revisó). Los pasos de DBeaver están escritos de lo que sé del programa, no de verlo: 🔶.
 
 ## 0. Qué necesitás
 
@@ -37,8 +37,8 @@ Reglas generales:
 ## 2. Armar el script con los datos reales
 
 1. Hacé una **copia** de `04_DatosSQL_Grupo00.sql` y llamala `04_DatosReales.sql`. No toques el original.
-2. Abrila en el editor y buscá la primera línea que empieza con `INSERT INTO especialidad` (es la **línea 148**). Todo lo anterior son el `USE iqual`, los `TRUNCATE` y los 19 catálogos fijos: **se queda**.
-3. **Borrá desde esa línea 148 hasta el final del archivo.** Con eso se van los datos de ejemplo (especialidades, cursos, usuarios, objetos, ventas, etc.).
+2. Abrila en el editor y buscá la primera línea que empieza con `INSERT INTO especialidad` (es la **línea 145**). Todo lo anterior son el `USE iqual`, los `TRUNCATE` y los 19 catálogos fijos: **se queda**.
+3. **Borrá desde esa línea 145 hasta el final del archivo.** Con eso se van los datos de ejemplo (especialidades, cursos, usuarios, objetos, ventas, etc.).
 4. Al final del archivo escribí tus INSERT, **en este orden** (cada tabla depende de las anteriores): `especialidad`, `carro`, `deporte`, `franja_horaria`, `curso`, `materia`, `software`, `recursos_ct`, `recurso_software`, `oferta_deporte`, `sector`, `horario_escolar`, `horario_dia`. Los usuarios y lo demás (objetos, reservas, ventas, préstamos…) no hacen falta: se cargan desde la app.
 5. Usá los mismos patrones del 04 original (todos buscan por nombre, no por número de id):
 
@@ -140,7 +140,7 @@ La app lee los datos de conexión en `iqual.ini` (ver `GUIA_DRIVER_WINDOWS.md` y
 
 ## Desvíos
 
-- El flujo anterior (plantilla + CSV + `generar_sql.py`) lo di por obsoleto porque esos archivos no están en el paquete; no lo reconstruí. El reemplazo es manual (copiar el 04, cortar en la línea 148 y escribir los INSERT), más trabajoso que con CSV pero sin dependencias.
+- El flujo anterior (plantilla + CSV + `generar_sql.py`) lo di por obsoleto porque esos archivos no están en el paquete; no lo reconstruí. El reemplazo es manual (copiar el 04, cortar en la línea 145 y escribir los INSERT), más trabajoso que con CSV pero sin dependencias.
 - `herramientas/generar_datos.py` **no sirve para esto**: genera los datos de ejemplo y sus fuentes (`iqual_mysql.sql`, `iqual_sqlserver.sql`) no están en el paquete, así que ni siquiera se puede volver a correr. No lo toqué.
 - Para SQL Server el procedimiento es el mismo sobre `04_DatosSQL_Grupo00_sqlserver.sql` (cortar en la primera línea `INSERT INTO academico.especialidad`, que es la **línea 193** de ese archivo, y respetar los `GO`; los catálogos fijos quedan arriba); no lo probé ni lo detallé porque nada se corrió en SQL Server.
 - La carga en MySQL y en DBeaver sobre Windows **no se probó**; los pasos de DBeaver son 🔶.

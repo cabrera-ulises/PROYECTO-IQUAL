@@ -41,6 +41,7 @@
   * `3.3` Incluye una opción clara para registrar donaciones directas (monto entero mayor a cero) destinadas al objetivo del grupo.
   * `3.4` La aplicación no procesa pagos: la entrega y el cobro de lo reservado se coordinan en persona.
   * `3.5` La lista de productos se filtra por categoría, por vendedor ("Productos sueltos de alumnos" o un grupo) y por texto; los productos sin stock aparecen como "SIN STOCK".
+  * `3.6` Un producto publicado por un Alumno queda pendiente y no se ve ni se puede reservar hasta que un Preceptor lo aprueba. El Alumno lo ve en "Mis productos" como pendiente o rechazado. El Preceptor tiene la pestaña "Por aprobar" con Aprobar y Rechazar (el rechazo pide confirmación), y cada revisión queda en la auditoría.
 
 ### 🟡 US04:Módulo Préstamo de Equipos
 * **Historia de Usuario:** Como **Profesor o Preceptor** (y, a su propio nombre, como **Alumno**),quiero **registrar en forma digital el préstamo y la devolución de computadoras y tableros**,para **eliminar el uso de planillas de papel manuales y evitar pérdidas de equipamiento**.
@@ -51,6 +52,7 @@
   * `4.4` Provee un buscador rápido por código de recurso, que filtra mientras se escribe, para auditar los préstamos.
   * `4.5` El Alumno solo registra préstamos a su nombre, solo devuelve los suyos y **solo ve sus propios préstamos** (sin préstamos, la pantalla dice «Todavía no tenés préstamos registrados.»); Profesor, Preceptor y Maestranza ven todos.
   * `4.6` La Maestranza no registra préstamos; puede ver la pantalla y reparar equipos (ver US13).
+  * `4.7` Cada usuario ve su ID de usuario en "Mi cuenta". El Profesor o el Preceptor puede escribir ese ID en "ID del alumno" para elegir al alumno que retira el equipo, y con Enter registra el préstamo. Si el ID no corresponde a un alumno, no se elige a nadie y se avisa.
 
 ### 🟡 US05:Módulo Reserva de Sectores
 * **Historia de Usuario:** Como **Profesor**,quiero **reservar el laboratorio o la biblioteca eligiendo fecha y horario en un calendario**,para **asegurar la disponibilidad del espacio sin entorpecer a otros profesores, con la aprobación del Preceptor**.
@@ -82,6 +84,7 @@
   * `7.5` La contraseña se guarda con hash SHA-256 y el inicio de sesión usa usuario y contraseña; Enter confirma el formulario. Después de 5 intentos fallidos seguidos hay que cerrar y volver a abrir la aplicación.
   * `7.6` Cada módulo muestra solo las pestañas, botones y módulos permitidos al rol: lo que el rol no puede usar se oculta (tabla de permisos de [`requerimientos.md`](./requerimientos.md)).
   * `7.7` El Dashboard muestra tres indicadores según el rol (por ejemplo, el Preceptor ve reclamos, reservas y reportes pendientes; el Alumno ve sus reclamos, reservas y préstamos).
+  * `7.8` Si olvidé mi contraseña, desde la pestaña "Recuperar contraseña" la cambio escribiendo mi usuario, mi DNI y mi correo; si no coinciden con una misma cuenta se me avisa y se descuenta un intento (5 como máximo). Cada intento queda en la auditoría.
 
 ### 🟡 US08:Módulo Consultas de Objetos Perdidos
 * **Historia de Usuario:** Como **Alumno**,quiero **publicar una consulta del tipo "¿Vieron tal cosa?" sobre algo que perdí**,para **que otras personas de la escuela me ayuden a encontrarlo**.
@@ -108,7 +111,7 @@
 ### 🟡 US11:Módulo Registro de Auditoría
 * **Historia de Usuario:** Como **responsable de la escuela (por ejemplo, el Preceptor)**,quiero **que el sistema registre en la base de datos los eventos importantes con su resultado**,para **poder revisar después quién hizo qué y cuándo, sin depender de la memoria de nadie**.
 * **Criterios de Aceptación (Confirmación):**
-  * `11.1` El sistema registra los 14 tipos de evento (inicio y cierre de sesión, registro de usuario, publicación de objeto, reclamo de objeto, resolución de reclamo, reporte de higiene, resolución de reporte, reserva de producto, donación, préstamo de recurso, devolución de recurso, reserva de sector e inscripción a Educación Física).
+  * `11.1` El sistema registra los 16 tipos de evento (inicio y cierre de sesión, registro de usuario, recuperación de contraseña, revisión de producto, publicación de objeto, reclamo de objeto, resolución de reclamo, reporte de higiene, resolución de reporte, reserva de producto, donación, préstamo de recurso, devolución de recurso, reserva de sector e inscripción a Educación Física).
   * `11.2` Cada registro guarda fecha y hora, descripción, tipo de evento, entidad afectada, resultado ("Exitoso" o "Fallido"), el nombre del equipo y el usuario implicado, que puede quedar vacío (por ejemplo, un inicio de sesión fallido con un usuario inexistente).
   * `11.3` Cuando una validación de negocio rechaza una acción (por ejemplo, cupo lleno o superposición de horarios), el intento se registra con resultado "Fallido".
   * `11.4` El Preceptor ve los últimos 50 registros en la pestaña "Auditoría" de Objetos Perdidos, con filtro Todos / Exitoso / Fallido; el resto se consulta directamente en la base de datos.

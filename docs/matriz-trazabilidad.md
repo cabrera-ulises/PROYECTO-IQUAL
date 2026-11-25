@@ -39,6 +39,9 @@ Relaciona cada requerimiento funcional con la historia de usuario que lo cubre, 
 | **RF21** Visibilidad de Funciones por Rol | US07 | Transversal | `usuario`, `rol` | Todas las páginas (pestañas, botones y módulos ocultos según el rol) y el Dashboard |
 | **RF22** Reparación de Equipos | US13 | Préstamo de equipos | `recursos_ct`, `estado_recurso` | Página 6 · lista de fuera de servicio |
 | **RF23** Cancelación Automática de Inscripción por Cambio de Curso | US06 | Mi Cuenta / Educación Física | `usuario`, `curso`, `inscripcion_ed_fisica`, `horario_escolar`, `log_auditoria` | Página 9 (aviso Sí/No al guardar el curso) y página 8 |
+| **RF24** Recuperación de Contraseña | US07 | Acceso | `usuario`, `log_auditoria`, `tipo_log` | Página 1 · pestaña Recuperar contraseña |
+| **RF25** Aprobación de Productos por el Preceptor | US03 | Tienda de alumnos | `producto_buffet` (`aprobado`, `id_usuario_revisor`), `usuario`, `log_auditoria`, `tipo_log` | Página 5 · pestañas Publicar, Mis productos y Por aprobar |
+| **RF26** ID de Usuario para Préstamos en Persona | US04 | Préstamo de equipos / Mi cuenta | `usuario`, `prestamo_ct`, `recursos_ct` | Página 6 (campo ID del alumno) y página 9 |
 
 `sector.id_tipo_sector` es clave foránea a `tipo_sector` (Reservable, Uso común) y reemplaza a la marca `reservable`: solo los sectores de tipo Reservable se pueden reservar.
 
@@ -56,11 +59,11 @@ La página 0 (Landing) y la 2 (Dashboard) no implementan un RF propio: son la po
 | :--- | :--- |
 | US01 Objetos Perdidos | RF01, RF02 |
 | US02 Reporte de Higiene/Mantenimiento | RF03, RF04 |
-| US03 Tienda de Alumnos y Recaudación | RF05, RF06 |
-| US04 Préstamo de Equipos | RF07, RF08 |
+| US03 Tienda de Alumnos y Recaudación | RF05, RF06, RF25 |
+| US04 Préstamo de Equipos | RF07, RF08, RF26 |
 | US05 Reserva de Sectores | RF09, RF10, RF16 |
 | US06 Educación Física | RF11, RF12, RF23 |
-| US07 Acceso y Roles | RF13, RF21 |
+| US07 Acceso y Roles | RF13, RF21, RF24 |
 | US08 Consultas de Objetos Perdidos | RF14 |
 | US09 Grupos de Recaudación | RF15 |
 | US10 Mi Cuenta | RF17 |
@@ -106,7 +109,7 @@ Las filas se refieren a [`maquetado-y-usabilidad.xlsx`](./maquetado-y-usabilidad
 
 | Tabla | Tipo | Para qué sirve | Requerimiento |
 | :--- | :--- | :--- | :--- |
-| `log_auditoria` | Entidad | Registro de auditoría (14 tipos de evento, resultado Exitoso o Fallido) | RF18 |
+| `log_auditoria` | Entidad | Registro de auditoría (16 tipos de evento, resultado Exitoso o Fallido) | RF18 |
 | `tipo_log` | Catálogo | Tipo de acción registrada | RF18 |
 | `resultado_log` | Catálogo | Resultado de la acción registrada | RF18 |
 | `entidad_log` | Catálogo | Tabla afectada por la acción (12 entidades; regla de datos categorizables) | RF18 |
@@ -144,7 +147,7 @@ Salen de `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql` (47 sentencias `CR
 | `estado_recurso` | RF07, RF08, RF22 |
 | `carro` | RF07 |
 | `deporte` | RF11 |
-| `tipo_log` | RF18 |
+| `tipo_log` | RF18, RF24, RF25 |
 | `resultado_log` | RF18 |
 | `entidad_log` | RF18 |
 | `tipo_sector` | RF01, RF03, RF04, RF09, RF10 |
@@ -154,7 +157,7 @@ Salen de `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql` (47 sentencias `CR
 | `division` | RF07, RF13, RF17 |
 | `franja_horaria` | RF11, RF12 |
 | `curso` | RF07, RF12, RF13, RF17, RF23 |
-| `usuario` | RF01, RF02, RF03, RF04, RF05, RF06, RF07, RF08, RF09, RF10, RF11, RF12, RF13, RF14, RF15, RF16, RF17, RF18, RF19, RF21, RF23 |
+| `usuario` | RF01, RF02, RF03, RF04, RF05, RF06, RF07, RF08, RF09, RF10, RF11, RF12, RF13, RF14, RF15, RF16, RF17, RF18, RF19, RF21, RF23, RF24, RF25, RF26 |
 | `materia` | RF12 |
 | `horario_escolar` | RF12, RF23 |
 | `horario_dia` | RF12 |
@@ -165,16 +168,16 @@ Salen de `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql` (47 sentencias `CR
 | `reporte_higiene` | RF03, RF04 |
 | `grupo_buffet` | RF05, RF06, RF15 |
 | `integrante_grupo` | RF15 |
-| `producto_buffet` | RF05, RF15, RF19 |
+| `producto_buffet` | RF05, RF15, RF19, RF25 |
 | `venta_buffet` | RF05, RF15, RF19 |
 | `detalle_venta` | RF05, RF15, RF19 |
 | `donacion_buffet` | RF06, RF15 |
 | `recursos_ct` | RF07, RF08, RF20, RF22 |
 | `recurso_software` | RF20 |
-| `prestamo_ct` | RF07, RF08 |
+| `prestamo_ct` | RF07, RF08, RF26 |
 | `reserva_sector` | RF09, RF10, RF16 |
 | `oferta_deporte` | RF11, RF12 |
 | `inscripcion_ed_fisica` | RF11, RF23 |
-| `log_auditoria` | RF18, RF23 |
+| `log_auditoria` | RF18, RF23, RF24, RF25 |
 
 Hay RF que no tienen tablas propias porque son transversales o de interfaz (RF21) y las páginas 0 (Landing) y 2 (Dashboard).

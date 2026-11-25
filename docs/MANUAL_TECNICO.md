@@ -18,8 +18,8 @@
 | Tipo de app | Escritorio, una sola ventana principal |
 | Base de datos | MySQL (47 tablas); es la única que usa la app |
 | Drivers | `QMYSQL` (plugin de Qt) o, en Windows, ODBC (`QODBC`) con MySQL Connector/ODBC |
-| Tamaño del código principal (v7) | `mainwindow.cpp` 3257 líneas; `mainwindow.ui` 2244; `mainwindow.h` 246; 185 funciones de `MainWindow` (contadas con una búsqueda por texto, sin contar constructor y destructor) |
-| Consultas | 99 llamadas a `prepare(` y 224 a `bindValue`; solo dos `exec("...")` directos sin parámetros: `SELECT LAST_INSERT_ID()` y `SET NAMES utf8mb4` |
+| Tamaño del código principal (v7) | `mainwindow.cpp` 3436 líneas; `mainwindow.ui` 2273; `mainwindow.h` 256; 194 funciones de `MainWindow` (contadas con una búsqueda por texto, sin contar constructor y destructor) |
+| Consultas | 103 llamadas a `prepare(` y 232 a `bindValue`; solo dos `exec("...")` directos sin parámetros: `SELECT LAST_INSERT_ID()` y `SET NAMES utf8mb4` |
 | Nivel de código | Sin comentarios, sin ternarios, sin `continue`, sin `findData`, `.arg` encadenados de a un parámetro (verificado con búsquedas por texto sobre toda la app v7; ver `REVISION_CODIGO_*`) |
 
 ---
@@ -88,7 +88,19 @@ Todas las consultas se escriben con `prepare()` y `bindValue()` (no se arman con
 - Algunos widgets se estilizan con **propiedades dinámicas** (`estilo`, `variante`) que el `.qss` usa como selector (por ejemplo, botones primarios o de peligro).
 
 ### 2.7 Auditoría
-Toda acción relevante (alta, baja, cambio de estado, intento fallido) termina en `registrarLog`. Hay una pantalla para consultar la auditoría con los roles que corresponden (ver `requerimientos.md`).
+Toda acción relevante (alta, baja, cambio de estado, intento fallido) termina en `registrarLog`. Hay una pantalla para consultar la auditoría con los roles que corresponden (ver `requerimientos.md`). Hay 16 tipos de evento en el catálogo `tipo_log`: a los 14 originales se suman «Recuperación de contraseña» (RF24) y «Revisión de producto» (RF25).
+
+### 2.8 Funciones agregadas después del Demo Day
+| Función | Qué hace |
+|---|---|
+| `on_btnLoginOlvide_clicked` | Lleva a la pestaña «Recuperar contraseña» de la pantalla de acceso |
+| `on_btnRecuperar_clicked` | RF24. Valida los campos, busca la cuenta con `usuario_nick`, `dni` y `email` a la vez, cuenta los intentos (`intentosRecuperacion`, máximo `MAX_INTENTOS`), guarda el hash nuevo y registra el evento. Si el login estaba bloqueado por intentos, lo vuelve a habilitar |
+| `cargarAprobacion` | RF25. Arma la lista de productos con `aprobado = 0` y sin revisor, y muestra la pestaña «Por aprobar (n)» solo al Preceptor |
+| `resolverProducto(bool)` | RF25. Aprueba o rechaza (el rechazo pide confirmación). El `UPDATE` exige `id_usuario_revisor IS NULL`, así que un producto ya revisado no se puede revisar dos veces |
+| `on_btnProdAprobar_clicked`, `on_btnProdRechazar_clicked` | Llaman a `resolverProducto` |
+| `on_lePlanillasId_textChanged`, `on_lePlanillasId_returnPressed` | RF26. Eligen en `cbPlanillasAlumno` al alumno cuyo ID se escribió (si no existe, vuelve a «Elegí el alumno») y, con Enter, registran el préstamo |
+
+Además, `cargarBuffet`, `cargarVendedores` y `on_btnBuffetReservar_clicked` ahora solo consideran productos con `aprobado = 1`, y `cargarMisProductos` muestra el estado de cada producto.
 
 ---
 
@@ -96,6 +108,7 @@ Toda acción relevante (alta, baja, cambio de estado, intento fallido) termina e
 
 ### 3.1 Modelo
 - **47 tablas**: 24 de catálogos y 23 de entidades y relaciones, según `justificacion_3FN.md`. Son las 44 del diseño original más `categoria_producto`, `software` y `recurso_software`.
+- `producto_buffet` tiene dos columnas para la aprobación del Preceptor (RF25): `aprobado` (`TINYINT`, 0 o 1, por defecto 0) e `id_usuario_revisor` (clave foránea a `usuario`, puede ser nula). Pendiente = `aprobado` 0 y sin revisor; aprobado = `aprobado` 1; rechazado = `aprobado` 0 con revisor. Una restricción `CHECK` impide que un producto aprobado no tenga revisor. Los productos de los datos de demostración vienen aprobados por `preceptor1`. No se agregó ninguna tabla: siguen siendo 47.
 - Está normalizado hasta **Tercera Forma Normal (3FN)**; la justificación está en `justificacion_3FN.md`.
 - Diagramas: `Proyecto_IQUAL_Edgar_Codd.xml` y `Proyecto_IQUAL_Peter_Chen.xml` (modelo relacional y entidad-relación).
 - La matriz de trazabilidad (`matriz-trazabilidad.md`, sección 6) vincula cada una de las 47 tablas con los requerimientos que la usan.
@@ -221,6 +234,7 @@ Recursos embebidos (`recursos.qrc`): `/imagenes` (logo y GIF del splash, sin uso
 - Los scripts `03`, `04` y `05` (47 tablas, 62 usuarios, 27 procedimientos), `consultas_demo.sql` y `consultas_verificacion_mysql.sql` corren sin errores.
 - 104 casos de prueba de los procedimientos (`db/06_PruebasSQL.xlsx`) planificados; 80 se ejecutaron a mano en la aplicación.
 - La app compila con Qt 6.12 MinGW 64-bit (Windows).
+- Las tres funciones agregadas después del Demo Day (RF24, RF25 y RF26) se probaron con una prueba automática que maneja la interfaz (`tests/`): 36 comprobaciones, todas OK, sobre la base cargada con `03`, `04` y `05` en MariaDB 10.11 y Qt 6.4 en Linux. No se probaron a mano en Windows con ODBC. Detalle en `docs/pruebas/CASOS_PRUEBA_NUEVAS_FUNCIONES.md`.
 
 **No probado:**
 - MySQL 8 de Oracle (la base usada fue MariaDB 10.11) y SQL Server 2005 (`03_ModeloSQL_Grupo00_sqlserver.sql`, solo revisado por lectura).
@@ -243,13 +257,13 @@ Recursos embebidos (`recursos.qrc`): `/imagenes` (logo y GIF del splash, sin uso
 - Rendimiento con muchos datos: no se midió (RNF03).
 - Sin pagos reales: las reservas de la Tienda se coordinan y se pagan en persona .
 - El cruce de horarios de Educación Física solo funciona para los cursos con horario cargado .
-- Sin notificaciones en pantalla . La auditoría **sí tiene pantalla** (pestaña «Auditoría» de Objetos perdidos, solo para el Preceptor); la documentación del proyecto todavía dice que no (ver los documentos de `docs/pruebas`).
+- Sin notificaciones en pantalla (tampoco para avisar que un producto fue aprobado o rechazado: el alumno lo ve al entrar a «Mis productos»). La auditoría **sí tiene pantalla** (pestaña «Auditoría» de Objetos perdidos, solo para el Preceptor); la documentación del proyecto todavía dice que no (ver los documentos de `docs/pruebas`).
 - Es una aplicación de escritorio: no hay versión web ni para celular.
 
 ### 8.2 Decisiones por defecto 
 | Tema | Decisión |
 |---|---|
-| Login (U04) | 5 intentos fallidos → hay que cerrar y volver a abrir la app. No hay recuperación de clave. El restablecimiento lo hace el responsable del sistema (soporte técnico de IQUAL), verificando el DNI. |
+| Login (U04) | 5 intentos fallidos → hay que cerrar y volver a abrir la app. La clave se recupera desde la pantalla de acceso con usuario, DNI y correo (RF24, otros 5 intentos); si no alcanza, la restablece el responsable del sistema (soporte técnico de IQUAL), verificando el DNI. |
 | Objetos devueltos (U18) | Se ven en gris con «Ya devuelto» y no se pueden reclamar |
 | Observaciones (U11) | Un solo campo de observaciones |
 | Devolver un equipo (ERR-08) | Arranca en «Funciona»; solo «No funciona» pide confirmación |

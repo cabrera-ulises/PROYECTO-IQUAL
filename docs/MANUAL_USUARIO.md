@@ -83,7 +83,18 @@ Los marcadores `[CAPTURA: …]` indican dónde va una imagen. Los que llevan car
 - En el usuario no importan las mayúsculas ni los espacios al principio o al final. **La contraseña sí distingue mayúsculas**.
 - Si te equivocás, ves "Usuario o contraseña incorrectos" y cuántos intentos te quedan. El mensaje es el mismo si el usuario no existe.
 - **Si se falla 5 veces seguidas** (en cualquier cuenta), la aplicación pide cerrarla y volver a abrirla para intentar de nuevo. Mientras tanto nadie puede ingresar.
-- **La aplicación no tiene recuperación de contraseña.** Si la olvidaste, no la podés recuperar desde la pantalla: pedí que te la restablezcan (ver sección 12).
+- **Si olvidaste tu contraseña,** tocá **Olvidé mi contraseña** (o la pestaña **Recuperar contraseña**) y seguí los pasos de la sección 1.3 bis.
+
+### 1.3 bis Recuperar tu contraseña
+1. En la pantalla de acceso, tocá **Olvidé mi contraseña**. Se abre la pestaña **Recuperar contraseña** con tu usuario ya escrito, si lo habías puesto.
+2. Escribí tu **usuario**, tu **DNI** y el **correo** con el que creaste la cuenta.
+3. Escribí la **contraseña nueva** (4 caracteres o más, distinta de la actual) y repetila.
+4. Tocá **Cambiar contraseña** (o apretá Enter en el último campo). Ves "Contraseña cambiada" y volvés a **Iniciar sesión** con tu usuario ya escrito.
+
+- Si el usuario, el DNI y el correo no son de la misma cuenta, ves "Los datos no coinciden con ninguna cuenta" y cuántos intentos te quedan. El mensaje no dice cuál de los tres está mal.
+- **Se permiten 5 intentos.** Después hay que cerrar y volver a abrir la aplicación, o pedirle al responsable del sistema que te restablezca la contraseña (ver sección 12).
+- Si habías llegado al máximo de intentos del inicio de sesión, al cambiar la contraseña ese contador también se reinicia.
+- Cada intento, bueno o malo, queda en la auditoría.
 
 ### 1.4 Moverte por la aplicación
 Una vez adentro, tenés dos barras:
@@ -329,7 +340,8 @@ Solo se pueden cancelar las reservas **tuyas** y **activas** ("Esa reserva no es
    - **Precio** y **stock**: números enteros mayores a 0, sin centavos.
    - **Venta individual** o un grupo: en la lista de grupos solo aparecen aquellos de los que sos integrante.
 3. Si querés, elegí una **foto** (opcional, pero ayuda a vender). Con **Quitar foto** la sacás antes de publicar.
-4. Tocá **Publicar**. Ves "Producto publicado." y los campos se limpian.
+4. Tocá **Publicar**. Ves "Producto publicado. Se va a ver en la tienda cuando un preceptor lo apruebe." y los campos se limpian.
+5. El producto queda **pendiente**: no aparece en la tienda ni se puede reservar hasta que un Preceptor lo apruebe. En **Mis productos** lo ves marcado como "PENDIENTE DE APROBACIÓN". Si el Preceptor lo rechaza, ves "RECHAZADO" y podés eliminarlo y publicarlo de nuevo corregido.
 
 La foto se elige al publicar y después no se puede cambiar. Si querés otra, eliminá el producto y publicalo de nuevo.
 
@@ -339,6 +351,12 @@ La foto se elige al publicar y después no se puede cambiar. Si querés otra, el
 | "Precio y stock: escribí números enteros mayores a 0." | Revisá que no haya letras, centavos ni ceros |
 | "Elegí la categoría del producto." | Elegí una categoría |
 | "Para vender en un grupo tenés que ser integrante." | Unite al grupo primero (sección 5.6) |
+
+### 5.4 bis Aprobar los productos (Preceptor)
+El Preceptor tiene la pestaña **Por aprobar**, que muestra entre paréntesis cuántos productos están esperando.
+1. Elegí un producto de la lista (se ve el nombre, el precio, el stock, la categoría, quién lo vende y si es de un grupo).
+2. Tocá **Aprobar** para que se vea en la tienda, o **Rechazar** (pide confirmación) para que no se publique.
+3. La revisión queda registrada con tu usuario y en la auditoría. Un producto ya revisado sale de la lista.
 
 ### 5.5 Mis productos (Alumno)
 En **Mis productos** ves solo lo que publicaste vos. Elegí un producto y usá:
@@ -416,7 +434,7 @@ Acá se registra el préstamo y la devolución de computadoras (de los carros C1
 
 ### 6.3 Prestarle un equipo a un alumno (Profesor y Preceptor)
 1. Tocá el equipo en **Equipos disponibles**.
-2. En **Pedir un equipo**, elegí el **alumno** que se lo lleva (el desplegable los lista por orden alfabético de nombre).
+2. En **Pedir un equipo**, elegí el **alumno** que se lo lleva (el desplegable los lista por orden alfabético de nombre). También podés escribir su **ID de usuario** en el campo **ID del alumno**: el alumno se elige solo. Cada usuario ve su ID en **Mi cuenta**. Si el ID no existe o no es de un alumno, el desplegable vuelve a "Elegí el alumno".
 3. Tocá **Registrar préstamo**. En la lista queda anotado que lo autorizaste vos.
 4. Si el alumno ya tiene un equipo, ves "Ese alumno ya tiene un equipo prestado. Tiene que devolverlo antes de retirar otro."
 
@@ -564,7 +582,7 @@ Acá ves tus datos y podés cambiar tu curso (si sos Alumno), tu contraseña y t
 `[CAPTURA: capturas/alumno_c_p9.png]` (vista de Alumno) · `[CAPTURA: capturas/preceptor_c_p9.png]` (Profesor, Preceptor o Maestranza: sin curso)
 
 ### 9.1 Qué ves en la pantalla
-- **Mis datos:** tu nombre completo, usuario, DNI, correo, teléfono y rol. Si sos Alumno, también tu **curso** (por ejemplo, "4° 1° Computación"). No se pueden editar desde ahí.
+- **Mis datos:** tu nombre completo, usuario, **ID de usuario**, DNI, correo, teléfono y rol. El **ID de usuario** es tu número personal: si un profesor o preceptor te presta un equipo en persona, decíselo y lo registra a tu nombre. Si sos Alumno, también tu **curso** (por ejemplo, "4° 1° Computación"). No se pueden editar desde ahí.
 - **Cambiar mi curso** (solo Alumnos).
 - **Cambiar contraseña** y **Cambiar teléfono** (todos los roles).
 
@@ -638,7 +656,7 @@ Tu curso se usa para ver si una actividad de **Educación Física** choca con tu
 | Un botón no hace nada | Fijate si tenés que elegir antes un elemento de la lista; si no, la aplicación te lo avisa al apretarlo |
 | Aparece "No se pudo usar MySQL" al abrir | La aplicación no se puede usar hasta que se arregle la conexión con la base de datos: cerrala y avisá al responsable del sistema |
 | Bloqueo por intentos de contraseña | Cerrá y abrí la aplicación |
-| Olvidé mi contraseña | No se recupera desde la aplicación (ver 1.3 y la sección 12) |
+| Olvidé mi contraseña | Se recupera desde **Olvidé mi contraseña** en la pantalla de acceso (ver 1.3 bis); si no funciona, ver la sección 12 |
 | Un producto, objeto o reporte que veía ya no está | Otra persona lo eliminó, archivó o resolvió: volvé a abrir la pantalla para actualizar la lista |
 
 ---
@@ -648,5 +666,5 @@ Tu curso se usa para ver si una actividad de **Educación Física** choca con tu
 | Necesito… | Pedíselo a… |
 |---|---|
 | El PIN de personal (profesores, preceptores y maestranza, para crear la cuenta) | Preceptoría o dirección, en persona |
-| Que me restablezcan la contraseña | El responsable del sistema, con tu DNI como verificación |
+| Que me restablezcan la contraseña (si falló la recuperación de la pantalla de acceso) | El responsable del sistema, con tu DNI como verificación |
 | Ayuda si la aplicación no abre o no conecta con la base de datos | El responsable del sistema (soporte técnico de IQUAL) |
