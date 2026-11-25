@@ -2127,6 +2127,17 @@
           </widget>
          </item>
          <item>
+          <widget class="QFrame" name="tarjetaCuentaPin"><property name="estilo" stdset="0"><string>tarjeta</string></property>
+           <layout class="QVBoxLayout" name="layoutCuentaPin"><property name="leftMargin"><number>20</number></property><property name="topMargin"><number>18</number></property><property name="rightMargin"><number>20</number></property><property name="bottomMargin"><number>18</number></property><property name="spacing"><number>10</number></property>
+            <item><widget class="QLabel" name="lblCuentaPinTit"><property name="text"><string>PIN de personal</string></property><property name="estilo" stdset="0"><string>subtitulo</string></property></widget></item>
+            <item><widget class="QLineEdit" name="leCuentaPinNuevo"><property name="placeholderText"><string>PIN nuevo</string></property><property name="toolTip"><string>El PIN que van a pedir las cuentas nuevas de Profesor, Preceptor y Maestranza</string></property><property name="echoMode"><enum>QLineEdit::Password</enum></property></widget></item>
+            <item><widget class="QLabel" name="lblCuentaPinAyuda"><property name="text"><string>Mínimo 6 caracteres. Se guarda cifrado en iqual.ini de esta computadora.</string></property><property name="wordWrap"><bool>true</bool></property><property name="estilo" stdset="0"><string>suave</string></property></widget></item>
+            <item><widget class="QLineEdit" name="leCuentaPinRepetir"><property name="placeholderText"><string>Repetí el PIN nuevo</string></property><property name="toolTip"><string>Escribilo igual que arriba y apretá Enter para guardarlo</string></property><property name="echoMode"><enum>QLineEdit::Password</enum></property></widget></item>
+            <item><widget class="QPushButton" name="btnCuentaPin"><property name="text"><string>Cambiar PIN</string></property><property name="toolTip"><string>Guarda el PIN nuevo de personal</string></property></widget></item>
+           </layout>
+          </widget>
+         </item>
+         <item>
           <spacer name="spCuentaDer">
            <property name="orientation">
             <enum>Qt::Vertical</enum>

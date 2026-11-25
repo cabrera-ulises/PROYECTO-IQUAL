@@ -343,8 +343,9 @@ BEGIN
     SELECT 'OK' AS estado, v_id_objeto AS id_objeto, 'Objeto publicado.' AS mensaje;
 END //
 
--- 4. sp_reclamar_objeto: alta de un reclamo en estado Pendiente. Solo el Alumno reclama.
+-- 4. sp_reclamar_objeto: alta de un reclamo en estado Pendiente. Reclaman Alumno, Profesor y Maestranza (no el Preceptor, que resuelve).
 --    No se puede reclamar un objeto Devuelto o Archivado, el detalle necesita 10 caracteres o más y se reclama una sola vez por objeto.
+--    Si el objeto estaba Disponible pasa a En reclamo.
 DROP PROCEDURE IF EXISTS sp_reclamar_objeto //
 CREATE PROCEDURE sp_reclamar_objeto(
     p_nick VARCHAR(50),
@@ -380,8 +381,8 @@ BEGIN
     IF v_id_usuario IS NULL THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se encontró el usuario indicado.';
     END IF;
-    IF v_rol <> 'Alumno' THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Esta acción es solo para estos roles: Alumno.';
+    IF v_rol NOT IN ('Alumno', 'Profesor', 'Maestranza') THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Esta acción es solo para estos roles: Alumno, Profesor, Maestranza.';
     END IF;
 
     IF p_id_objeto IS NULL OR p_id_objeto <= 0 THEN
@@ -417,6 +418,10 @@ BEGIN
     INSERT INTO reclamo_objeto (prueba_pertenencia, fecha_reclamo, id_usuario, id_objeto, id_estado_reclamo)
     VALUES (v_prueba, CURDATE(), v_id_usuario, v_id_objeto, v_id_estado);
     SET v_id_reclamo = LAST_INSERT_ID();
+    IF v_estado_objeto = 'Disponible' THEN
+        UPDATE objeto_perdido SET id_estado_objeto = (SELECT id_estado_objeto FROM estado_objeto WHERE nombre_estado = 'En reclamo')
+        WHERE id_objeto = v_id_objeto;
+    END IF;
 
     SET @iqual_log_silencioso = 1;
     CALL sp_registrar_log('Reclamo de objeto', CONCAT('Reclamo sobre el objeto ', v_id_objeto), 'reclamo_objeto', p_nick, 'Exitoso', NULL);
@@ -643,7 +648,7 @@ BEGIN
 END //
 
 -- 7. sp_devolver_equipo: cierra un préstamo activo con la hora actual y deja el recurso Disponible (p_funciona = 1) o Fuera de servicio (p_funciona = 0).
---    Un Alumno solo devuelve sus propios préstamos. Si hay observaciones nuevas se agregan a las anteriores.
+--    La devolución la registra un Profesor o un Preceptor, que revisa el equipo (el Alumno no se devuelve solo). Si hay observaciones nuevas se agregan a las anteriores.
 DROP PROCEDURE IF EXISTS sp_devolver_equipo //
 CREATE PROCEDURE sp_devolver_equipo(
     p_id_prestamo INT,
@@ -683,8 +688,8 @@ BEGIN
     IF v_id_autorizador IS NULL THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se encontró el usuario indicado.';
     END IF;
-    IF v_rol NOT IN ('Alumno', 'Profesor', 'Preceptor') THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Esta acción es solo para estos roles: Alumno, Profesor, Preceptor.';
+    IF v_rol NOT IN ('Profesor', 'Preceptor') THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Esta acción es solo para estos roles: Profesor, Preceptor.';
     END IF;
 
     IF p_id_prestamo IS NULL OR p_id_prestamo <= 0 THEN
@@ -706,9 +711,6 @@ BEGIN
     END IF;
     IF v_hora_devolucion IS NOT NULL THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Ese préstamo ya fue devuelto.';
-    END IF;
-    IF v_rol = 'Alumno' AND v_id_solicitante <> v_id_autorizador THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Solo podés devolver tus propios préstamos.';
     END IF;
 
     SET v_nuevas = NULLIF(TRIM(COALESCE(p_observaciones, '')), '');

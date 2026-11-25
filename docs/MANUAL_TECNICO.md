@@ -18,8 +18,8 @@
 | Tipo de app | Escritorio, una sola ventana principal |
 | Base de datos | MySQL (47 tablas); es la única que usa la app |
 | Drivers | `QMYSQL` (plugin de Qt) o, en Windows, ODBC (`QODBC`) con MySQL Connector/ODBC |
-| Tamaño del código principal (v7) | `mainwindow.cpp` 3436 líneas; `mainwindow.ui` 2273; `mainwindow.h` 256; 194 funciones de `MainWindow` (contadas con una búsqueda por texto, sin contar constructor y destructor) |
-| Consultas | 103 llamadas a `prepare(` y 232 a `bindValue`; solo dos `exec("...")` directos sin parámetros: `SELECT LAST_INSERT_ID()` y `SET NAMES utf8mb4` |
+| Tamaño del código principal (v7) | `mainwindow.cpp` 3538 líneas; `mainwindow.ui` 2284; `mainwindow.h` 260; 198 funciones de `MainWindow` (contadas con una búsqueda por texto, sin contar constructor y destructor) |
+| Consultas | 108 llamadas a `prepare(` y 248 a `bindValue`; solo dos `exec("...")` directos sin parámetros: `SELECT LAST_INSERT_ID()` y `SET NAMES utf8mb4` |
 | Nivel de código | Sin comentarios, sin ternarios, sin `continue`, sin `findData`, `.arg` encadenados de a un parámetro (verificado con búsquedas por texto sobre toda la app v7; ver `REVISION_CODIGO_*`) |
 
 ---
@@ -102,6 +102,16 @@ Toda acción relevante (alta, baja, cambio de estado, intento fallido) termina e
 
 Además, `cargarBuffet`, `cargarVendedores` y `on_btnBuffetReservar_clicked` ahora solo consideran productos con `aprobado = 1`, y `cargarMisProductos` muestra el estado de cada producto.
 
+### 2.9 Reglas que se ajustaron después de revisar los puntos débiles (25/11/2026)
+| Regla | Dónde está | Qué hace |
+|---|---|---|
+| Vencimientos | `vencerPendientes()`, llamada desde `cargarTodo()` en cada inicio de sesión | Cancela las reservas de la tienda con más de `DIAS_RESERVA` (2) días sin entregar, con `cancelarReserva`, que devuelve el stock. Rechaza las reservas de sectores que siguen «Pendiente» cuando ya pasó su fecha o su hora de inicio (quedan sin autorizador). Cada caso queda en la auditoría sin usuario, porque lo hace el sistema. No hay un proceso que corra solo: si nadie abre la app, se vencen al próximo inicio de sesión |
+| Reclamos | `on_btnObjReclamar_clicked`, `resolverReclamo` | Reclaman Alumno, Profesor y Maestranza. El primer reclamo pasa el objeto de «Disponible» a «En reclamo» (en la misma transacción); al rechazar el último reclamo pendiente vuelve a «Disponible» |
+| Devolución de equipos | `on_btnPlanillasDevolver_clicked`, `aplicarPermisos` | Solo Profesor y Preceptor; al Alumno se le oculta el botón |
+| PIN de personal | `pinPersonalValido`, `on_btnCuentaPin_clicked` | Ver 4.2 |
+
+Los procedimientos `sp_reclamar_objeto` y `sp_devolver_equipo` aplican las mismas reglas.
+
 ---
 
 ## 3. Base de datos
@@ -167,6 +177,8 @@ El código no usa funciones de fecha del SQL (`NOW()`, `CURDATE()`): las fechas 
 | `odbc_driver` (opcional) | (se busca solo) | Nombre exacto del driver ODBC instalado |
 
 Todas van en la sección `[base]`. Los valores de usuario y clave **no se escriben en este manual**: están en `GUIA_CONEXION_APP_MYSQL.md` y en el script de datos.
+
+En la sección `[seguridad]` está `pin_personal`: el **hash SHA-256** del PIN que piden las cuentas de Profesor, Preceptor y Maestranza (el PIN en texto no aparece ni en el código ni en el archivo). Si falta, la app escribe el hash del PIN inicial del proyecto. El Preceptor lo cambia desde Mi cuenta (`on_btnCuentaPin_clicked`); `pinPersonalValido` compara el hash del PIN escrito con el guardado. Como el `.ini` es de cada computadora, el PIN se cambia en cada una.
 
 ### 4.3 `abrirMySql` y elección del driver
 - `driver=auto`: usa `QMYSQL` si Qt lo tiene disponible; si no, usa `QODBC`. Si no hay ninguno de los dos, devuelve el error «Qt no tiene ni el driver QMYSQL ni el QODBC».
@@ -234,7 +246,7 @@ Recursos embebidos (`recursos.qrc`): `/imagenes` (logo y GIF del splash, sin uso
 - Los scripts `03`, `04` y `05` (47 tablas, 62 usuarios, 27 procedimientos), `consultas_demo.sql` y `consultas_verificacion_mysql.sql` corren sin errores.
 - 104 casos de prueba de los procedimientos (`db/06_PruebasSQL.xlsx`) planificados; 80 se ejecutaron a mano en la aplicación.
 - La app compila con Qt 6.12 MinGW 64-bit (Windows).
-- Las tres funciones agregadas después del Demo Day (RF24, RF25 y RF26) se probaron con una prueba automática que maneja la interfaz (`tests/`): 36 comprobaciones, todas OK, sobre la base cargada con `03`, `04` y `05` en MariaDB 10.11 y Qt 6.4 en Linux. No se probaron a mano en Windows con ODBC. Detalle en `docs/pruebas/CASOS_PRUEBA_NUEVAS_FUNCIONES.md`.
+- Las tres funciones agregadas después del Demo Day (RF24, RF25 y RF26) y las reglas ajustadas el 25/11 (sección 2.9) se probaron con una prueba automática que maneja la interfaz (`tests/`): 64 comprobaciones, todas OK, sobre la base cargada con `03`, `04` y `05` en MariaDB 10.11 y Qt 6.4 en Linux. No se probaron a mano en Windows con ODBC. Detalle en `docs/pruebas/CASOS_PRUEBA_NUEVAS_FUNCIONES.md`.
 
 **No probado:**
 - MySQL 8 de Oracle (la base usada fue MariaDB 10.11) y SQL Server 2005 (`03_ModeloSQL_Grupo00_sqlserver.sql`, solo revisado por lectura).

@@ -152,20 +152,21 @@ Acá se publican los objetos que se encuentran en el colegio y los alumnos puede
 ### 3.1 Ver los objetos y buscar (todos los roles)
 1. Abrí **Objetos perdidos** desde la barra lateral.
 2. En la pestaña **Objetos** ves una tarjeta por objeto con su nombre, su categoría y el sector donde se encontró, su estado y cuántos reclamos tiene, por ejemplo "Disponible · (2 reclamos)".
-   - En **verde** están los que se pueden reclamar.
+   - En **verde** están los que se pueden reclamar: "Disponible" (nadie lo reclamó todavía) y "En reclamo" (ya tiene reclamos en revisión, pero igual lo podés reclamar).
    - En **gris** y con "Ya devuelto" están los que ya volvieron a su dueño.
-   - En **gris** y con "En reclamo" están los que ya tienen reclamos en revisión; igual se pueden reclamar.
-   - El resumen de arriba ("Objetos para reclamar") cuenta solo los que están en verde.
+   - El resumen de arriba ("Objetos para reclamar") cuenta los que están en verde.
 3. Para buscar, escribí en el cuadro de búsqueda (busca por nombre, descripción, categoría y sector) o elegí una **categoría**.
 4. Para ver un objeto con más detalle, hacé **doble clic** en su tarjeta: se abre una ventana con la descripción y la foto. Tocá **Cerrar** (o apretá Enter o Esc) para volver.
 
 `[CAPTURA: capturas/alumno_c_p3_t0.png]` · `[CAPTURA: objetos_detalle]`
 
-### 3.2 Cómo reclamar un objeto (Alumno)
+### 3.2 Cómo reclamar un objeto (Alumno, Profesor y Maestranza)
 1. En la pestaña **Objetos**, tocá la tarjeta del objeto que creés tuyo.
 2. En **Reclamar el objeto elegido**, escribí **un detalle que no se vea en la foto ni en la descripción**: algo que solo su dueño sabría (por ejemplo, "tiene una cinta celeste en la cabeza"). Necesitás 10 caracteres o más.
 3. Tocá **Reclamar objeto** (o apretá Enter).
-4. Ves "Reclamo enviado. El preceptor lo va a revisar." El objeto **sigue en la lista**: ahora muestra un reclamo más.
+4. Ves "Reclamo enviado. El preceptor lo va a revisar." El objeto **sigue en la lista**: ahora muestra un reclamo más y, si era el primero, pasa a "En reclamo".
+
+**¿Cuánto se espera antes de entregar un objeto?** No hay un plazo automático. El preceptor ve todos los reclamos de cada objeto, con el detalle que escribió cada persona y el dato reservado que cargó al publicarlo, y decide cuándo resolver. Si hay más de un reclamo, compara los detalles o habla con cada uno antes de aprobar. Al aprobar uno, los demás se rechazan solos; si rechaza todos, el objeto vuelve a "Disponible".
 
 Es bueno saber que:
 - **Cada objeto se reclama una sola vez por persona.** Si lo intentás de nuevo, ves "Ya reclamaste este objeto. Solo se puede reclamar una vez."
@@ -316,7 +317,8 @@ La pantalla tiene pestañas; cuáles ves depende de tu rol:
 ### 5.2 Reservar un producto (todos los roles)
 1. Tocá el producto. La franja de abajo te dice si lo podés reservar.
 2. Elegí la **cantidad** (el selector no deja pasar del stock disponible).
-3. Tocá **Reservar**. Ves **"Reserva hecha. Coordiná la entrega en persona con el vendedor."** El stock del producto baja en lo que reservaste y la reserva aparece en **Mis reservas**.
+3. Tocá **Reservar**. Ves **"Reserva hecha. Coordiná la entrega en persona con el vendedor. Tenés 2 días para retirarla…"** El stock del producto baja en lo que reservaste y la reserva aparece en **Mis reservas** con la fecha en que **vence**.
+4. **La reserva vence a los 2 días.** Si para entonces el vendedor no la marcó como entregada, la próxima vez que alguien abre la aplicación se cancela sola y el stock vuelve al producto. Queda registrado en la auditoría.
 
 | Mensaje | Qué significa |
 |---|---|
@@ -438,8 +440,10 @@ Acá se registra el préstamo y la devolución de computadoras (de los carros C1
 3. Tocá **Registrar préstamo**. En la lista queda anotado que lo autorizaste vos.
 4. Si el alumno ya tiene un equipo, ves "Ese alumno ya tiene un equipo prestado. Tiene que devolverlo antes de retirar otro."
 
-### 6.4 Devolver un equipo (Alumno, Profesor y Preceptor)
-1. En **Préstamos**, tocá el préstamo que querés cerrar (los activos están en verde). Un alumno solo ve y puede devolver los suyos.
+### 6.4 Registrar la devolución de un equipo (Profesor y Preceptor)
+La devolución la registra siempre un profesor o un preceptor, que revisa el equipo antes de decir si funciona. **El alumno no puede devolver desde la aplicación**: lleva el equipo y quien lo recibe registra la devolución.
+
+1. En **Préstamos**, tocá el préstamo que querés cerrar (los activos están en verde).
 2. En **¿Cómo vuelve el equipo?**, elegí **Funciona** o **No funciona**. **Ojo: el desplegable arranca en "Funciona"**, así que fijate de cambiarlo si el equipo tiene un problema.
 3. Si querés, escribí una observación en el campo de **Observaciones** (el mismo que se usa al pedir): se guarda con la devolución.
 4. Tocá **Devolver equipo**. Ves "Devolución registrada."
@@ -452,7 +456,7 @@ Acá se registra el préstamo y la devolución de computadoras (de los carros C1
 | "Elegí quién se lleva el equipo." | Elegí el alumno (profesor y preceptor) |
 | "Elegí un préstamo de la lista." | Tocá primero un préstamo |
 | "Ese préstamo ya fue devuelto." | Elegí un préstamo activo |
-| "Solo podés devolver tus propios préstamos." | Pedile a quien lo retiró que lo devuelva |
+| "Esta acción es solo para estos roles: Profesor, Preceptor." | Llevá el equipo a un profesor o preceptor para que registre la devolución |
 
 ### 6.5 Equipos fuera de servicio (Preceptor y Maestranza)
 1. En **Fuera de servicio** ves los equipos rotos, en rojo.
@@ -501,6 +505,7 @@ Es igual que para el Profesor, con una diferencia: tu reserva queda **Aprobada**
 2. Hacé clic en la reserva que querés resolver.
 3. Para aceptarla, **Aprobar**. Pasa a **Aprobada** (verde).
 4. Para no aceptarla, **Rechazar**. La aplicación pregunta **"¿Querés rechazar la reserva de …? El horario queda libre."** Elegí **Sí** o **No**. Con **Sí** pasa a **Rechazada** (rojo) y el horario queda libre.
+5. **Si nadie aprueba una reserva antes de su horario, se rechaza sola** la próxima vez que alguien abre la aplicación, para que no quede trabando el sector. En la base queda sin autorizador y en la auditoría dice que fue automático.
 
 `[CAPTURA: sectores_aprobar_rechazar_preceptor]`
 
@@ -612,6 +617,14 @@ Acá ves tus datos y podés cambiar tu curso (si sos Alumno), tu contraseña y t
 `[CAPTURA: cuenta_cambiar_telefono]`
 
 Avisos: **"Escribí el teléfono nuevo."** (campo vacío) y **"Escribí el teléfono solo con números (entre 8 y 15), sin espacios ni guiones."** (formato incorrecto).
+
+### 9.3 bis Cambiar el PIN de personal (Preceptor)
+El PIN de personal es el que piden las cuentas nuevas de Profesor, Preceptor y Maestranza. No está escrito en el programa: se guarda **cifrado** en el archivo `iqual.ini` de cada computadora.
+1. En **Mi cuenta**, tarjeta **PIN de personal**, escribí el PIN nuevo (6 caracteres o más) y repetilo.
+2. Tocá **Cambiar PIN** (o apretá Enter). Ves "PIN de personal cambiado…".
+
+- **Cambialo antes de usar IQUAL en el colegio**: la primera vez la aplicación guarda el PIN inicial del proyecto, que figura en la documentación.
+- El cambio vale para la computadora donde lo hiciste. Si IQUAL está instalado en varias, hay que cambiarlo en cada una (o copiar la línea `pin_personal` de `iqual.ini`).
 
 ### 9.4 Cambiar tu curso (Alumno)
 Tu curso se usa para ver si una actividad de **Educación Física** choca con tus clases, así que conviene mantenerlo al día.

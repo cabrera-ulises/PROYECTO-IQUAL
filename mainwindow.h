@@ -51,6 +51,8 @@ private slots:
     void on_btnLoginOlvide_clicked();
     void on_btnRecuperar_clicked();
     void on_leRecClaveRepetir_returnPressed();
+    void on_btnCuentaPin_clicked();
+    void on_leCuentaPinRepetir_returnPressed();
     void on_leUsuario_returnPressed();
     void on_leClave_returnPressed();
     void on_leRegContacto_returnPressed();
@@ -222,6 +224,8 @@ private:
     void cargarMisVentas();
     void cargarMisProductos();
     void cargarAprobacion();
+    void vencerPendientes();
+    bool pinPersonalValido(const QString &pin);
     void resolverProducto(bool aprobar);
     void cargarPlanillas();
     void cargarFueraServicio();

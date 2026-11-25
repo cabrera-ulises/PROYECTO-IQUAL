@@ -11,6 +11,9 @@
 #include <QSqlQuery>
 #include <QDebug>
 #include <QMetaObject>
+#include <QSettings>
+#include <QCoreApplication>
+#include <QFrame>
 
 static QStringList mensajes;
 static int fallos = 0;
@@ -87,6 +90,9 @@ int main(int argc, char *argv[])
     QTimer t;
     QObject::connect(&t, &QTimer::timeout, cerrarCajas);
     t.start(30);
+    QSettings cfg(QCoreApplication::applicationDirPath() + "/iqual.ini", QSettings::IniFormat);
+    cfg.remove("seguridad/pin_personal");
+    cfg.sync();
     MainWindow mw;
 
     qInfo() << "== RECUPERAR CONTRASEÑA";
@@ -219,6 +225,137 @@ int main(int argc, char *argv[])
     entrar(mw, "alumno1", "nueva123");
     check(!w<QLineEdit>(mw, "lePlanillasId")->isVisibleTo(&mw), "el alumno no ve el campo ID del alumno");
     salir(mw);
+
+
+    qInfo() << "== VENCIMIENTOS AL INICIAR SESIÓN";
+    check(consulta("SELECT COUNT(*) FROM venta_buffet v JOIN estado_venta e ON e.id_estado_venta = v.id_estado_venta WHERE e.nombre_estado = 'Reservada' AND v.fecha_hora < NOW() - INTERVAL 2 DAY") == "0", "no quedan reservas de la tienda con más de 2 días");
+    check(consulta("SELECT COUNT(*) FROM log_auditoria WHERE descripcion_evento LIKE '%vencida%'") == "8", "las 8 reservas viejas de los datos de ejemplo se cancelaron y quedaron en la auditoría");
+    QSqlQuery prep;
+    prep.exec("SELECT stock FROM producto_buffet WHERE id_producto = 3");
+    prep.next();
+    int stockAntes = prep.value(0).toInt();
+    prep.exec("INSERT INTO venta_buffet (fecha_hora, id_usuario, id_estado_venta) VALUES (NOW() - INTERVAL 3 DAY, 3, (SELECT id_estado_venta FROM estado_venta WHERE nombre_estado = 'Reservada'))");
+    prep.exec("INSERT INTO detalle_venta (id_venta, id_producto, cantidad, precio_unitario) VALUES (LAST_INSERT_ID(), 3, 2, 700)");
+    prep.exec("UPDATE producto_buffet SET stock = stock - 2 WHERE id_producto = 3");
+    prep.exec("INSERT INTO venta_buffet (fecha_hora, id_usuario, id_estado_venta) VALUES (NOW() - INTERVAL 1 DAY, 3, (SELECT id_estado_venta FROM estado_venta WHERE nombre_estado = 'Reservada'))");
+    prep.exec("INSERT INTO detalle_venta (id_venta, id_producto, cantidad, precio_unitario) VALUES (LAST_INSERT_ID(), 3, 1, 700)");
+    prep.exec("UPDATE producto_buffet SET stock = stock - 1 WHERE id_producto = 3");
+    prep.exec("INSERT INTO reserva_sector (fecha_reserva, hora_inicio, hora_fin, id_usuario, id_sector, id_estado_reserva) VALUES (CURDATE() - INTERVAL 1 DAY, '10:00', '11:00', 3, (SELECT id_sector FROM sector WHERE id_tipo_sector = (SELECT id_tipo_sector FROM tipo_sector WHERE nombre_tipo = 'Reservable') LIMIT 1), (SELECT id_estado_reserva FROM estado_reserva WHERE nombre_estado = 'Pendiente'))");
+    QString reservaVieja = consulta("SELECT MAX(id_reserva) FROM reserva_sector");
+    entrar(mw, "profe1", "1234");
+    check(consulta("SELECT stock FROM producto_buffet WHERE id_producto = 3").toInt() == stockAntes - 1, "la reserva de hace 3 días devolvió su stock y la de ayer lo sigue reteniendo");
+    check(consulta("SELECT COUNT(*) FROM venta_buffet v JOIN estado_venta e ON e.id_estado_venta = v.id_estado_venta WHERE e.nombre_estado = 'Reservada' AND v.id_usuario = 3") == "1", "la reserva de ayer sigue activa");
+    check(listaTiene(w<QListWidget>(mw, "listMisReservas"), "vence "), "Mis reservas muestra cuándo vence la reserva activa");
+    check(consulta("SELECT CONCAT(e.nombre_estado, '-', COALESCE(r.id_usuario_autorizador, 'nadie')) FROM reserva_sector r JOIN estado_reserva e ON e.id_estado_reserva = r.id_estado_reserva WHERE r.id_reserva = " + reservaVieja) == "Rechazada-nadie", "la reserva de sector pendiente de ayer se rechazó sola, sin autorizador");
+    check(consulta("SELECT COUNT(*) FROM reserva_sector r JOIN estado_reserva e ON e.id_estado_reserva = r.id_estado_reserva WHERE e.nombre_estado = 'Pendiente' AND r.fecha_reserva > CURDATE()") == "8", "las reservas pendientes de días que vienen no se tocan");
+
+    qInfo() << "== RECLAMOS DE OBJETOS";
+    check(!w<QFrame>(mw, "frmObjReclamo")->isHidden(), "el profesor ve el formulario para reclamar");
+    QListWidget *objetos = w<QListWidget>(mw, "listObjetos");
+    QString idCampera = consulta("SELECT id_objeto FROM objeto_perdido WHERE titulo = 'Campera azul'");
+    for (int i = 0; i < objetos->count(); i++) {
+        if (objetos->item(i)->data(Qt::UserRole).toString() == idCampera) objetos->setCurrentRow(i);
+    }
+    w<QLineEdit>(mw, "leObjPrueba")->setText("Es mía, tiene mis iniciales en la etiqueta");
+    mensajes.clear();
+    clic(mw, "btnObjReclamar");
+    check(dijo("Reclamo enviado"), "el profesor puede reclamar un objeto");
+    QString estadoCampera = "SELECT e.nombre_estado FROM objeto_perdido o JOIN estado_objeto e ON e.id_estado_objeto = o.id_estado_objeto WHERE o.titulo = 'Campera azul'";
+    check(consulta(estadoCampera) == "En reclamo", "el objeto pasa de Disponible a En reclamo");
+    salir(mw);
+    sp.exec(QString("CALL sp_reclamar_objeto('alumno2', %1, 'Es mi campera, tiene un parche en la manga')").arg(idCampera));
+    sp.next();
+    check(sp.value(0).toString() == "OK", "un alumno también la reclama (procedimiento)");
+    sp.finish();
+    while (sp.nextResult()) {}
+    sp.exec(QString("CALL sp_reclamar_objeto('preceptor1', %1, 'Detalle de prueba suficientemente largo')").arg(idCampera));
+    sp.next();
+    check(sp.value(0).toString() == "ERROR" && sp.value(2).toString().contains("Alumno, Profesor, Maestranza"), "el preceptor no puede reclamar (procedimiento)");
+    sp.finish();
+    while (sp.nextResult()) {}
+    entrar(mw, "preceptor1", "1234");
+    check(w<QFrame>(mw, "frmObjReclamo")->isHidden(), "el preceptor no ve el formulario para reclamar");
+    QListWidget *reclamos = w<QListWidget>(mw, "listReclamos");
+    int filaReclamo = -1;
+    for (int i = 0; i < reclamos->count(); i++) {
+        if (filaReclamo < 0 && reclamos->item(i)->text().contains("Campera azul")) filaReclamo = i;
+    }
+    reclamos->setCurrentRow(filaReclamo);
+    mensajes.clear();
+    clic(mw, "btnReclamoRechazar");
+    check(dijo("Reclamo rechazado") && consulta(estadoCampera) == "En reclamo", "rechazar uno de los dos reclamos deja el objeto En reclamo");
+    filaReclamo = -1;
+    for (int i = 0; i < reclamos->count(); i++) {
+        if (filaReclamo < 0 && reclamos->item(i)->text().contains("Campera azul")) filaReclamo = i;
+    }
+    reclamos->setCurrentRow(filaReclamo);
+    clic(mw, "btnReclamoRechazar");
+    check(consulta(estadoCampera) == "Disponible", "rechazar el último reclamo pendiente lo vuelve a Disponible");
+
+    qInfo() << "== DEVOLUCIÓN DE EQUIPOS";
+    check(!w<QPushButton>(mw, "btnPlanillasDevolver")->isHidden(), "el preceptor ve el botón Devolver equipo");
+    salir(mw);
+    entrar(mw, "alumno1", "nueva123");
+    check(w<QPushButton>(mw, "btnPlanillasDevolver")->isHidden(), "el alumno no ve el botón Devolver equipo");
+    check(!w<QFrame>(mw, "frmPlanillasPrestar")->isHidden(), "el alumno sigue pudiendo pedir un equipo");
+    check(w<QFrame>(mw, "tarjetaCuentaPin")->isHidden(), "el alumno no ve la tarjeta del PIN de personal");
+    mensajes.clear();
+    QMetaObject::invokeMethod(&mw, "on_btnPlanillasDevolver_clicked");
+    check(dijo("Profesor, Preceptor"), "si el alumno intenta devolver, la app lo rechaza");
+    salir(mw);
+    QString prestamoAlumno1 = consulta("SELECT p.id_prestamo FROM prestamo_ct p WHERE p.id_usuario_solicitante = 1 AND p.hora_devolucion IS NULL");
+    sp.exec(QString("CALL sp_devolver_equipo(%1, 'alumno1', 1, NULL)").arg(prestamoAlumno1));
+    sp.next();
+    check(sp.value(0).toString() == "ERROR", "sp_devolver_equipo rechaza al alumno");
+    sp.finish();
+    while (sp.nextResult()) {}
+    sp.exec(QString("CALL sp_devolver_equipo(%1, 'profe1', 1, 'Revisado')").arg(prestamoAlumno1));
+    sp.next();
+    check(sp.value(0).toString() == "OK", "sp_devolver_equipo acepta al profesor");
+    sp.finish();
+    while (sp.nextResult()) {}
+
+    qInfo() << "== PIN DE PERSONAL";
+    check(cfg.value("seguridad/pin_personal").toString().size() == 64 && !cfg.value("seguridad/pin_personal").toString().contains("IQUAL"), "iqual.ini guarda el PIN cifrado, no el texto");
+    clic(mw, "btnLandingRegister");
+    QComboBox *rol = w<QComboBox>(mw, "cbRegRol");
+    w<QLineEdit>(mw, "leRegNombre")->setText("Nora Prueba");
+    w<QLineEdit>(mw, "leRegUsuario")->setText("nora.prueba");
+    w<QLineEdit>(mw, "leRegClave")->setText("clave1");
+    w<QLineEdit>(mw, "leRegDni")->setText("35123456");
+    w<QLineEdit>(mw, "leRegMail")->setText("nora@iqual.demo");
+    w<QLineEdit>(mw, "leRegContacto")->setText("1155550099");
+    rol->setCurrentIndex(rol->findText("Profesor"));
+    w<QLineEdit>(mw, "leRegPin")->setText("IQUAL2026");
+    entrar(mw, "preceptor1", "1234");
+    check(!w<QFrame>(mw, "tarjetaCuentaPin")->isHidden(), "el preceptor ve la tarjeta del PIN de personal");
+    w<QLineEdit>(mw, "leCuentaPinNuevo")->setText("abc");
+    w<QLineEdit>(mw, "leCuentaPinRepetir")->setText("abc");
+    mensajes.clear();
+    clic(mw, "btnCuentaPin");
+    check(dijo("6 caracteres"), "un PIN corto se rechaza");
+    w<QLineEdit>(mw, "leCuentaPinNuevo")->setText("Escuela-3-DE9");
+    w<QLineEdit>(mw, "leCuentaPinRepetir")->setText("Escuela-3-DE9");
+    mensajes.clear();
+    clic(mw, "btnCuentaPin");
+    check(dijo("PIN de personal cambiado"), "el preceptor cambia el PIN");
+    salir(mw);
+    clic(mw, "btnLandingRegister");
+    w<QLineEdit>(mw, "leRegNombre")->setText("Nora Prueba");
+    w<QLineEdit>(mw, "leRegUsuario")->setText("nora.prueba");
+    w<QLineEdit>(mw, "leRegClave")->setText("clave1");
+    w<QLineEdit>(mw, "leRegDni")->setText("35123456");
+    w<QLineEdit>(mw, "leRegMail")->setText("nora@iqual.demo");
+    w<QLineEdit>(mw, "leRegContacto")->setText("1155550099");
+    rol->setCurrentIndex(rol->findText("Profesor"));
+    w<QLineEdit>(mw, "leRegPin")->setText("IQUAL2026");
+    mensajes.clear();
+    clic(mw, "btnRegistrar");
+    check(dijo("PIN de personal es incorrecto"), "el PIN viejo ya no sirve para crear una cuenta de personal");
+    w<QLineEdit>(mw, "leRegPin")->setText("Escuela-3-DE9");
+    mensajes.clear();
+    clic(mw, "btnRegistrar");
+    check(dijo("Cuenta creada"), "con el PIN nuevo se crea la cuenta de Profesor");
 
     qInfo().noquote() << QString("RESULTADO: %1 de %2 pruebas OK").arg(total - fallos).arg(total);
     return fallos;

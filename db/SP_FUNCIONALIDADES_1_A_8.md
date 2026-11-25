@@ -77,16 +77,16 @@ CALL sp_publicar_objeto('preceptor1', 'Mochila negra', 'Mochila negra con un lla
 
 ## 4. `sp_reclamar_objeto`
 
-**Para qué sirve:** un Alumno reclama un objeto; crea el reclamo en estado `Pendiente`.
+**Para qué sirve:** un Alumno, un Profesor o la Maestranza reclama un objeto; crea el reclamo en estado `Pendiente`.
 
 **Parámetros:** `p_nick, p_id_objeto, p_prueba`.
 
 **Reglas:**
-- Usuario con rol Alumno; objeto elegido y existente.
+- Usuario con rol Alumno, Profesor o Maestranza (el Preceptor no reclama: resuelve); objeto elegido y existente.
 - No se reclama un objeto `Devuelto` o `Archivado`.
 - El detalle necesita 10 caracteres o más (máximo 200).
 - Un solo reclamo por alumno y objeto (hay un índice único `ux_reclamo_usuario_objeto`).
-- Igual que la app, el objeto **no** cambia de estado al reclamarse: cambia cuando el Preceptor resuelve.
+- Igual que la app, si el objeto estaba `Disponible` pasa a `En reclamo` (cambio del 25/11/2026). Vuelve a `Disponible` si el Preceptor rechaza todos los reclamos pendientes.
 
 **Devuelve:** `OK` + `id_reclamo` + `Reclamo enviado. El preceptor lo va a revisar.`.
 
@@ -137,7 +137,7 @@ CALL sp_prestar_equipo('alumno2', 'profe1', 1, 'Para la clase de Bases de Datos'
 **Parámetros:** `p_id_prestamo, p_nick_autorizador, p_funciona` (1 funciona, 0 no funciona), `p_observaciones`.
 
 **Reglas:**
-- Alumno, Profesor o Preceptor. Un Alumno solo devuelve sus propios préstamos.
+- Profesor o Preceptor (desde el 25/11/2026 el Alumno no registra devoluciones: el equipo lo recibe y lo revisa un adulto).
 - Préstamo elegido, existente y sin devolver (`Ese préstamo ya fue devuelto.`); `p_funciona` obligatorio (0 o 1).
 - Si hay observaciones nuevas se agregan a las anteriores con ` / Devolución: `; el total no puede pasar de 200 caracteres.
 - La confirmación «vas a devolverlo como que NO funciona» es de la pantalla: el SP no pregunta.
@@ -145,7 +145,7 @@ CALL sp_prestar_equipo('alumno2', 'profe1', 1, 'Para la clase de Bases de Datos'
 **Devuelve:** `OK` + `id_prestamo` + `estado_recurso` + `Devolución registrada.`.
 
 ```sql
-CALL sp_devolver_equipo(1, 'alumno1', 1, 'Todo bien');
+CALL sp_devolver_equipo(1, 'profe1', 1, 'Todo bien');
 ```
 
 ## 8. `sp_reservar_sector`

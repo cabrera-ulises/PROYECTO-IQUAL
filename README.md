@@ -88,7 +88,7 @@ Para registrar cuentas de Profesor, Preceptor o Maestranza la app pide un PIN in
 ### 4.3 Qué se probó y qué no
 * **Pruebas de la base de datos:** el script de 47 tablas y los 27 procedimientos se integraron en MariaDB 10.11 (104 casos de prueba planificados en `db/06_PruebasSQL.xlsx`).
 * **Pruebas de la aplicación:** se hicieron a mano, en Windows con Qt 6.12 (MinGW) y MySQL por ODBC. De los 104 casos planificados se ejecutaron 80 en la aplicación. Los casos por pantalla suman 337: 285 OK, 21 con observación y 31 sin probar (detalle en `docs/CASOS_PRUEBA_CONSOLIDADO.md` y `docs/pdf/CASOS_PRUEBA_CON_RESULTADOS.pdf`).
-* **Funciones nuevas (RF24 a RF26):** 36 comprobaciones automáticas en Linux (`tests/`); sin probar a mano en Windows.
+* **Funciones y reglas nuevas (RF24 a RF26 y ajustes del 25/11):** 64 comprobaciones automáticas en Linux (`tests/`); sin probar a mano en Windows.
 * **No probado:** MySQL 8 de Oracle y SQL Server 2005.
 
 ---
@@ -175,7 +175,14 @@ La presentación terminaba con una lámina «Qué le falta a IQUAL». Se impleme
 * **Aprobación de productos (RF25):** los productos de la tienda de alumnos quedan pendientes hasta que un Preceptor los aprueba o rechaza. Nuevas columnas `aprobado` e `id_usuario_revisor` en `producto_buffet` (siguen siendo 47 tablas; hay que **volver a cargar `03`, `04` y `05`**) y dos tipos de evento nuevos en la auditoría.
 * **ID de usuario (RF26):** cada usuario ve su ID en «Mi cuenta»; el Profesor o el Preceptor lo escribe al prestar un equipo y el alumno se elige solo.
 
-Siguen sin hacerse: notificaciones, medir el uso con muchos usuarios y la versión web o celular. Pruebas: [`tests/`](./tests/LEEME.md) y [`docs/pruebas/CASOS_PRUEBA_NUEVAS_FUNCIONES.md`](./docs/pruebas/CASOS_PRUEBA_NUEVAS_FUNCIONES.md) (36 comprobaciones automáticas en Linux; falta probar a mano en Windows).
+Además, después de revisar los puntos débiles de cada módulo:
+* **Objetos perdidos:** también pueden reclamar el Profesor y la Maestranza; el objeto pasa a «En reclamo» con el primer reclamo y vuelve a «Disponible» si se rechazan todos. No hay plazo de espera automático: el Preceptor decide cuándo resolver.
+* **Préstamos:** el Alumno sigue pidiendo equipos a su nombre, pero la devolución la registra un Profesor o un Preceptor.
+* **Tienda:** las reservas vencen a los 2 días y devuelven el stock.
+* **Sectores:** una reserva que sigue pendiente cuando llega su horario se rechaza sola.
+* **PIN de personal:** ya no está en el código; se guarda cifrado en `iqual.ini` y el Preceptor lo cambia desde Mi cuenta. **Cambiarlo antes de usar la app en el colegio.**
+
+Siguen sin hacerse: notificaciones, medir el uso con muchos usuarios y la versión web o celular. Pruebas: [`tests/`](./tests/LEEME.md) y [`docs/pruebas/CASOS_PRUEBA_NUEVAS_FUNCIONES.md`](./docs/pruebas/CASOS_PRUEBA_NUEVAS_FUNCIONES.md) (64 comprobaciones automáticas en Linux; falta probar a mano en Windows).
 
 ## Actualización v7: base de datos de la consigna de BBDD
 Los scripts están en `db/`: `03_ModeloSQL_Grupo00.sql` (47 tablas), `04_DatosSQL_Grupo00.sql` (62 usuarios y datos de las demás tablas), `05_Backend_Grupo00.sql` (procedimientos almacenados) y `06_PruebasSQL.xlsx` (104 casos con resultado real). Orden de carga: 03, 04, 05, con Alt+X en DBeaver. Hay versión para SQL Server (`*_sqlserver.sql`, con schemas). El número de grupo `Grupo00` es provisorio hasta confirmarlo con el profesor. Si en algún documento aparece "5 usuarios", es el dato de ejemplo anterior: ahora son 62.

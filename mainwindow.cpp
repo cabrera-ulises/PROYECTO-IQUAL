@@ -30,7 +30,8 @@
 #include <QProgressBar>
 #include <QVariant>
 
-const QString PIN_PERSONAL = "IQUAL2026";
+const QString PIN_PERSONAL_INICIAL = "1d720c20dcf3f321fa35cc139f9c6f4e661b939482df0fe0e9b2cb6842bbbb62";
+const int DIAS_RESERVA = 2;
 const QString HORA_APERTURA = "07:00";
 const QString HORA_CIERRE = "19:00";
 const int MAX_INTENTOS = 5;
@@ -97,6 +98,7 @@ bool MainWindow::abrirBase()
     if (!cfg.contains("base/usuario")) cfg.setValue("base/usuario", "root");
     if (!cfg.contains("base/clave")) cfg.setValue("base/clave", "12341234");
     if (!cfg.contains("base/nombre")) cfg.setValue("base/nombre", "iqual");
+    if (!cfg.contains("seguridad/pin_personal")) cfg.setValue("seguridad/pin_personal", PIN_PERSONAL_INICIAL);
     cfg.sync();
 
     QString error;
@@ -225,11 +227,90 @@ void MainWindow::cargarCursoCombos(QComboBox *anio, QComboBox *division, QComboB
     cargarCombo(especialidad, "SELECT id_especialidad, nombre_especialidad FROM especialidad ORDER BY nombre_especialidad", "Especialidad", "");
 }
 
+bool MainWindow::pinPersonalValido(const QString &pin)
+{
+    QSettings cfg(QCoreApplication::applicationDirPath() + "/iqual.ini", QSettings::IniFormat);
+    QString guardado = cfg.value("seguridad/pin_personal", PIN_PERSONAL_INICIAL).toString();
+    return hashClave(pin) == guardado;
+}
+
+void MainWindow::on_btnCuentaPin_clicked()
+{
+    if (!exigir("Preceptor", "", "")) return;
+    QString nuevo = ui->leCuentaPinNuevo->text();
+    QString repetido = ui->leCuentaPinRepetir->text();
+    if (nuevo.trimmed().size() < 6) {
+        ui->leCuentaPinNuevo->setFocus();
+        fallar("", "", "El PIN nuevo necesita 6 caracteres o más.");
+        return;
+    }
+    if (nuevo != repetido) {
+        ui->leCuentaPinRepetir->setFocus();
+        fallar("", "", "Los dos PIN no son iguales.");
+        return;
+    }
+    if (pinPersonalValido(nuevo)) {
+        fallar("", "", "Ese ya es el PIN de personal. Elegí otro.");
+        return;
+    }
+    QSettings cfg(QCoreApplication::applicationDirPath() + "/iqual.ini", QSettings::IniFormat);
+    cfg.setValue("seguridad/pin_personal", hashClave(nuevo));
+    cfg.sync();
+    if (cfg.status() != QSettings::NoError) {
+        fallar("", "", "No se pudo guardar el PIN en iqual.ini. Revisá que el archivo no sea de solo lectura.");
+        return;
+    }
+    ui->leCuentaPinNuevo->clear();
+    ui->leCuentaPinRepetir->clear();
+    info("PIN de personal cambiado. Desde ahora las cuentas de Profesor, Preceptor y Maestranza piden el PIN nuevo en esta computadora.");
+}
+
+void MainWindow::on_leCuentaPinRepetir_returnPressed() { on_btnCuentaPin_clicked(); }
+
+void MainWindow::vencerPendientes()
+{
+    int usuario = idActual;
+    idActual = 0;
+    QSqlQuery q;
+    q.prepare("SELECT id_venta FROM venta_buffet WHERE id_estado_venta = :reservada AND fecha_hora < :limite ORDER BY id_venta");
+    q.bindValue(":reservada", idEstado("estado_venta", "Reservada"));
+    q.bindValue(":limite", QDateTime::currentDateTime().addDays(-DIAS_RESERVA));
+    q.exec();
+    QList<int> ventas;
+    while (q.next()) ventas << q.value(0).toInt();
+    for (int i = 0; i < ventas.size(); i++) {
+        if (cancelarReserva(ventas[i])) {
+            registrarLog("Reserva de producto", QString("Reserva %1 vencida: nadie la retiró en %2 días y se canceló sola").arg(ventas[i]).arg(DIAS_RESERVA), "venta_buffet", "Exitoso");
+        }
+    }
+    q.prepare("SELECT id_reserva FROM reserva_sector WHERE id_estado_reserva = :pendiente "
+              "AND (fecha_reserva < :hoy OR (fecha_reserva = :hoyMismo AND hora_inicio <= :hora)) ORDER BY id_reserva");
+    q.bindValue(":pendiente", idEstado("estado_reserva", "Pendiente"));
+    q.bindValue(":hoy", valorFecha(QDate::currentDate()));
+    q.bindValue(":hoyMismo", valorFecha(QDate::currentDate()));
+    q.bindValue(":hora", QTime::currentTime().toString("HH:mm"));
+    q.exec();
+    QList<int> reservas;
+    while (q.next()) reservas << q.value(0).toInt();
+    for (int i = 0; i < reservas.size(); i++) {
+        QSqlQuery r;
+        r.prepare("UPDATE reserva_sector SET id_estado_reserva = :rechazada WHERE id_reserva = :reserva AND id_estado_reserva = :pendiente");
+        r.bindValue(":rechazada", idEstado("estado_reserva", "Rechazada"));
+        r.bindValue(":reserva", reservas[i]);
+        r.bindValue(":pendiente", idEstado("estado_reserva", "Pendiente"));
+        if (r.exec()) {
+            registrarLog("Reserva de sector", QString("Reserva %1: Rechazada sola porque nadie la aprobó antes del horario").arg(reservas[i]), "reserva_sector", "Exitoso");
+        }
+    }
+    idActual = usuario;
+}
+
 void MainWindow::cargarTodo()
 {
     ui->tabObjetos->setCurrentIndex(0);
     ui->tabBuffet->setCurrentIndex(0);
     aplicarPermisos();
+    vencerPendientes();
     cargarCuenta();
     cargarResumen();
     cargarObjetos();
@@ -273,7 +354,7 @@ void MainWindow::aplicarPermisos()
     ui->tabObjetos->setTabVisible(3, preceptor);
     ui->tabObjetos->setTabVisible(4, preceptor);
     habilitar(preceptor, QList<QWidget *>() << ui->btnObjArchivar);
-    habilitar(alumno, QList<QWidget *>() << ui->frmObjReclamo);
+    habilitar(!preceptor, QList<QWidget *>() << ui->frmObjReclamo);
 
     habilitar(personal, QList<QWidget *>() << ui->btnHigieneResolver);
 
@@ -284,8 +365,8 @@ void MainWindow::aplicarPermisos()
     habilitar(alumno, QList<QWidget *>() << ui->btnBuffetEntregar << ui->btnBuffetCancelarVenta
               << ui->sbProdReponer << ui->btnProdReponer << ui->btnProdQuitar << ui->btnProdEliminar);
 
-    habilitar(prestamos, QList<QWidget *>() << ui->frmPlanillasPrestar << ui->lblPlanillasEstadoEt
-              << ui->cbPlanillasEstado << ui->btnPlanillasDevolver);
+    habilitar(prestamos, QList<QWidget *>() << ui->frmPlanillasPrestar);
+    habilitar(docente, QList<QWidget *>() << ui->lblPlanillasEstadoEt << ui->cbPlanillasEstado << ui->btnPlanillasDevolver);
     ui->cbPlanillasAlumno->setEnabled(docente);
     ui->lePlanillasId->setVisible(docente);
     habilitar(reparador, QList<QWidget *>() << ui->frmPlanillasFuera);
@@ -299,6 +380,7 @@ void MainWindow::aplicarPermisos()
 
     habilitar(alumno, QList<QWidget *>() << ui->tarjetaCuentaCurso << ui->lblCuentaCambio << ui->cbCuentaAnio << ui->cbCuentaDivision
               << ui->cbCuentaEspecialidad << ui->btnCuentaGuardar << ui->lblCuentaCursoTit << ui->lblCuentaCurso);
+    habilitar(preceptor, QList<QWidget *>() << ui->tarjetaCuentaPin);
 }
 
 void MainWindow::habilitar(bool si, QList<QWidget *> widgets)
@@ -589,6 +671,8 @@ void MainWindow::cerrarSesion()
     ui->leCuentaClaveNueva->clear();
     ui->leCuentaClaveRepetir->clear();
     ui->leCuentaTelefono->clear();
+    ui->leCuentaPinNuevo->clear();
+    ui->leCuentaPinRepetir->clear();
     ui->cbHigieneSector->setCurrentIndex(0);
     ui->cbHigieneTipo->setCurrentIndex(0);
     ui->cbObjCategoria->setCurrentIndex(0);
@@ -683,7 +767,7 @@ void MainWindow::on_btnRegistrar_clicked()
     else if (!soloDigitos(dni, 7, 8)) problema = "El DNI tiene que tener 7 u 8 números, sin puntos.";
     else if (!QRegularExpression("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$").match(mail).hasMatch()) problema = "El correo no es válido. Tiene que ser algo como nombre@dominio.com.";
     else if (!soloDigitos(telefono, 8, 15)) problema = "El teléfono tiene que tener entre 8 y 15 números.";
-    else if (!alumno && ui->leRegPin->text() != PIN_PERSONAL) problema = "El PIN de personal es incorrecto.";
+    else if (!alumno && !pinPersonalValido(ui->leRegPin->text())) problema = "El PIN de personal es incorrecto.";
     else if (existe("usuario", "LOWER(usuario_nick)", nick)) problema = "Ese usuario ya existe, probá con otro.";
     else if (existe("usuario", "dni", dni)) problema = "Ya hay una cuenta con ese DNI.";
     else if (existe("usuario", "email", mail)) problema = "Ya hay una cuenta con ese correo.";
@@ -1051,9 +1135,10 @@ void MainWindow::cargarObjetos()
             QPixmap foto(carpeta + q.value(3).toString());
             if (!q.value(3).toString().isEmpty() && !foto.isNull()) miniatura = foto.scaled(96, 96, Qt::KeepAspectRatio, Qt::SmoothTransformation);
             item->setIcon(QIcon(miniatura));
-            if (estado == "Disponible") item->setForeground(QBrush(colorToken("ok")));
+            bool reclamable = estado == "Disponible" || estado == "En reclamo";
+            if (reclamable) item->setForeground(QBrush(colorToken("ok")));
             else item->setForeground(QBrush(colorToken("suave")));
-            if (estado == "Disponible") disponibles++;
+            if (reclamable) disponibles++;
             if (estado == "Devuelto") devueltos++;
             if (q.value(0).toInt() == elegido) ui->listObjetos->setCurrentRow(ui->listObjetos->count() - 1);
         }
@@ -1112,7 +1197,7 @@ void MainWindow::cargarReclamos()
 
 void MainWindow::on_btnObjReclamar_clicked()
 {
-    if (!exigir("Alumno", "Reclamo de objeto", "reclamo_objeto")) return;
+    if (!exigir("Alumno,Profesor,Maestranza", "Reclamo de objeto", "reclamo_objeto")) return;
     int objeto = seleccionado(ui->listObjetos);
     QString detalle = ui->leObjPrueba->text().trimmed();
     if (objeto == 0) {
@@ -1129,6 +1214,7 @@ void MainWindow::on_btnObjReclamar_clicked()
         fallar("Reclamo de objeto", "reclamo_objeto", "Contanos un poco más: el detalle necesita 10 caracteres o más.");
         return;
     }
+    db.transaction();
     QSqlQuery q;
     q.prepare("INSERT INTO reclamo_objeto (prueba_pertenencia, fecha_reclamo, id_usuario, id_objeto, id_estado_reclamo) "
               "VALUES (:prueba, :fecha, :usuario, :objeto, :estado)");
@@ -1137,7 +1223,15 @@ void MainWindow::on_btnObjReclamar_clicked()
     q.bindValue(":usuario", idActual);
     q.bindValue(":objeto", objeto);
     q.bindValue(":estado", idEstado("estado_reclamo", "Pendiente"));
-    if (!q.exec()) {
+    bool ok = q.exec();
+    if (ok && estado == "Disponible") {
+        q.prepare("UPDATE objeto_perdido SET id_estado_objeto = :estado WHERE id_objeto = :objeto");
+        q.bindValue(":estado", idEstado("estado_objeto", "En reclamo"));
+        q.bindValue(":objeto", objeto);
+        ok = q.exec();
+    }
+    if (!ok) {
+        db.rollback();
         q.prepare("SELECT COUNT(*) FROM reclamo_objeto WHERE id_usuario = :usuario AND id_objeto = :objeto");
         q.bindValue(":usuario", idActual);
         q.bindValue(":objeto", objeto);
@@ -1147,6 +1241,7 @@ void MainWindow::on_btnObjReclamar_clicked()
         else fallar("Reclamo de objeto", "reclamo_objeto", "No se pudo enviar el reclamo. Probá de nuevo.");
         return;
     }
+    db.commit();
     registrarLog("Reclamo de objeto", QString("Reclamo sobre el objeto %1").arg(objeto), "reclamo_objeto", "Exitoso");
     ui->leObjPrueba->clear();
     cargarObjetos();
@@ -1193,6 +1288,15 @@ void MainWindow::resolverReclamo(const QString &estadoReclamo, const QString &ev
         q.prepare("UPDATE objeto_perdido SET id_estado_objeto = :estado WHERE id_objeto = :objeto");
         q.bindValue(":estado", idEstado("estado_objeto", "Devuelto"));
         q.bindValue(":objeto", objeto);
+        ok = ok && q.exec();
+    } else {
+        q.prepare("UPDATE objeto_perdido SET id_estado_objeto = :disponible WHERE id_objeto = :objeto AND id_estado_objeto = :enReclamo "
+                  "AND NOT EXISTS (SELECT 1 FROM reclamo_objeto r WHERE r.id_objeto = :mismo AND r.id_estado_reclamo = :pendiente)");
+        q.bindValue(":disponible", idEstado("estado_objeto", "Disponible"));
+        q.bindValue(":objeto", objeto);
+        q.bindValue(":enReclamo", idEstado("estado_objeto", "En reclamo"));
+        q.bindValue(":mismo", objeto);
+        q.bindValue(":pendiente", idEstado("estado_reclamo", "Pendiente"));
         ok = ok && q.exec();
     }
     if (!ok) {
@@ -1633,6 +1737,7 @@ void MainWindow::cargarMisReservas()
         QString estado = q.value(7).toString();
         QString texto = QString("%1 · %2 x%3 · $%4 · vende %5 (tel. %6) · %7").arg(estado).arg(q.value(1).toString()).arg(q.value(2).toInt())
                 .arg(q.value(3).toInt()).arg(q.value(4).toString()).arg(q.value(5).toString()).arg(formatoCorto(q.value(6).toString()));
+        if (estado == "Reservada") texto += " · vence " + q.value(6).toDateTime().addDays(DIAS_RESERVA).toString("dd/MM HH:mm");
         agregarItem(ui->listMisReservas, texto, q.value(0).toInt());
         pintarEstadoVenta(ui->listMisReservas->item(ui->listMisReservas->count() - 1), estado);
         if (estado == "Reservada") activas++;
@@ -1701,7 +1806,7 @@ void MainWindow::on_btnBuffetReservar_clicked()
     ui->sbBuffetCantidad->setValue(1);
     cargarBuffet();
     cargarMisReservas();
-    info("Reserva hecha. Coordiná la entrega en persona con el vendedor.");
+    info(QString("Reserva hecha. Coordiná la entrega en persona con el vendedor. Tenés %1 días para retirarla: si no, se cancela sola y el stock vuelve al producto.").arg(DIAS_RESERVA));
 }
 
 void MainWindow::on_btnBuffetCancelar_clicked()
@@ -1794,6 +1899,7 @@ void MainWindow::cargarMisVentas()
         QString estado = q.value(7).toString();
         QString texto = QString("%1 · %2 x%3 · $%4 · reservó %5 (tel. %6) · %7").arg(estado).arg(q.value(1).toString()).arg(q.value(2).toInt())
                 .arg(q.value(3).toInt()).arg(q.value(4).toString()).arg(q.value(5).toString()).arg(formatoCorto(q.value(6).toString()));
+        if (estado == "Reservada") texto += " · vence " + q.value(6).toDateTime().addDays(DIAS_RESERVA).toString("dd/MM HH:mm");
         agregarItem(ui->listMisVentas, texto, q.value(0).toInt());
         pintarEstadoVenta(ui->listMisVentas->item(ui->listMisVentas->count() - 1), estado);
         if (estado == "Reservada") pendientes++;
@@ -2479,7 +2585,7 @@ void MainWindow::on_btnPlanillasPrestar_clicked()
 
 void MainWindow::on_btnPlanillasDevolver_clicked()
 {
-    if (!exigir("Alumno,Profesor,Preceptor", "Devolución de recurso", "prestamo_ct")) return;
+    if (!exigir("Profesor,Preceptor", "Devolución de recurso", "prestamo_ct")) return;
     int prestamo = seleccionado(ui->listPrestamos);
     QString observaciones = ui->lePlanillasObs->text().trimmed();
     if (prestamo == 0) {
@@ -2493,10 +2599,6 @@ void MainWindow::on_btnPlanillasDevolver_clicked()
     q.next();
     if (!q.value(0).isNull()) {
         fallar("Devolución de recurso", "prestamo_ct", "Ese préstamo ya fue devuelto.");
-        return;
-    }
-    if (rolActual() == "Alumno" && q.value(2).toInt() != idActual) {
-        fallar("Devolución de recurso", "prestamo_ct", "Solo podés devolver tus propios préstamos.");
         return;
     }
     int recurso = q.value(1).toInt();
