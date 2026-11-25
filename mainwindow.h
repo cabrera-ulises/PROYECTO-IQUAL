@@ -1,9 +1,11 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#ifdef _WIN32
+#include <winsock2.h>
+#endif
+#include <mysql.h>
 #include <QMainWindow>
-#include <QSqlDatabase>
-#include <QSqlQuery>
 #include <QSettings>
 #include <QString>
 #include <QStringList>
@@ -147,7 +149,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     bool temaOscuro;
-    QSqlDatabase db;
+    MYSQL *conn;
     int idActual;
     int intentosFallidos;
     QString fotoElegida;
@@ -155,11 +157,15 @@ private:
 
     bool abrirBase();
     bool abrirMySql(QSettings &cfg, QString &error);
-    int ultimoId(QSqlQuery &q);
+    MYSQL_RES *hacerSelect(const QString &sql);
+    bool ejecutar(const QString &sql);
+    QString texto(const QString &valor);
+    QString textoONulo(const QString &valor);
+    QString numeroONulo(int numero);
+    int ultimoId();
     QString valorUnicoHoy(const QString &sql, int id);
-    QVariant valorAhora();
-    QVariant valorFecha(const QDate &fecha);
-    QString nombreDriverOdbc(QSettings &cfg);
+    QString valorAhora();
+    QString valorFecha(const QDate &fecha);
     void cargarCatalogos();
     void aplicarTema(bool oscuro);
     void cargarResumen();

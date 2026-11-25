@@ -17,7 +17,7 @@
 | Sistema de construcción | CMake (objetivo `PROYECTO_IQUAL`) |
 | Tipo de app | Escritorio, una sola ventana principal |
 | Base de datos | MySQL (47 tablas); es la única que usa la app |
-| Drivers | `QMYSQL` (plugin de Qt) o, en Windows, ODBC (`QODBC`) con MySQL Connector/ODBC |
+| Conexión | Librería de C de MySQL (`mysql.h` / `libmysqlclient`), como en la clase 006: `mysql_init`, `mysql_real_connect`, `mysql_query`, `mysql_store_result`, `mysql_fetch_row`, `mysql_free_result`, `mysql_close` |
 | Tamaño del código principal (v7) | `mainwindow.cpp` 3257 líneas; `mainwindow.ui` 2244; `mainwindow.h` 246; 185 funciones de `MainWindow` (contadas con una búsqueda por texto, sin contar constructor y destructor) |
 | Consultas | 99 llamadas a `prepare(` y 224 a `bindValue`; solo dos `exec("...")` directos sin parámetros: `SELECT LAST_INSERT_ID()` y `SET NAMES utf8mb4` |
 | Nivel de código | Sin comentarios, sin ternarios, sin `continue`, sin `findData`, `.arg` encadenados de a un parámetro (verificado con búsquedas por texto sobre toda la app v7; ver `REVISION_CODIGO_*`) |
@@ -74,7 +74,10 @@ Estas funciones se usan en todos los módulos; conviene conocerlas antes de toca
 | `confirmar(titulo, pregunta)` | Cuadro Sí/No; el botón por defecto es **No** |
 | `hashClave` | SHA-256 de la clave con `QCryptographicHash` |
 | `valorAhora()`, `valorFecha(QDate)` | Fecha y hora para guardar en la base, calculadas en C++ (no en el SQL): devuelven siempre un `QDateTime` o un `QDate` |
-| `ultimoId(QSqlQuery&)` | Devuelve el id recién insertado; con driver ODBC pide `SELECT LAST_INSERT_ID()` |
+| `hacerSelect(sql)` | `mysql_query` + `mysql_store_result`; devuelve el `MYSQL_RES*` (o `NULL` si falla) y descarta los resultados extra de un `CALL` |
+| `ejecutar(sql)` | `mysql_query` para INSERT, UPDATE, DELETE, `CALL` y `START TRANSACTION`/`COMMIT`/`ROLLBACK`; devuelve `true` si salió bien |
+| `texto(valor)` | Escapa el texto con `mysql_real_escape_string` y le pone comillas simples (evita que una comilla rompa la consulta y la inyección SQL) |
+| `ultimoId()` | Devuelve el id recién insertado (`mysql_insert_id`) |
 | `formatoCorto()`, `plural` | Formato de fechas y plurales en los textos |
 | `ponerIcono`, `colorToken` | Íconos y colores de estado |
 | `elegirPorId`, `cargarCombo` | Cargar y posicionar combos por id |
@@ -124,11 +127,11 @@ Fichas en `db/SP_*.md`, pruebas en `db/06_PruebasSQL.xlsx` (104 casos) y tuning 
 ### 3.4 Cómo usa la app los tipos y el motor
 | Tema | Cómo es en MySQL |
 |---|---|
-| Fechas | tipos `DATE` / `DATETIME`; la app pasa un `QDate` o un `QDateTime` con `bindValue` |
+| Fechas | tipos `DATE` / `DATETIME`; la app las arma como texto `'yyyy-MM-dd'` o `'yyyy-MM-dd HH:mm:ss'` (`valorFecha`, `valorAhora`) |
 | Mayúsculas y tildes en comparaciones y `LIKE` | el collation por defecto (`utf8mb4_0900_ai_ci`) no las distingue: `ALUMNO1` = `alumno1` |
 | Restricciones `CHECK` | se aplican desde MySQL 8.0.16 |
 | Claves foráneas | siempre (InnoDB) |
-| Id nuevo | `LAST_INSERT_ID()` con ODBC, `lastInsertId()` con `QMYSQL` (función `ultimoId`) |
+| Id nuevo | `mysql_insert_id(conn)` (función `ultimoId`) |
 
 El código no usa funciones de fecha del SQL (`NOW()`, `CURDATE()`): las fechas se calculan en C++ y el id nuevo pasa por `ultimoId`.
 
@@ -139,7 +142,7 @@ El código no usa funciones de fecha del SQL (`NOW()`, `CURDATE()`): las fechas 
 ### 4.1 Flujo
 1. Al construir `MainWindow` se llama a `abrirBase()`.
 2. `abrirBase()` lee `iqual.ini`, que está **al lado del .exe**. Si no existe, la app lo crea con valores por defecto.
-3. Llama a `abrirMySql()`. Si conecta, el título de la ventana termina en «· MySQL» o «· MySQL (ODBC)» según el driver.
+3. Llama a `abrirMySql()`. Si conecta, el título de la ventana termina en «· MySQL».
 4. Si no conecta, `abrirBase()` muestra «No se pudo usar MySQL: …» con el motivo y devuelve `false` (ver 4.5).
 
 ### 4.2 `iqual.ini`
@@ -150,38 +153,36 @@ El código no usa funciones de fecha del SQL (`NOW()`, `CURDATE()`): las fechas 
 | `usuario` | (por defecto de la app) | Usuario de MySQL |
 | `clave` | (por defecto de la app) | Clave de MySQL |
 | `nombre` | `iqual` | Nombre de la base |
-| `driver` (opcional) | `auto` | `auto`, `qmysql` u `odbc` |
-| `odbc_driver` (opcional) | (se busca solo) | Nombre exacto del driver ODBC instalado |
 
 Todas van en la sección `[base]`. Los valores de usuario y clave **no se escriben en este manual**: están en `GUIA_CONEXION_APP_MYSQL.md` y en el script de datos.
 
-### 4.3 `abrirMySql` y elección del driver
-- `driver=auto`: usa `QMYSQL` si Qt lo tiene disponible; si no, usa `QODBC`. Si no hay ninguno de los dos, devuelve el error «Qt no tiene ni el driver QMYSQL ni el QODBC».
-- Con ODBC arma la cadena de conexión `DRIVER={...};SERVER=...;PORT=...;DATABASE=...`.
-- `nombreDriverOdbc` busca en el registro de Windows (`HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI\ODBC Drivers`) un driver de MySQL y prefiere el que dice «Unicode». Se puede forzar con `odbc_driver`.
-- Después de conectar ejecuta `SET NAMES utf8mb4` para que las tildes y la ñ viajen bien.
-- Si la base existe pero no tiene la tabla `usuario`, devuelve el error «La base … existe pero está vacía. Cargá 03_ModeloSQL_Grupo06.sql y 04_DatosSQL_Grupo06.sql desde DBeaver.»
+### 4.3 `abrirMySql`
+- `conn = mysql_init(NULL)` crea el objeto de conexión y `mysql_options(conn, MYSQL_SET_CHARSET_NAME, "utf8mb4")` pide que las tildes y la ñ viajen bien.
+- `mysql_real_connect(conn, host, usuario, clave, base, puerto, NULL, 0)` abre la sesión con los datos de `iqual.ini`. Si devuelve `NULL`, el error es el texto de `mysql_error(conn)`.
+- Después prueba `SELECT COUNT(*) FROM seguridad.usuario`; si falla, devuelve «Los schemas de IQUAL no existen. Cargá 03_ModeloSQL_Grupo06.sql y 04_DatosSQL_Grupo06.sql desde DBeaver.»
 
-### 4.4 Autochequeo con ODBC
-Con ODBC, la app hace una consulta de prueba (`SELECT COUNT(*) FROM rol WHERE nombre_rol = :nombre` buscando «Alumno»). Si devuelve menos de 1, entiende que el driver no está pasando bien los parámetros, cierra la conexión y devuelve un error que sugiere instalar MySQL Connector/ODBC o usar el driver `QMYSQL`. No hay otra base a la que pasar.
+### 4.4 Cómo se arma cada consulta
+- Los números se pegan con `QString::number` y los textos con `texto(valor)`, que usa `mysql_real_escape_string`. Así un apóstrofo (`O'Brien`) no rompe la consulta y no se puede inyectar SQL.
+- Los valores opcionales van como `NULL` con `textoONulo` y `numeroONulo`.
+- Los listados recorren el resultado con `while ((fila = mysql_fetch_row(result)) != NULL)` y lo liberan con `mysql_free_result`, como en la clase 006.
 
 ### 4.5 Qué pasa si no se puede conectar
-Si `abrirMySql` falla (servidor apagado, clave mal, base vacía, falta el driver o el autochequeo ODBC falla):
+Si `abrirMySql` falla (servidor apagado, clave mal o base sin schemas):
 1. `abrirBase()` muestra el aviso «No se pudo usar MySQL:» + el motivo + «Revisá iqual.ini y que el servidor esté encendido.».
 2. El constructor de `MainWindow` muestra un segundo aviso («No se pudo abrir la base de datos. Revisá iqual.ini y que el servidor MySQL esté encendido.»), deshabilita el `QStackedWidget` y sale sin llamar a `cargarCatalogos`.
 3. La ventana queda abierta pero **sin usarse**: no hay login ni módulos hasta corregir el problema y volver a abrir la app. No hay base de respaldo.
 
-### 4.6 Pasos para instalar el driver
-**No se repiten acá.** Están en `GUIA_CONEXION_APP_MYSQL.md`: Camino A (MySQL Connector/ODBC Unicode de 64 bits), Camino B (compilar el plugin `QMYSQL`) e instalación en Ubuntu. La instalación del servidor y la carga del script están en `GUIA_INSTALACION_MYSQL.md`.
+### 4.6 Qué instalar
+**No se repite acá.** Está en `db/guias/GUIA_APP_MYSQL_H.md` (Windows: MySQL Server trae `mysql.h` y `libmysql`; Linux: `libmysqlclient-dev`). La instalación del servidor y la carga del script están en `GUIA_INSTALACION_MYSQL.md`.
 
 ---
 
 ## 5. Cómo compilar y ejecutar
 
 ### 5.1 Requisitos
-- Qt 6 con los módulos **Widgets** y **Sql** (el proyecto usa Desktop Qt 6.12.0 MinGW 64-bit).
+- Qt 6 con el módulo **Widgets** (el proyecto usa Desktop Qt 6.12.0 MinGW 64-bit).
 - CMake y un compilador con C++17.
-- Para usar MySQL: un driver (ver sección 4.6).
+- La librería de C de MySQL (`mysql.h` y `libmysql`), ver sección 4.6.
 
 ### 5.2 Pasos con Qt Creator
 1. Abrir `CMakeLists.txt`.
@@ -191,7 +192,7 @@ Si `abrirMySql` falla (servidor apagado, clave mal, base vacía, falta el driver
 5. Antes de abrir la app: levantar el servidor MySQL, cargar `03_ModeloSQL_Grupo06.sql`, `04_DatosSQL_Grupo06.sql` y `05_Backend_Grupo06.sql` y revisar `iqual.ini` (`GUIA_INSTALACION_MYSQL.md` y `GUIA_CONEXION_APP_MYSQL.md`).
 
 ### 5.3 Observaciones sobre el proyecto CMake
-- `CMakeLists.txt` compila solo `main.cpp`, `mainwindow.*`, `ventanadetalle.*`, `ventanaproducto.*`, `ventanainicio.*` y `recursos.qrc`, y enlaza `Qt6::Widgets` y `Qt6::Sql`. Ya no hay ejecutables de prueba aparte (`harness*`): las pruebas de la app son los casos por pantalla de `docs/pruebas` y los 104 casos de los procedimientos (`db/06_PruebasSQL.xlsx`).
+- `CMakeLists.txt` compila solo `main.cpp`, `mainwindow.*`, `ventanadetalle.*`, `ventanaproducto.*`, `ventanainicio.*` y `recursos.qrc`, y enlaza `Qt6::Widgets` y la librería de MySQL (`libmysql` en Windows, `mysqlclient` en Linux). Ya no hay ejecutables de prueba aparte (`harness*`): las pruebas de la app son los casos por pantalla de `docs/pruebas` y los 104 casos de los procedimientos (`db/06_PruebasSQL.xlsx`).
 - `recursos.qrc` embebe el logo, el GIF del splash (sin uso), los dos `.qss` y los íconos; ya no embebe ningún script SQL.
 - La carpeta `recursos/` (imágenes, temas e íconos) está en el repositorio, junto a `recursos.qrc`.
 

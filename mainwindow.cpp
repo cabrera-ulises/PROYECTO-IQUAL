@@ -10,8 +10,6 @@
 #include <QPushButton>
 #include <QListWidget>
 #include <QListWidgetItem>
-#include <QSqlQuery>
-#include <QSqlError>
 #include <QCryptographicHash>
 #include <QDateTime>
 #include <QFile>
@@ -40,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , temaOscuro(false)
+    , conn(NULL)
     , idActual(0)
     , intentosFallidos(0)
 {
@@ -85,6 +84,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    if (conn != NULL) mysql_close(conn);
     delete ui;
 }
 
@@ -100,95 +100,90 @@ bool MainWindow::abrirBase()
 
     QString error;
     if (abrirMySql(cfg, error)) {
-        QString sufijo = " · MySQL";
-        if (db.driverName() == "QODBC") sufijo = " · MySQL (ODBC)";
-        setWindowTitle(windowTitle() + sufijo);
+        setWindowTitle(windowTitle() + " · MySQL");
         return true;
     }
-    db = QSqlDatabase();
-    QSqlDatabase::removeDatabase(QSqlDatabase::defaultConnection);
     aviso("No se pudo usar MySQL:\n" + error + "\n\nRevisá iqual.ini y que el servidor esté encendido.");
     return false;
 }
 
-int MainWindow::ultimoId(QSqlQuery &q)
-{
-    if (db.driverName() == "QODBC") {
-        QSqlQuery u;
-        if (u.exec("SELECT LAST_INSERT_ID()") && u.next()) return u.value(0).toInt();
-        return 0;
-    }
-    return q.lastInsertId().toInt();
-}
-
-QString MainWindow::nombreDriverOdbc(QSettings &cfg)
-{
-    QString configurado = cfg.value("base/odbc_driver").toString().trimmed();
-    if (!configurado.isEmpty()) return configurado;
-#ifdef Q_OS_WIN
-    QSettings registro("HKEY_LOCAL_MACHINE\\SOFTWARE\\ODBC\\ODBCINST.INI\\ODBC Drivers", QSettings::NativeFormat);
-    QStringList nombres = registro.childKeys();
-    for (int i = 0; i < nombres.size(); i++) {
-        if (nombres[i].contains("MySQL", Qt::CaseInsensitive) && nombres[i].contains("Unicode", Qt::CaseInsensitive)) return nombres[i];
-    }
-    for (int i = 0; i < nombres.size(); i++) {
-        if (nombres[i].contains("MySQL", Qt::CaseInsensitive)) return nombres[i];
-    }
-#endif
-    return "MySQL ODBC 8.0 Unicode Driver";
-}
-
 bool MainWindow::abrirMySql(QSettings &cfg, QString &error)
 {
-    QString preferido = cfg.value("base/driver", "auto").toString().toLower();
-    bool hayMysql = QSqlDatabase::isDriverAvailable("QMYSQL");
-    bool hayOdbc = QSqlDatabase::isDriverAvailable("QODBC");
-    bool usarOdbc = preferido == "odbc" || (preferido != "qmysql" && !hayMysql);
-    if (usarOdbc && !hayOdbc) {
-        error = "Qt no tiene ni el driver QMYSQL ni el QODBC (ver la guía GUIA_CONEXION_APP_MYSQL).";
+    conn = mysql_init(NULL);
+    if (conn == NULL) {
+        error = "No se pudo inicializar la conexión de MySQL (mysql_init).";
         return false;
     }
-    if (!usarOdbc && !hayMysql) {
-        error = "Falta el driver QMYSQL de Qt (ver la guía GUIA_CONEXION_APP_MYSQL).";
+    mysql_options(conn, MYSQL_SET_CHARSET_NAME, "utf8mb4");
+    QByteArray host = cfg.value("base/host").toString().toUtf8();
+    QByteArray usuario = cfg.value("base/usuario").toString().toUtf8();
+    QByteArray clave = cfg.value("base/clave").toString().toUtf8();
+    QByteArray base = cfg.value("base/nombre").toString().toUtf8();
+    unsigned int puerto = cfg.value("base/puerto").toUInt();
+    if (mysql_real_connect(conn, host.constData(), usuario.constData(), clave.constData(), base.constData(), puerto, NULL, 0) == NULL) {
+        error = QString::fromUtf8(mysql_error(conn));
+        mysql_close(conn);
+        conn = NULL;
         return false;
     }
-    if (usarOdbc) {
-        db = QSqlDatabase::addDatabase("QODBC");
-        db.setDatabaseName(QString("DRIVER={%1};SERVER=%2;PORT=%3;DATABASE=%4")
-                           .arg(nombreDriverOdbc(cfg)).arg(cfg.value("base/host").toString()).arg(cfg.value("base/puerto").toString())
-                           .arg(cfg.value("base/nombre").toString()));
-    } else {
-        db = QSqlDatabase::addDatabase("QMYSQL");
-        db.setHostName(cfg.value("base/host").toString());
-        db.setPort(cfg.value("base/puerto").toInt());
-        db.setDatabaseName(cfg.value("base/nombre").toString());
-    }
-    db.setUserName(cfg.value("base/usuario").toString());
-    db.setPassword(cfg.value("base/clave").toString());
-    if (!db.open()) {
-        error = db.lastError().text();
-        return false;
-    }
-    QSqlQuery q;
-    q.exec("SET NAMES utf8mb4");
-    QSqlQuery hayTablas;
-    hayTablas.prepare("SELECT COUNT(*) FROM seguridad.usuario");
-    if (!hayTablas.exec()) {
+    ejecutar("SET NAMES utf8mb4");
+    MYSQL_RES *result = hacerSelect("SELECT COUNT(*) FROM seguridad.usuario");
+    if (result == NULL) {
         error = "Los schemas de IQUAL no existen. Cargá 03_ModeloSQL_Grupo06.sql y 04_DatosSQL_Grupo06.sql desde DBeaver.";
-        db.close();
+        mysql_close(conn);
+        conn = NULL;
         return false;
     }
-    if (db.driverName() == "QODBC") {
-        QSqlQuery prueba;
-        prueba.prepare("SELECT COUNT(*) FROM seguridad.rol WHERE nombre_rol = :nombre");
-        prueba.bindValue(":nombre", "Alumno");
-        if (!prueba.exec() || !prueba.next() || prueba.value(0).toInt() < 1) {
-            error = "El driver ODBC no compara bien los textos (le pasa al MariaDB Connector/ODBC). Instalá MySQL Connector/ODBC o usá el driver QMYSQL.";
-            db.close();
-            return false;
-        }
+    mysql_free_result(result);
+    return true;
+}
+
+MYSQL_RES *MainWindow::hacerSelect(const QString &sql)
+{
+    if (mysql_query(conn, sql.toUtf8().constData()) != 0) return NULL;
+    MYSQL_RES *result = mysql_store_result(conn);
+    while (mysql_next_result(conn) == 0) {
+        MYSQL_RES *resto = mysql_store_result(conn);
+        if (resto != NULL) mysql_free_result(resto);
+    }
+    return result;
+}
+
+bool MainWindow::ejecutar(const QString &sql)
+{
+    if (mysql_query(conn, sql.toUtf8().constData()) != 0) return false;
+    MYSQL_RES *result = mysql_store_result(conn);
+    if (result != NULL) mysql_free_result(result);
+    while (mysql_next_result(conn) == 0) {
+        result = mysql_store_result(conn);
+        if (result != NULL) mysql_free_result(result);
     }
     return true;
+}
+
+QString MainWindow::texto(const QString &valor)
+{
+    QByteArray origen = valor.toUtf8();
+    QByteArray destino(origen.size() * 2 + 1, '\0');
+    unsigned long largo = mysql_real_escape_string(conn, destino.data(), origen.constData(), origen.size());
+    return "'" + QString::fromUtf8(destino.constData(), largo) + "'";
+}
+
+QString MainWindow::textoONulo(const QString &valor)
+{
+    if (valor.isEmpty()) return "NULL";
+    return texto(valor);
+}
+
+QString MainWindow::numeroONulo(int numero)
+{
+    if (numero <= 0) return "NULL";
+    return QString::number(numero);
+}
+
+int MainWindow::ultimoId()
+{
+    return mysql_insert_id(conn);
 }
 
 void MainWindow::ponerIcono(QPushButton *boton, const QString &ruta, int tamano)
@@ -310,12 +305,14 @@ void MainWindow::habilitar(bool si, QList<QWidget *> widgets)
 
 int MainWindow::idPorNombre(const QString &tabla, const QString &columnaId, const QString &columnaNombre, const QString &valor)
 {
-    QSqlQuery q;
-    q.prepare(QString("SELECT %1 FROM %2 WHERE %3 = :valor").arg(columnaId).arg(tabla).arg(columnaNombre));
-    q.bindValue(":valor", valor);
-    q.exec();
-    if (q.next()) return q.value(0).toInt();
-    return 0;
+    QString sql = "SELECT " + columnaId + " FROM " + tabla + " WHERE " + columnaNombre + " = " + texto(valor);
+    MYSQL_RES *result = hacerSelect(sql);
+    if (result == NULL) return 0;
+    int id = 0;
+    MYSQL_ROW fila = mysql_fetch_row(result);
+    if (fila != NULL) id = QString(fila[0]).toInt();
+    mysql_free_result(result);
+    return id;
 }
 
 int MainWindow::idEstado(const QString &tabla, const QString &nombre)
@@ -325,33 +322,34 @@ int MainWindow::idEstado(const QString &tabla, const QString &nombre)
 
 QString MainWindow::valorUnico(const QString &sql, int id)
 {
-    QSqlQuery q;
-    q.prepare(sql);
-    q.bindValue(":id", id);
-    q.exec();
-    if (q.next()) return q.value(0).toString();
-    return "";
+    QString consulta = sql;
+    consulta.replace(":id", QString::number(id));
+    MYSQL_RES *result = hacerSelect(consulta);
+    if (result == NULL) return "";
+    QString valor = "";
+    MYSQL_ROW fila = mysql_fetch_row(result);
+    if (fila != NULL) valor = QString(fila[0]);
+    mysql_free_result(result);
+    return valor;
 }
 
 QString MainWindow::valorUnicoHoy(const QString &sql, int id)
 {
-    QSqlQuery q;
-    q.prepare(sql);
-    q.bindValue(":id", id);
-    q.bindValue(":hoy", valorFecha(QDate::currentDate()));
-    q.exec();
-    if (q.next()) return q.value(0).toString();
-    return "";
+    QString consulta = sql;
+    consulta.replace(":hoy", valorFecha(QDate::currentDate()));
+    return valorUnico(consulta, id);
 }
 
 bool MainWindow::existe(const QString &tabla, const QString &columna, const QString &valor)
 {
-    QSqlQuery q;
-    q.prepare(QString("SELECT COUNT(*) FROM %1 WHERE %2 = :valor").arg(tabla).arg(columna));
-    q.bindValue(":valor", valor);
-    q.exec();
-    q.next();
-    return q.value(0).toInt() > 0;
+    QString sql = "SELECT COUNT(*) FROM " + tabla + " WHERE " + columna + " = " + texto(valor);
+    MYSQL_RES *result = hacerSelect(sql);
+    if (result == NULL) return false;
+    int cantidad = 0;
+    MYSQL_ROW fila = mysql_fetch_row(result);
+    if (fila != NULL) cantidad = QString(fila[0]).toInt();
+    mysql_free_result(result);
+    return cantidad > 0;
 }
 
 QString MainWindow::rolActual()
@@ -405,39 +403,20 @@ void MainWindow::fallar(const QString &evento, const QString &entidad, const QSt
 
 void MainWindow::registrarLog(const QString &evento, const QString &descripcion, const QString &entidad, const QString &resultado)
 {
-    QVariant usuario;
-    if (idActual > 0) usuario = idActual;
-    QVariant nick;
+    QString nick = "NULL";
     if (idActual > 0) {
-        QSqlQuery qn;
-        qn.prepare("SELECT usuario_nick FROM seguridad.usuario WHERE id_usuario = :id");
-        qn.bindValue(":id", idActual);
-        qn.exec();
-        if (qn.next()) nick = qn.value(0).toString();
+        nick = texto(valorUnico("SELECT usuario_nick FROM seguridad.usuario WHERE id_usuario = :id", idActual));
     }
-    QSqlQuery sp;
-    sp.prepare("CALL sp_registrar_log(:evento, :descripcion, :entidad, :nick, :resultado, :ip)");
-    sp.bindValue(":evento", evento);
-    sp.bindValue(":descripcion", descripcion);
-    sp.bindValue(":entidad", entidad);
-    sp.bindValue(":nick", nick);
-    sp.bindValue(":resultado", resultado);
-    sp.bindValue(":ip", QSysInfo::machineHostName());
-    if (sp.exec()) {
-        sp.finish();
-        return;
-    }
-    QSqlQuery q;
-    q.prepare("INSERT INTO seguridad.log_auditoria (fecha_hora, direccion_ip, descripcion_evento, id_entidad, id_usuario, id_tipo_log, id_resultado) "
-              "VALUES (:fecha, :ip, :descripcion, :entidad, :usuario, :tipo, :resultado)");
-    q.bindValue(":fecha", valorAhora());
-    q.bindValue(":ip", QSysInfo::machineHostName());
-    q.bindValue(":descripcion", descripcion);
-    q.bindValue(":entidad", idPorNombre("seguridad.entidad_log", "id_entidad", "nombre_entidad", entidad));
-    q.bindValue(":usuario", usuario);
-    q.bindValue(":tipo", idPorNombre("seguridad.tipo_log", "id_tipo_log", "nombre_evento", evento));
-    q.bindValue(":resultado", idPorNombre("seguridad.resultado_log", "id_resultado", "nombre_resultado", resultado));
-    q.exec();
+    QString sql = "CALL sp_registrar_log(" + texto(evento) + ", " + texto(descripcion) + ", " + texto(entidad) + ", "
+                  + nick + ", " + texto(resultado) + ", " + texto(QSysInfo::machineHostName()) + ")";
+    if (ejecutar(sql)) return;
+    sql = "INSERT INTO seguridad.log_auditoria (fecha_hora, direccion_ip, descripcion_evento, id_entidad, id_usuario, id_tipo_log, id_resultado) VALUES ("
+          + valorAhora() + ", " + texto(QSysInfo::machineHostName()) + ", " + texto(descripcion) + ", "
+          + QString::number(idPorNombre("seguridad.entidad_log", "id_entidad", "nombre_entidad", entidad)) + ", "
+          + numeroONulo(idActual) + ", "
+          + QString::number(idPorNombre("seguridad.tipo_log", "id_tipo_log", "nombre_evento", evento)) + ", "
+          + QString::number(idPorNombre("seguridad.resultado_log", "id_resultado", "nombre_resultado", resultado)) + ")";
+    ejecutar(sql);
 }
 
 QString MainWindow::hashClave(const QString &clave)
@@ -450,14 +429,14 @@ QString MainWindow::ahora()
     return QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");
 }
 
-QVariant MainWindow::valorAhora()
+QString MainWindow::valorAhora()
 {
-    return QDateTime::currentDateTime();
+    return texto(ahora());
 }
 
-QVariant MainWindow::valorFecha(const QDate &fecha)
+QString MainWindow::valorFecha(const QDate &fecha)
 {
-    return fecha;
+    return texto(fecha.toString("yyyy-MM-dd"));
 }
 
 QString MainWindow::hoy()
@@ -488,11 +467,13 @@ void MainWindow::cargarCombo(QComboBox *combo, const QString &sql, const QString
     combo->blockSignals(true);
     combo->clear();
     if (!inicial.isEmpty()) combo->addItem(inicial, 0);
-    QSqlQuery q;
-    q.prepare(sql);
-    q.exec();
-    while (q.next()) {
-        combo->addItem(q.value(1).toString() + sufijo, q.value(0).toInt());
+    MYSQL_RES *result = hacerSelect(sql);
+    if (result != NULL) {
+        MYSQL_ROW fila;
+        while ((fila = mysql_fetch_row(result)) != NULL) {
+            combo->addItem(QString(fila[1]) + sufijo, QString(fila[0]).toInt());
+        }
+        mysql_free_result(result);
     }
     combo->blockSignals(false);
 }
@@ -514,33 +495,29 @@ int MainWindow::seleccionado(QListWidget *lista, int rol)
 
 int MainWindow::obtenerCurso(QComboBox *anio, QComboBox *division, QComboBox *especialidad)
 {
-    QSqlQuery q;
-    q.prepare("SELECT id_curso FROM academico.curso WHERE id_anio = :a AND id_division = :d AND id_especialidad = :e");
-    q.bindValue(":a", anio->currentData().toInt());
-    q.bindValue(":d", division->currentData().toInt());
-    q.bindValue(":e", especialidad->currentData().toInt());
-    q.exec();
-    if (q.next()) return q.value(0).toInt();
-    q.prepare("INSERT INTO academico.curso (id_anio, id_division, id_especialidad) VALUES (:a, :d, :e)");
-    q.bindValue(":a", anio->currentData().toInt());
-    q.bindValue(":d", division->currentData().toInt());
-    q.bindValue(":e", especialidad->currentData().toInt());
-    if (!q.exec()) return 0;
-    return ultimoId(q);
+    QString a = QString::number(anio->currentData().toInt());
+    QString d = QString::number(division->currentData().toInt());
+    QString e = QString::number(especialidad->currentData().toInt());
+    int curso = valorUnico("SELECT id_curso FROM academico.curso WHERE id_anio = " + a + " AND id_division = " + d + " AND id_especialidad = " + e, 0).toInt();
+    if (curso > 0) return curso;
+    if (!ejecutar("INSERT INTO academico.curso (id_anio, id_division, id_especialidad) VALUES (" + a + ", " + d + ", " + e + ")")) return 0;
+    return ultimoId();
 }
 
 QString MainWindow::textoCurso(int idCurso)
 {
     if (idCurso <= 0) return "sin curso";
-    QSqlQuery q;
-    q.prepare("SELECT a.numero_anio, d.numero_division, e.nombre_especialidad FROM academico.curso c "
-              "JOIN academico.anio a ON a.id_anio = c.id_anio JOIN academico.division d ON d.id_division = c.id_division "
-              "JOIN academico.especialidad e ON e.id_especialidad = c.id_especialidad WHERE c.id_curso = :curso");
-    q.bindValue(":curso", idCurso);
-    q.exec();
-    if (!q.next()) return "sin curso";
-    return QString("%1° %2° %3").arg(q.value(0).toInt()).arg(q.value(1).toInt()).arg(q.value(2).toString());
+    MYSQL_RES *result = hacerSelect("SELECT a.numero_anio, d.numero_division, e.nombre_especialidad FROM academico.curso c "
+                                    "JOIN academico.anio a ON a.id_anio = c.id_anio JOIN academico.division d ON d.id_division = c.id_division "
+                                    "JOIN academico.especialidad e ON e.id_especialidad = c.id_especialidad WHERE c.id_curso = " + QString::number(idCurso));
+    if (result == NULL) return "sin curso";
+    QString resultado = "sin curso";
+    MYSQL_ROW fila = mysql_fetch_row(result);
+    if (fila != NULL) resultado = QString("%1° %2° %3").arg(QString(fila[0]).toInt()).arg(QString(fila[1]).toInt()).arg(QString(fila[2]));
+    mysql_free_result(result);
+    return resultado;
 }
+
 
 QString MainWindow::codigoRecurso(const QString &carro, int numero)
 {
@@ -691,28 +668,19 @@ void MainWindow::on_btnRegistrar_clicked()
         return;
     }
 
-    QVariant curso;
+    int curso = 0;
     if (alumno) {
-        int idCurso = obtenerCurso(ui->cbRegAnio, ui->cbRegDivision, ui->cbRegEspecialidad);
-        if (idCurso == 0) {
+        curso = obtenerCurso(ui->cbRegAnio, ui->cbRegDivision, ui->cbRegEspecialidad);
+        if (curso == 0) {
             fallar("Registro de usuario", "usuario", "No se pudo guardar el curso elegido.");
             return;
         }
-        curso = idCurso;
     }
 
-    QSqlQuery q;
-    q.prepare("INSERT INTO seguridad.usuario (dni, nombre_completo, usuario_nick, password_hash, email, contacto_telefono, id_rol, id_curso) "
-              "VALUES (:dni, :nombre, :nick, :hash, :mail, :telefono, :rol, :curso)");
-    q.bindValue(":dni", dni);
-    q.bindValue(":nombre", nombre);
-    q.bindValue(":nick", nick);
-    q.bindValue(":hash", hashClave(clave));
-    q.bindValue(":mail", mail);
-    q.bindValue(":telefono", telefono);
-    q.bindValue(":rol", ui->cbRegRol->currentData().toInt());
-    q.bindValue(":curso", curso);
-    if (!q.exec()) {
+    QString sql = "INSERT INTO seguridad.usuario (dni, nombre_completo, usuario_nick, password_hash, email, contacto_telefono, id_rol, id_curso) VALUES ("
+                  + texto(dni) + ", " + texto(nombre) + ", " + texto(nick) + ", " + texto(hashClave(clave)) + ", " + texto(mail) + ", "
+                  + texto(telefono) + ", " + QString::number(ui->cbRegRol->currentData().toInt()) + ", " + numeroONulo(curso) + ")";
+    if (!ejecutar(sql)) {
         fallar("Registro de usuario", "usuario", "No se pudo crear la cuenta. Revisá los datos.");
         return;
     }
@@ -734,12 +702,9 @@ void MainWindow::on_btnLoginIngresar_clicked()
         aviso("Completá el usuario y la contraseña.");
         return;
     }
-    QSqlQuery q;
-    q.prepare("SELECT id_usuario FROM seguridad.usuario WHERE LOWER(usuario_nick) = :nick AND password_hash = :hash");
-    q.bindValue(":nick", nick);
-    q.bindValue(":hash", hashClave(clave));
-    q.exec();
-    if (!q.next()) {
+    int encontrado = valorUnico("SELECT id_usuario FROM seguridad.usuario WHERE LOWER(usuario_nick) = " + texto(nick)
+                                + " AND password_hash = " + texto(hashClave(clave)), 0).toInt();
+    if (encontrado == 0) {
         intentosFallidos++;
         idActual = idPorNombre("seguridad.usuario", "id_usuario", "LOWER(usuario_nick)", nick);
         QString detalle = "Intento fallido con un usuario inexistente";
@@ -755,7 +720,7 @@ void MainWindow::on_btnLoginIngresar_clicked()
         return;
     }
     intentosFallidos = 0;
-    idActual = q.value(0).toInt();
+    idActual = encontrado;
     ui->leUsuario->clear();
     ui->leClave->clear();
     registrarLog("Inicio de sesión", QString("Ingresó el usuario %1").arg(nick), "usuario", "Exitoso");
@@ -765,28 +730,37 @@ void MainWindow::on_btnLoginIngresar_clicked()
 
 void MainWindow::cargarCuenta()
 {
-    QSqlQuery q;
-    q.prepare("SELECT u.nombre_completo, u.usuario_nick, u.dni, u.email, u.contacto_telefono, r.nombre_rol, "
-              "u.id_curso, cu.id_anio, cu.id_division, cu.id_especialidad FROM seguridad.usuario u "
-              "JOIN seguridad.rol r ON r.id_rol = u.id_rol LEFT JOIN academico.curso cu ON cu.id_curso = u.id_curso WHERE u.id_usuario = :usuario");
-    q.bindValue(":usuario", idActual);
-    q.exec();
-    if (!q.next()) return;
-    QString telefono = q.value(4).toString();
+    MYSQL_RES *result = hacerSelect("SELECT u.nombre_completo, u.usuario_nick, u.dni, u.email, u.contacto_telefono, r.nombre_rol, "
+                                    "u.id_curso, cu.id_anio, cu.id_division, cu.id_especialidad FROM seguridad.usuario u "
+                                    "JOIN seguridad.rol r ON r.id_rol = u.id_rol LEFT JOIN academico.curso cu ON cu.id_curso = u.id_curso "
+                                    "WHERE u.id_usuario = " + QString::number(idActual));
+    if (result == NULL) return;
+    MYSQL_ROW fila = mysql_fetch_row(result);
+    if (fila == NULL) {
+        mysql_free_result(result);
+        return;
+    }
+    QString telefono = QString(fila[4]);
     if (telefono.isEmpty()) telefono = "Sin teléfono cargado";
-    ui->lblBienvenida->setText(QString("Hola, %1").arg(q.value(0).toString().split(" ").first()));
-    ui->lblUsuarioChip->setText(QString("%1 · %2").arg(q.value(0).toString()).arg(q.value(5).toString()));
-    ui->lblCuentaNombre->setText(q.value(0).toString());
-    ui->lblCuentaUsuario->setText(q.value(1).toString());
-    ui->lblCuentaDni->setText(q.value(2).toString());
-    ui->lblCuentaMail->setText(q.value(3).toString());
+    ui->lblBienvenida->setText(QString("Hola, %1").arg(QString(fila[0]).split(" ").first()));
+    ui->lblUsuarioChip->setText(QString("%1 · %2").arg(QString(fila[0])).arg(QString(fila[5])));
+    ui->lblCuentaNombre->setText(QString(fila[0]));
+    ui->lblCuentaUsuario->setText(QString(fila[1]));
+    ui->lblCuentaDni->setText(QString(fila[2]));
+    ui->lblCuentaMail->setText(QString(fila[3]));
     ui->lblCuentaContacto->setText(telefono);
-    ui->lblCuentaRol->setText(q.value(5).toString());
-    ui->lblCuentaCurso->setText(textoCurso(q.value(6).toInt()));
-    ponerDato(ui->cbCuentaAnio, q.value(7).toInt());
-    ponerDato(ui->cbCuentaDivision, q.value(8).toInt());
-    ponerDato(ui->cbCuentaEspecialidad, q.value(9).toInt());
-    ui->lblProdContacto->setText("Tu contacto: " + q.value(4).toString());
+    ui->lblCuentaRol->setText(QString(fila[5]));
+    int curso = QString(fila[6]).toInt();
+    int anio = QString(fila[7]).toInt();
+    int division = QString(fila[8]).toInt();
+    int especialidad = QString(fila[9]).toInt();
+    QString contacto = QString(fila[4]);
+    mysql_free_result(result);
+    ui->lblCuentaCurso->setText(textoCurso(curso));
+    ponerDato(ui->cbCuentaAnio, anio);
+    ponerDato(ui->cbCuentaDivision, division);
+    ponerDato(ui->cbCuentaEspecialidad, especialidad);
+    ui->lblProdContacto->setText("Tu contacto: " + contacto);
 }
 
 void MainWindow::on_btnCuentaGuardar_clicked()
@@ -817,20 +791,13 @@ void MainWindow::on_btnCuentaGuardar_clicked()
             return;
         }
     }
-    QSqlQuery q;
-    q.prepare("UPDATE seguridad.usuario SET id_curso = :curso WHERE id_usuario = :usuario");
-    q.bindValue(":curso", curso);
-    q.bindValue(":usuario", idActual);
-    if (!q.exec()) {
+    if (!ejecutar("UPDATE seguridad.usuario SET id_curso = " + QString::number(curso) + " WHERE id_usuario = " + QString::number(idActual))) {
         fallar("", "", "No se pudo cambiar tu curso. Probá de nuevo.");
         return;
     }
     bool cancelada = false;
     if (!materia.isEmpty()) {
-        QSqlQuery d;
-        d.prepare("DELETE FROM deportes.inscripcion_ed_fisica WHERE id_usuario = :usuario");
-        d.bindValue(":usuario", idActual);
-        cancelada = d.exec();
+        cancelada = ejecutar("DELETE FROM deportes.inscripcion_ed_fisica WHERE id_usuario = " + QString::number(idActual));
     }
     if (cancelada) {
         registrarLog("Inscripción a Ed. Física", QString("Inscripción a la oferta %1 cancelada por cambio de curso").arg(oferta), "inscripcion_ed_fisica", "Exitoso");
@@ -876,11 +843,7 @@ void MainWindow::on_btnCuentaClave_clicked()
         fallar("", "", "Elegí una contraseña distinta de la actual.");
         return;
     }
-    QSqlQuery q;
-    q.prepare("UPDATE seguridad.usuario SET password_hash = :hash WHERE id_usuario = :usuario");
-    q.bindValue(":hash", hashClave(nueva));
-    q.bindValue(":usuario", idActual);
-    if (!q.exec()) {
+    if (!ejecutar("UPDATE seguridad.usuario SET password_hash = " + texto(hashClave(nueva)) + " WHERE id_usuario = " + QString::number(idActual))) {
         fallar("", "", "No se pudo cambiar la contraseña. Probá de nuevo.");
         return;
     }
@@ -906,11 +869,7 @@ void MainWindow::on_btnCuentaTelefono_clicked()
         fallar("", "", "Escribí el teléfono solo con números (entre 8 y 15), sin espacios ni guiones.");
         return;
     }
-    QSqlQuery q;
-    q.prepare("UPDATE seguridad.usuario SET contacto_telefono = :telefono WHERE id_usuario = :usuario");
-    q.bindValue(":telefono", telefono);
-    q.bindValue(":usuario", idActual);
-    if (!q.exec()) {
+    if (!ejecutar("UPDATE seguridad.usuario SET contacto_telefono = " + texto(telefono) + " WHERE id_usuario = " + QString::number(idActual))) {
         fallar("", "", "No se pudo cambiar el teléfono. Probá de nuevo.");
         return;
     }
@@ -942,14 +901,11 @@ void MainWindow::cargarObjetos()
                   "(SELECT COUNT(*) FROM objetos.reclamo_objeto r WHERE r.id_objeto = o.id_objeto) "
                   "FROM objetos.objeto_perdido o JOIN objetos.categoria_objeto c ON c.id_categoria_objeto = o.id_categoria_objeto "
                   "JOIN instalaciones.sector s ON s.id_sector = o.id_sector JOIN objetos.estado_objeto e ON e.id_estado_objeto = o.id_estado_objeto "
-                  "WHERE o.id_estado_objeto <> :archivado ";
-    if (categoria > 0) sql += "AND o.id_categoria_objeto = :categoria ";
+                  "WHERE o.id_estado_objeto <> " + QString::number(idEstado("objetos.estado_objeto", "Archivado")) + " ";
+    if (categoria > 0) sql += "AND o.id_categoria_objeto = " + QString::number(categoria) + " ";
     sql += "ORDER BY o.id_objeto DESC";
-    QSqlQuery q;
-    q.prepare(sql);
-    q.bindValue(":archivado", idEstado("objetos.estado_objeto", "Archivado"));
-    if (categoria > 0) q.bindValue(":categoria", categoria);
-    q.exec();
+    MYSQL_RES *result = hacerSelect(sql);
+    MYSQL_ROW fila;
     int disponibles = 0;
     int devueltos = 0;
     QString carpeta = QCoreApplication::applicationDirPath() + "/imagenes_objetos/";
@@ -960,28 +916,29 @@ void MainWindow::cargarObjetos()
         vacia = QPixmap(96, 96);
         vacia.fill(colorToken("seleccion"));
     }
-    while (q.next()) {
-        QString estado = q.value(6).toString();
-        QString conjunto = q.value(1).toString() + " " + q.value(2).toString() + " " + q.value(4).toString() + " " + q.value(5).toString();
+    while (result != NULL && (fila = mysql_fetch_row(result)) != NULL) {
+        QString estado = QString(fila[6]);
+        QString conjunto = QString(fila[1]) + " " + QString(fila[2]) + " " + QString(fila[4]) + " " + QString(fila[5]);
         if (buscar.isEmpty() || conjunto.contains(buscar, Qt::CaseInsensitive)) {
             QString nombreEstado = estado;
             if (estado == "Devuelto") nombreEstado = "Ya devuelto";
-            QString cantidad = "(" + plural(q.value(7).toInt(), "reclamo", "reclamos") + ")";
-            QString texto = QString("%1\n%2 · %3\n%4 · %5").arg(q.value(1).toString()).arg(q.value(4).toString())
-                                .arg(q.value(5).toString()).arg(nombreEstado).arg(cantidad);
-            agregarItem(ui->listObjetos, texto, q.value(0).toInt());
+            QString cantidad = "(" + plural(QString(fila[7]).toInt(), "reclamo", "reclamos") + ")";
+            QString texto = QString("%1\n%2 · %3\n%4 · %5").arg(QString(fila[1])).arg(QString(fila[4]))
+                                .arg(QString(fila[5])).arg(nombreEstado).arg(cantidad);
+            agregarItem(ui->listObjetos, texto, QString(fila[0]).toInt());
             QListWidgetItem *item = ui->listObjetos->item(ui->listObjetos->count() - 1);
             QPixmap miniatura = vacia;
-            QPixmap foto(carpeta + q.value(3).toString());
-            if (!q.value(3).toString().isEmpty() && !foto.isNull()) miniatura = foto.scaled(96, 96, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            QPixmap foto(carpeta + QString(fila[3]));
+            if (!QString(fila[3]).isEmpty() && !foto.isNull()) miniatura = foto.scaled(96, 96, Qt::KeepAspectRatio, Qt::SmoothTransformation);
             item->setIcon(QIcon(miniatura));
             if (estado == "Disponible") item->setForeground(QBrush(colorToken("ok")));
             else item->setForeground(QBrush(colorToken("suave")));
             if (estado == "Disponible") disponibles++;
             if (estado == "Devuelto") devueltos++;
-            if (q.value(0).toInt() == elegido) ui->listObjetos->setCurrentRow(ui->listObjetos->count() - 1);
+            if (QString(fila[0]).toInt() == elegido) ui->listObjetos->setCurrentRow(ui->listObjetos->count() - 1);
         }
     }
+    if (result != NULL) mysql_free_result(result);
     if (ui->listObjetos->count() == 0) {
         if (buscar.isEmpty() && categoria == 0) agregarVacio(ui->listObjetos, "Todavía no hay objetos publicados.");
         else agregarVacio(ui->listObjetos, "No hay objetos que coincidan con la búsqueda.");
@@ -998,15 +955,18 @@ void MainWindow::cargarObjetos()
 void MainWindow::on_listObjetos_itemDoubleClicked(QListWidgetItem *item)
 {
     int objeto = item->data(Qt::UserRole).toInt();
-    QSqlQuery q;
-    q.prepare("SELECT titulo, COALESCE(descripcion, ''), COALESCE(ruta_foto, ''), COALESCE(detalle_reservado, '') "
-              "FROM objetos.objeto_perdido WHERE id_objeto = :objeto");
-    q.bindValue(":objeto", objeto);
-    q.exec();
-    if (!q.next()) return;
+    MYSQL_RES *result = hacerSelect("SELECT titulo, COALESCE(descripcion, ''), COALESCE(ruta_foto, ''), COALESCE(detalle_reservado, '') "
+                                    "FROM objetos.objeto_perdido WHERE id_objeto = " + QString::number(objeto));
+    if (result == NULL) return;
+    MYSQL_ROW fila = mysql_fetch_row(result);
+    if (fila == NULL) {
+        mysql_free_result(result);
+        return;
+    }
     VentanaDetalle ventana;
-    ventana.setObjeto(q.value(0).toString(), q.value(1).toString(), q.value(2).toString());
-    if (rolEs("Preceptor")) ventana.setReservado(q.value(3).toString());
+    ventana.setObjeto(QString(fila[0]), QString(fila[1]), QString(fila[2]));
+    if (rolEs("Preceptor")) ventana.setReservado(QString(fila[3]));
+    mysql_free_result(result);
     ventana.exec();
 }
 
@@ -1015,20 +975,19 @@ void MainWindow::cargarReclamos()
     ui->listReclamos->clear();
     ui->tabObjetos->setTabText(1, "Reclamos");
     if (!rolEs("Preceptor")) return;
-    QSqlQuery q;
-    q.prepare("SELECT r.id_reclamo, r.id_objeto, o.titulo, u.nombre_completo, r.prueba_pertenencia, COALESCE(o.detalle_reservado, '') "
-              "FROM objetos.reclamo_objeto r JOIN objetos.objeto_perdido o ON o.id_objeto = r.id_objeto "
-              "JOIN seguridad.usuario u ON u.id_usuario = r.id_usuario WHERE r.id_estado_reclamo = :pendiente "
-              "ORDER BY r.id_objeto, r.id_reclamo");
-    q.bindValue(":pendiente", idEstado("objetos.estado_reclamo", "Pendiente"));
-    q.exec();
-    while (q.next()) {
-        QString reservado = q.value(5).toString();
+    MYSQL_RES *result = hacerSelect("SELECT r.id_reclamo, r.id_objeto, o.titulo, u.nombre_completo, r.prueba_pertenencia, COALESCE(o.detalle_reservado, '') "
+                                    "FROM objetos.reclamo_objeto r JOIN objetos.objeto_perdido o ON o.id_objeto = r.id_objeto "
+                                    "JOIN seguridad.usuario u ON u.id_usuario = r.id_usuario WHERE r.id_estado_reclamo = "
+                                    + QString::number(idEstado("objetos.estado_reclamo", "Pendiente")) + " ORDER BY r.id_objeto, r.id_reclamo");
+    MYSQL_ROW fila;
+    while (result != NULL && (fila = mysql_fetch_row(result)) != NULL) {
+        QString reservado = QString(fila[5]);
         if (reservado.isEmpty()) reservado = "ninguno cargado";
         QString texto = QString("%1 · lo reclama %2\nSu detalle: %3\nDato reservado: %4")
-                            .arg(q.value(2).toString()).arg(q.value(3).toString()).arg(q.value(4).toString()).arg(reservado);
-        agregarItem(ui->listReclamos, texto, q.value(0).toInt(), q.value(1).toInt());
+                            .arg(QString(fila[2])).arg(QString(fila[3])).arg(QString(fila[4])).arg(reservado);
+        agregarItem(ui->listReclamos, texto, QString(fila[0]).toInt(), QString(fila[1]).toInt());
     }
+    if (result != NULL) mysql_free_result(result);
     int total = ui->listReclamos->count();
     if (total == 0) agregarVacio(ui->listReclamos, "No hay reclamos pendientes. Cuando un alumno reclame un objeto, aparece acá.");
     ui->tabObjetos->setTabText(1, QString("Reclamos (%1)").arg(total));
@@ -1053,21 +1012,13 @@ void MainWindow::on_btnObjReclamar_clicked()
         fallar("Reclamo de objeto", "reclamo_objeto", "Contanos un poco más: el detalle necesita 10 caracteres o más.");
         return;
     }
-    QSqlQuery q;
-    q.prepare("INSERT INTO objetos.reclamo_objeto (prueba_pertenencia, fecha_reclamo, id_usuario, id_objeto, id_estado_reclamo) "
-              "VALUES (:prueba, :fecha, :usuario, :objeto, :estado)");
-    q.bindValue(":prueba", detalle);
-    q.bindValue(":fecha", valorFecha(QDate::currentDate()));
-    q.bindValue(":usuario", idActual);
-    q.bindValue(":objeto", objeto);
-    q.bindValue(":estado", idEstado("objetos.estado_reclamo", "Pendiente"));
-    if (!q.exec()) {
-        q.prepare("SELECT COUNT(*) FROM objetos.reclamo_objeto WHERE id_usuario = :usuario AND id_objeto = :objeto");
-        q.bindValue(":usuario", idActual);
-        q.bindValue(":objeto", objeto);
-        q.exec();
-        q.next();
-        if (q.value(0).toInt() > 0) fallar("Reclamo de objeto", "reclamo_objeto", "Ya reclamaste este objeto. Solo se puede reclamar una vez.");
+    QString sql = "INSERT INTO objetos.reclamo_objeto (prueba_pertenencia, fecha_reclamo, id_usuario, id_objeto, id_estado_reclamo) VALUES ("
+                  + texto(detalle) + ", " + valorFecha(QDate::currentDate()) + ", " + QString::number(idActual) + ", "
+                  + QString::number(objeto) + ", " + QString::number(idEstado("objetos.estado_reclamo", "Pendiente")) + ")";
+    if (!ejecutar(sql)) {
+        int yaReclamado = valorUnico("SELECT COUNT(*) FROM objetos.reclamo_objeto WHERE id_usuario = " + QString::number(idActual)
+                                     + " AND id_objeto = :id", objeto).toInt();
+        if (yaReclamado > 0) fallar("Reclamo de objeto", "reclamo_objeto", "Ya reclamaste este objeto. Solo se puede reclamar una vez.");
         else fallar("Reclamo de objeto", "reclamo_objeto", "No se pudo enviar el reclamo. Probá de nuevo.");
         return;
     }
@@ -1102,29 +1053,22 @@ void MainWindow::resolverReclamo(const QString &estadoReclamo, const QString &ev
         pregunta = QString("¿Querés aprobar el reclamo de %1 sobre “%2”? El objeto figura como Devuelto y los otros reclamos se rechazan.").arg(quien).arg(titulo);
     }
     if (!confirmar("Confirmar", pregunta)) return;
-    db.transaction();
-    QSqlQuery q;
-    q.prepare("UPDATE objetos.reclamo_objeto SET id_estado_reclamo = :estado WHERE id_reclamo = :reclamo");
-    q.bindValue(":estado", idEstado("objetos.estado_reclamo", estadoReclamo));
-    q.bindValue(":reclamo", reclamo);
-    bool ok = q.exec();
+    ejecutar("START TRANSACTION");
+    bool ok = ejecutar("UPDATE objetos.reclamo_objeto SET id_estado_reclamo = " + QString::number(idEstado("objetos.estado_reclamo", estadoReclamo))
+                       + " WHERE id_reclamo = " + QString::number(reclamo));
     if (estadoReclamo == "Aprobado") {
-        q.prepare("UPDATE objetos.reclamo_objeto SET id_estado_reclamo = :estado WHERE id_objeto = :objeto AND id_reclamo <> :reclamo");
-        q.bindValue(":estado", idEstado("objetos.estado_reclamo", "Rechazado"));
-        q.bindValue(":objeto", objeto);
-        q.bindValue(":reclamo", reclamo);
-        ok = ok && q.exec();
-        q.prepare("UPDATE objetos.objeto_perdido SET id_estado_objeto = :estado WHERE id_objeto = :objeto");
-        q.bindValue(":estado", idEstado("objetos.estado_objeto", "Devuelto"));
-        q.bindValue(":objeto", objeto);
-        ok = ok && q.exec();
+        ok = ok && ejecutar("UPDATE objetos.reclamo_objeto SET id_estado_reclamo = " + QString::number(idEstado("objetos.estado_reclamo", "Rechazado"))
+                            + " WHERE id_objeto = " + QString::number(objeto) + " AND id_reclamo <> " + QString::number(reclamo));
+        ok = ok && ejecutar("UPDATE objetos.objeto_perdido SET id_estado_objeto = " + QString::number(idEstado("objetos.estado_objeto", "Devuelto"))
+                            + " WHERE id_objeto = " + QString::number(objeto));
     }
     if (!ok) {
-        db.rollback();
+        ejecutar("ROLLBACK");
         fallar(evento, "reclamo_objeto", "No se pudo actualizar el reclamo. Probá de nuevo.");
         return;
     }
-    db.commit();
+    ejecutar("COMMIT");
+
     registrarLog(evento, QString("Reclamo %1: %2").arg(reclamo).arg(estadoReclamo), "reclamo_objeto", "Exitoso");
     cargarObjetos();
     cargarReclamos();
@@ -1151,11 +1095,8 @@ void MainWindow::on_btnObjArchivar_clicked()
     }
     QString titulo = valorUnico("SELECT titulo FROM objetos.objeto_perdido WHERE id_objeto = :id", objeto);
     if (!confirmar("Archivar objeto", QString("¿Querés archivar “%1”? Sale de la lista de objetos.").arg(titulo))) return;
-    QSqlQuery q;
-    q.prepare("UPDATE objetos.objeto_perdido SET id_estado_objeto = :estado WHERE id_objeto = :objeto");
-    q.bindValue(":estado", idEstado("objetos.estado_objeto", "Archivado"));
-    q.bindValue(":objeto", objeto);
-    if (!q.exec()) {
+    if (!ejecutar("UPDATE objetos.objeto_perdido SET id_estado_objeto = " + QString::number(idEstado("objetos.estado_objeto", "Archivado"))
+                  + " WHERE id_objeto = " + QString::number(objeto))) {
         fallar("", "", "No se pudo archivar el objeto. Probá de nuevo.");
         return;
     }
@@ -1203,25 +1144,11 @@ void MainWindow::on_btnObjPublicar_clicked()
             return;
         }
     }
-    QVariant valorDescripcion;
-    if (!descripcion.isEmpty()) valorDescripcion = descripcion;
-    QVariant valorFoto;
-    if (!archivo.isEmpty()) valorFoto = archivo;
-    QVariant valorReservado;
-    if (!reservado.isEmpty()) valorReservado = reservado;
-    QSqlQuery q;
-    q.prepare("INSERT INTO objetos.objeto_perdido (titulo, descripcion, ruta_foto, detalle_reservado, fecha_registro, id_usuario, id_categoria_objeto, id_estado_objeto, id_sector) "
-              "VALUES (:titulo, :descripcion, :foto, :reservado, :fecha, :usuario, :categoria, :estado, :sector)");
-    q.bindValue(":titulo", titulo);
-    q.bindValue(":descripcion", valorDescripcion);
-    q.bindValue(":foto", valorFoto);
-    q.bindValue(":reservado", valorReservado);
-    q.bindValue(":fecha", valorFecha(QDate::currentDate()));
-    q.bindValue(":usuario", idActual);
-    q.bindValue(":categoria", ui->cbObjCategoria->currentData().toInt());
-    q.bindValue(":estado", idEstado("objetos.estado_objeto", "Disponible"));
-    q.bindValue(":sector", ui->cbObjSector->currentData().toInt());
-    if (!q.exec()) {
+    QString sql = "INSERT INTO objetos.objeto_perdido (titulo, descripcion, ruta_foto, detalle_reservado, fecha_registro, id_usuario, id_categoria_objeto, id_estado_objeto, id_sector) VALUES ("
+                  + texto(titulo) + ", " + textoONulo(descripcion) + ", " + textoONulo(archivo) + ", " + textoONulo(reservado) + ", "
+                  + valorFecha(QDate::currentDate()) + ", " + QString::number(idActual) + ", " + QString::number(ui->cbObjCategoria->currentData().toInt()) + ", "
+                  + QString::number(idEstado("objetos.estado_objeto", "Disponible")) + ", " + QString::number(ui->cbObjSector->currentData().toInt()) + ")";
+    if (!ejecutar(sql)) {
         fallar("Publicación de objeto", "objeto_perdido", "No se pudo publicar el objeto. Probá de nuevo.");
         return;
     }
@@ -1240,15 +1167,15 @@ void MainWindow::on_btnObjPublicar_clicked()
 void MainWindow::cargarConsultas()
 {
     ui->listConsultas->clear();
-    QSqlQuery q;
-    q.prepare("SELECT c.id_consulta, c.id_usuario, u.nombre_completo, u.contacto_telefono, c.descripcion_busqueda, c.fecha_publicacion "
-              "FROM objetos.consulta_objeto c JOIN seguridad.usuario u ON u.id_usuario = c.id_usuario ORDER BY c.id_consulta DESC");
-    q.exec();
-    while (q.next()) {
-        QString dia = QDate::fromString(q.value(5).toString().left(10), "yyyy-MM-dd").toString("dd/MM");
-        QString texto = QString("%1 · tel. %2 · %3\n%4").arg(q.value(2).toString()).arg(q.value(3).toString()).arg(dia).arg(q.value(4).toString());
-        agregarItem(ui->listConsultas, texto, q.value(0).toInt(), q.value(1).toInt());
+    MYSQL_RES *result = hacerSelect("SELECT c.id_consulta, c.id_usuario, u.nombre_completo, u.contacto_telefono, c.descripcion_busqueda, c.fecha_publicacion "
+                                    "FROM objetos.consulta_objeto c JOIN seguridad.usuario u ON u.id_usuario = c.id_usuario ORDER BY c.id_consulta DESC");
+    MYSQL_ROW fila;
+    while (result != NULL && (fila = mysql_fetch_row(result)) != NULL) {
+        QString dia = QDate::fromString(QString(fila[5]).left(10), "yyyy-MM-dd").toString("dd/MM");
+        QString texto = QString("%1 · tel. %2 · %3\n%4").arg(QString(fila[2])).arg(QString(fila[3])).arg(dia).arg(QString(fila[4]));
+        agregarItem(ui->listConsultas, texto, QString(fila[0]).toInt(), QString(fila[1]).toInt());
     }
+    if (result != NULL) mysql_free_result(result);
     if (ui->listConsultas->count() == 0) agregarVacio(ui->listConsultas, "Todavía no hay consultas. ¿Perdiste algo? Publicá la primera.");
 }
 
@@ -1259,12 +1186,8 @@ void MainWindow::on_btnConsultaPublicar_clicked()
         fallar("", "", "Describí mejor lo que buscás (10 caracteres o más).");
         return;
     }
-    QSqlQuery q;
-    q.prepare("INSERT INTO objetos.consulta_objeto (fecha_publicacion, descripcion_busqueda, id_usuario) VALUES (:fecha, :descripcion, :usuario)");
-    q.bindValue(":fecha", valorFecha(QDate::currentDate()));
-    q.bindValue(":descripcion", descripcion);
-    q.bindValue(":usuario", idActual);
-    if (!q.exec()) {
+    if (!ejecutar("INSERT INTO objetos.consulta_objeto (fecha_publicacion, descripcion_busqueda, id_usuario) VALUES ("
+                  + valorFecha(QDate::currentDate()) + ", " + texto(descripcion) + ", " + QString::number(idActual) + ")")) {
         fallar("", "", "No se pudo publicar la consulta. Probá de nuevo.");
         return;
     }
@@ -1285,10 +1208,7 @@ void MainWindow::on_btnConsultaBorrar_clicked()
         return;
     }
     if (!confirmar("Borrar consulta", "¿Querés borrar esta consulta? No se puede deshacer.")) return;
-    QSqlQuery q;
-    q.prepare("DELETE FROM objetos.consulta_objeto WHERE id_consulta = :consulta");
-    q.bindValue(":consulta", consulta);
-    if (!q.exec()) {
+    if (!ejecutar("DELETE FROM objetos.consulta_objeto WHERE id_consulta = " + QString::number(consulta))) {
         fallar("", "", "No se pudo borrar la consulta. Probá de nuevo.");
         return;
     }
@@ -1309,27 +1229,27 @@ void MainWindow::cargarHigiene()
     if (filtro == "Pendientes") sql += "WHERE e.nombre_estado = 'Pendiente' ";
     if (filtro == "Resueltos") sql += "WHERE e.nombre_estado = 'Resuelto' ";
     sql += "ORDER BY CASE WHEN e.nombre_estado = 'Pendiente' THEN 0 ELSE 1 END, r.id_reporte DESC";
-    QSqlQuery q;
-    q.prepare(sql);
-    q.exec();
+    MYSQL_RES *result = hacerSelect(sql);
+    MYSQL_ROW fila;
     int resueltos = 0;
-    while (q.next()) {
-        QString estado = q.value(5).toString();
+    while (result != NULL && (fila = mysql_fetch_row(result)) != NULL) {
+        QString estado = QString(fila[5]);
         bool pendiente = estado == "Pendiente";
         if (pendiente || resueltos < MAX_RESUELTOS) {
-            QString texto = estado + " · " + q.value(3).toString() + " · " + q.value(4).toString() + "\n";
-            texto += formatoCorto(q.value(1).toString()) + " · Reportó " + q.value(6).toString();
-            if (!q.value(7).isNull()) {
-                texto += " · Resuelto " + formatoCorto(q.value(7).toString()) + " por " + q.value(8).toString();
+            QString texto = estado + " · " + QString(fila[3]) + " · " + QString(fila[4]) + "\n";
+            texto += formatoCorto(QString(fila[1])) + " · Reportó " + QString(fila[6]);
+            if (fila[7] != NULL) {
+                texto += " · Resuelto " + formatoCorto(QString(fila[7])) + " por " + QString(fila[8]);
             }
-            texto += "\n" + q.value(2).toString();
-            agregarItem(ui->listHigiene, texto, q.value(0).toInt());
+            texto += "\n" + QString(fila[2]);
+            agregarItem(ui->listHigiene, texto, QString(fila[0]).toInt());
             ui->listHigiene->item(ui->listHigiene->count() - 1)->setToolTip(texto);
             if (pendiente) pintarUltimo(ui->listHigiene, "peligro");
             else pintarUltimo(ui->listHigiene, "ok");
             if (!pendiente) resueltos++;
         }
     }
+    if (result != NULL) mysql_free_result(result);
     if (ui->listHigiene->count() == 0) {
         if (filtro == "Pendientes") agregarVacio(ui->listHigiene, "No hay reportes pendientes.");
         else if (filtro == "Resueltos") agregarVacio(ui->listHigiene, "Todavía no hay reportes resueltos.");
@@ -1340,17 +1260,17 @@ void MainWindow::cargarHigiene()
 
 void MainWindow::actualizarUltimoMantenimiento()
 {
-    QSqlQuery q;
-    q.prepare("SELECT r.fecha_hora_resolucion, u.nombre_completo FROM instalaciones.reporte_higiene r "
-              "JOIN seguridad.usuario u ON u.id_usuario = r.id_usuario_resolutor "
-              "WHERE r.id_sector = :sector AND r.fecha_hora_resolucion IS NOT NULL ORDER BY r.fecha_hora_resolucion DESC");
-    q.bindValue(":sector", ui->cbHigieneSector->currentData().toInt());
-    q.exec();
-    if (q.next()) {
-        ui->lblHigieneUltimo->setText(QString("%1 — %2").arg(formatoCorto(q.value(0).toString())).arg(q.value(1).toString()));
-    } else {
-        ui->lblHigieneUltimo->setText("Todavía no hay ninguno");
+    ui->lblHigieneUltimo->setText("Todavía no hay ninguno");
+    MYSQL_RES *result = hacerSelect("SELECT r.fecha_hora_resolucion, u.nombre_completo FROM instalaciones.reporte_higiene r "
+                                    "JOIN seguridad.usuario u ON u.id_usuario = r.id_usuario_resolutor WHERE r.id_sector = "
+                                    + QString::number(ui->cbHigieneSector->currentData().toInt())
+                                    + " AND r.fecha_hora_resolucion IS NOT NULL ORDER BY r.fecha_hora_resolucion DESC");
+    if (result == NULL) return;
+    MYSQL_ROW fila = mysql_fetch_row(result);
+    if (fila != NULL) {
+        ui->lblHigieneUltimo->setText(QString("%1 — %2").arg(formatoCorto(QString(fila[0]))).arg(QString(fila[1])));
     }
+    mysql_free_result(result);
 }
 
 void MainWindow::on_cbHigieneSector_currentIndexChanged(int) { actualizarUltimoMantenimiento(); }
@@ -1363,16 +1283,11 @@ void MainWindow::on_btnHigieneReportar_clicked()
         fallar("Reporte de higiene", "reporte_higiene", "Contanos qué pasa para poder resolverlo.");
         return;
     }
-    QSqlQuery q;
-    q.prepare("INSERT INTO instalaciones.reporte_higiene (fecha_hora, observaciones, id_usuario, id_sector, id_tipo_reporte, id_estado_reporte) "
-              "VALUES (:fecha, :observaciones, :usuario, :sector, :tipo, :estado)");
-    q.bindValue(":fecha", valorAhora());
-    q.bindValue(":observaciones", observaciones);
-    q.bindValue(":usuario", idActual);
-    q.bindValue(":sector", ui->cbHigieneSector->currentData().toInt());
-    q.bindValue(":tipo", ui->cbHigieneTipo->currentData().toInt());
-    q.bindValue(":estado", idEstado("instalaciones.estado_reporte", "Pendiente"));
-    if (!q.exec()) {
+    QString sql = "INSERT INTO instalaciones.reporte_higiene (fecha_hora, observaciones, id_usuario, id_sector, id_tipo_reporte, id_estado_reporte) VALUES ("
+                  + valorAhora() + ", " + texto(observaciones) + ", " + QString::number(idActual) + ", "
+                  + QString::number(ui->cbHigieneSector->currentData().toInt()) + ", " + QString::number(ui->cbHigieneTipo->currentData().toInt()) + ", "
+                  + QString::number(idEstado("instalaciones.estado_reporte", "Pendiente")) + ")";
+    if (!ejecutar(sql)) {
         fallar("Reporte de higiene", "reporte_higiene", "No se pudo enviar el reporte. Probá de nuevo.");
         return;
     }
@@ -1399,14 +1314,10 @@ void MainWindow::on_btnHigieneResolver_clicked()
         return;
     }
     int sectorResuelto = valorUnico("SELECT id_sector FROM instalaciones.reporte_higiene WHERE id_reporte = :id", reporte).toInt();
-    QSqlQuery q;
-    q.prepare("UPDATE instalaciones.reporte_higiene SET id_estado_reporte = :estado, fecha_hora_resolucion = :fecha, id_usuario_resolutor = :usuario "
-              "WHERE id_reporte = :reporte");
-    q.bindValue(":estado", idEstado("instalaciones.estado_reporte", "Resuelto"));
-    q.bindValue(":fecha", valorAhora());
-    q.bindValue(":usuario", idActual);
-    q.bindValue(":reporte", reporte);
-    if (!q.exec()) {
+    QString sql = "UPDATE instalaciones.reporte_higiene SET id_estado_reporte = " + QString::number(idEstado("instalaciones.estado_reporte", "Resuelto"))
+                  + ", fecha_hora_resolucion = " + valorAhora() + ", id_usuario_resolutor = " + QString::number(idActual)
+                  + " WHERE id_reporte = " + QString::number(reporte);
+    if (!ejecutar(sql)) {
         fallar("Resolución de reporte", "reporte_higiene", "No se pudo marcar el reporte como resuelto. Probá de nuevo.");
         return;
     }
@@ -1433,30 +1344,24 @@ void MainWindow::cargarGrupos()
 
     ui->cbProdGrupo->clear();
     ui->cbProdGrupo->addItem("Venta individual", 0);
-    QSqlQuery q;
-    q.prepare("SELECT g.id_grupo, g.nombre_grupo FROM tienda.grupo_buffet g JOIN tienda.integrante_grupo i ON i.id_grupo = g.id_grupo "
-              "WHERE i.id_usuario = :usuario ORDER BY g.nombre_grupo");
-    q.bindValue(":usuario", idActual);
-    q.exec();
-    while (q.next()) {
-        ui->cbProdGrupo->addItem(q.value(1).toString(), q.value(0).toInt());
+    MYSQL_RES *result = hacerSelect("SELECT g.id_grupo, g.nombre_grupo FROM tienda.grupo_buffet g JOIN tienda.integrante_grupo i ON i.id_grupo = g.id_grupo "
+                                    "WHERE i.id_usuario = " + QString::number(idActual) + " ORDER BY g.nombre_grupo");
+    MYSQL_ROW fila;
+    while (result != NULL && (fila = mysql_fetch_row(result)) != NULL) {
+        ui->cbProdGrupo->addItem(QString(fila[1]), QString(fila[0]).toInt());
     }
+    if (result != NULL) mysql_free_result(result);
     habilitar(rolEs("Alumno"), QList<QWidget *>() << ui->colGrupoAlumno);
     cargarDonaciones();
 }
 
 int MainWindow::recaudado(int grupo)
 {
-    QSqlQuery q;
-    q.prepare("SELECT COALESCE((SELECT SUM(monto) FROM tienda.donacion_buffet WHERE id_grupo = :grupo), 0) + "
-              "COALESCE((SELECT SUM(d.cantidad * d.precio_unitario) FROM tienda.detalle_venta d "
-              "JOIN tienda.venta_buffet v ON v.id_venta = d.id_venta JOIN tienda.producto_buffet p ON p.id_producto = d.id_producto "
-              "WHERE p.id_grupo = :grupo AND v.id_estado_venta = :entregada), 0)");
-    q.bindValue(":grupo", grupo);
-    q.bindValue(":entregada", idEstado("tienda.estado_venta", "Entregada"));
-    q.exec();
-    q.next();
-    return q.value(0).toInt();
+    QString entregada = QString::number(idEstado("tienda.estado_venta", "Entregada"));
+    return valorUnico("SELECT COALESCE((SELECT SUM(monto) FROM tienda.donacion_buffet WHERE id_grupo = :id), 0) + "
+                      "COALESCE((SELECT SUM(d.cantidad * d.precio_unitario) FROM tienda.detalle_venta d "
+                      "JOIN tienda.venta_buffet v ON v.id_venta = d.id_venta JOIN tienda.producto_buffet p ON p.id_producto = d.id_producto "
+                      "WHERE p.id_grupo = :id AND v.id_estado_venta = " + entregada + "), 0)", grupo).toInt();
 }
 
 void MainWindow::cargarBuffet()
@@ -1471,45 +1376,37 @@ void MainWindow::cargarBuffet()
     QString sql = "SELECT p.id_producto, p.nombre_producto, p.precio, p.stock, u.nombre_completo, c.nombre_categoria, COALESCE(p.ruta_foto, '') "
                   "FROM tienda.producto_buffet p JOIN seguridad.usuario u ON u.id_usuario = p.id_usuario "
                   "JOIN tienda.categoria_producto c ON c.id_categoria_producto = p.id_categoria_producto ";
-    if (grupo > 0) sql += "WHERE p.id_grupo = :grupo ";
+    if (grupo > 0) sql += "WHERE p.id_grupo = " + QString::number(grupo) + " ";
     else if (grupo == 0) sql += "WHERE p.id_grupo IS NULL ";
     else sql += "WHERE 1 = 1 ";
-    if (categoria > 0) sql += "AND p.id_categoria_producto = :categoria ";
-    if (vendedor > 0) sql += "AND p.id_usuario = :vendedor ";
-    if (!busqueda.isEmpty()) sql += "AND (p.nombre_producto LIKE :texto OR u.nombre_completo LIKE :texto) ";
+    if (categoria > 0) sql += "AND p.id_categoria_producto = " + QString::number(categoria) + " ";
+    if (vendedor > 0) sql += "AND p.id_usuario = " + QString::number(vendedor) + " ";
+    if (!busqueda.isEmpty()) sql += "AND (p.nombre_producto LIKE " + texto("%" + busqueda + "%") + " OR u.nombre_completo LIKE " + texto("%" + busqueda + "%") + ") ";
     sql += "ORDER BY p.nombre_producto";
-    QSqlQuery q;
-    q.prepare(sql);
-    if (grupo > 0) q.bindValue(":grupo", grupo);
-    if (categoria > 0) q.bindValue(":categoria", categoria);
-    if (vendedor > 0) q.bindValue(":vendedor", vendedor);
-    if (!busqueda.isEmpty()) q.bindValue(":texto", "%" + busqueda + "%");
-    q.exec();
+    MYSQL_RES *result = hacerSelect(sql);
+    MYSQL_ROW fila;
     int cantidad = 0;
-    while (q.next()) {
-        int stock = q.value(3).toInt();
-        QString tercera = "Stock " + QString::number(stock) + " · " + q.value(4).toString();
-        if (stock == 0) tercera = "SIN STOCK · " + q.value(4).toString();
-        QString texto = q.value(1).toString() + "\n$" + QString::number(q.value(2).toInt()) + " · " + q.value(5).toString() + "\n" + tercera;
-        agregarItem(ui->listBuffet, texto, q.value(0).toInt());
+    while (result != NULL && (fila = mysql_fetch_row(result)) != NULL) {
+        int stock = QString(fila[3]).toInt();
+        QString tercera = "Stock " + QString::number(stock) + " · " + QString(fila[4]);
+        if (stock == 0) tercera = "SIN STOCK · " + QString(fila[4]);
+        QString texto = QString(fila[1]) + "\n$" + QString::number(QString(fila[2]).toInt()) + " · " + QString(fila[5]) + "\n" + tercera;
+        agregarItem(ui->listBuffet, texto, QString(fila[0]).toInt());
         QListWidgetItem *item = ui->listBuffet->item(ui->listBuffet->count() - 1);
-        item->setIcon(QIcon(miniaturaProducto(q.value(6).toString())));
+        item->setIcon(QIcon(miniaturaProducto(QString(fila[6]))));
         item->setToolTip("Doble clic para ver el detalle y la foto");
         if (stock == 0) item->setForeground(QBrush(colorToken("peligro")));
         cantidad++;
     }
+    if (result != NULL) mysql_free_result(result);
     ui->lblBuffetResumen->setText(plural(cantidad, "producto", "productos"));
     ui->listBuffet->setVisible(cantidad > 0);
     ui->lblBuffetVacio->setVisible(cantidad == 0);
 
     ui->lblBuffetMeta->setVisible(grupo > 0);
     if (grupo > 0) {
-        QSqlQuery g;
-        g.prepare("SELECT meta_monto FROM tienda.grupo_buffet WHERE id_grupo = :grupo");
-        g.bindValue(":grupo", grupo);
-        g.exec();
-        if (g.next() && g.value(0).toInt() > 0) {
-            int meta = g.value(0).toInt();
+        int meta = valorUnico("SELECT meta_monto FROM tienda.grupo_buffet WHERE id_grupo = :id", grupo).toInt();
+        if (meta > 0) {
             int juntado = recaudado(grupo);
             ui->lblBuffetMeta->setText(QString("Meta del grupo: $%1 · recaudado $%2 (%3%)").arg(meta).arg(juntado).arg(juntado * 100 / meta));
         }
@@ -1525,41 +1422,44 @@ void MainWindow::on_cbBuffetCategoria_currentIndexChanged(int) { cargarBuffet();
 void MainWindow::on_listBuffet_itemDoubleClicked(QListWidgetItem *item)
 {
     int producto = item->data(Qt::UserRole).toInt();
-    QSqlQuery q;
-    q.prepare("SELECT p.nombre_producto, c.nombre_categoria, p.precio, p.stock, u.nombre_completo, u.contacto_telefono, COALESCE(p.ruta_foto, '') "
-              "FROM tienda.producto_buffet p JOIN tienda.categoria_producto c ON c.id_categoria_producto = p.id_categoria_producto "
-              "JOIN seguridad.usuario u ON u.id_usuario = p.id_usuario WHERE p.id_producto = :producto");
-    q.bindValue(":producto", producto);
-    q.exec();
-    if (!q.next()) return;
+    MYSQL_RES *result = hacerSelect("SELECT p.nombre_producto, c.nombre_categoria, p.precio, p.stock, u.nombre_completo, u.contacto_telefono, COALESCE(p.ruta_foto, '') "
+                                    "FROM tienda.producto_buffet p JOIN tienda.categoria_producto c ON c.id_categoria_producto = p.id_categoria_producto "
+                                    "JOIN seguridad.usuario u ON u.id_usuario = p.id_usuario WHERE p.id_producto = " + QString::number(producto));
+    if (result == NULL) return;
+    MYSQL_ROW fila = mysql_fetch_row(result);
+    if (fila == NULL) {
+        mysql_free_result(result);
+        return;
+    }
     VentanaProducto ventana;
-    ventana.setProducto(q.value(0).toString(), q.value(1).toString(), q.value(2).toInt(), q.value(3).toInt(),
-                        q.value(4).toString(), q.value(5).toString(), q.value(6).toString());
+    ventana.setProducto(QString(fila[0]), QString(fila[1]), QString(fila[2]).toInt(), QString(fila[3]).toInt(),
+                        QString(fila[4]), QString(fila[5]), QString(fila[6]));
+    mysql_free_result(result);
     ventana.exec();
+
 }
 
 void MainWindow::cargarMisReservas()
 {
     ui->listMisReservas->clear();
-    QSqlQuery q;
-    q.prepare("SELECT v.id_venta, p.nombre_producto, d.cantidad, "
-              "(SELECT SUM(x.cantidad * x.precio_unitario) FROM tienda.detalle_venta x WHERE x.id_venta = v.id_venta), "
-              "u.nombre_completo, u.contacto_telefono, v.fecha_hora, e.nombre_estado "
-              "FROM tienda.venta_buffet v JOIN tienda.detalle_venta d ON d.id_venta = v.id_venta "
-              "JOIN tienda.producto_buffet p ON p.id_producto = d.id_producto JOIN seguridad.usuario u ON u.id_usuario = p.id_usuario "
-              "JOIN tienda.estado_venta e ON e.id_estado_venta = v.id_estado_venta "
-              "WHERE v.id_usuario = :usuario ORDER BY v.id_venta DESC");
-    q.bindValue(":usuario", idActual);
-    q.exec();
+    MYSQL_RES *result = hacerSelect("SELECT v.id_venta, p.nombre_producto, d.cantidad, "
+                                    "(SELECT SUM(x.cantidad * x.precio_unitario) FROM tienda.detalle_venta x WHERE x.id_venta = v.id_venta), "
+                                    "u.nombre_completo, u.contacto_telefono, v.fecha_hora, e.nombre_estado "
+                                    "FROM tienda.venta_buffet v JOIN tienda.detalle_venta d ON d.id_venta = v.id_venta "
+                                    "JOIN tienda.producto_buffet p ON p.id_producto = d.id_producto JOIN seguridad.usuario u ON u.id_usuario = p.id_usuario "
+                                    "JOIN tienda.estado_venta e ON e.id_estado_venta = v.id_estado_venta "
+                                    "WHERE v.id_usuario = " + QString::number(idActual) + " ORDER BY v.id_venta DESC");
+    MYSQL_ROW fila;
     int activas = 0;
-    while (q.next()) {
-        QString estado = q.value(7).toString();
-        QString texto = QString("%1 · %2 x%3 · $%4 · vende %5 (tel. %6) · %7").arg(estado).arg(q.value(1).toString()).arg(q.value(2).toInt())
-                .arg(q.value(3).toInt()).arg(q.value(4).toString()).arg(q.value(5).toString()).arg(formatoCorto(q.value(6).toString()));
-        agregarItem(ui->listMisReservas, texto, q.value(0).toInt());
+    while (result != NULL && (fila = mysql_fetch_row(result)) != NULL) {
+        QString estado = QString(fila[7]);
+        QString texto = QString("%1 · %2 x%3 · $%4 · vende %5 (tel. %6) · %7").arg(estado).arg(QString(fila[1])).arg(QString(fila[2]).toInt())
+                .arg(QString(fila[3]).toInt()).arg(QString(fila[4])).arg(QString(fila[5])).arg(formatoCorto(QString(fila[6])));
+        agregarItem(ui->listMisReservas, texto, QString(fila[0]).toInt());
         pintarEstadoVenta(ui->listMisReservas->item(ui->listMisReservas->count() - 1), estado);
         if (estado == "Reservada") activas++;
     }
+    if (result != NULL) mysql_free_result(result);
     ui->lblMisReservasResumen->setText(plural(activas, "reserva activa", "reservas activas"));
     ui->lblMisReservasResumen->setVisible(ui->listMisReservas->count() > 0);
     alternarVacio(ui->listMisReservas, ui->lblMisReservasVacio);
@@ -1573,17 +1473,19 @@ void MainWindow::on_btnBuffetReservar_clicked()
         fallar("Reserva de producto", "venta_buffet", "Elegí un producto de la lista.");
         return;
     }
-    QSqlQuery q;
-    q.prepare("SELECT stock, precio, id_usuario FROM tienda.producto_buffet WHERE id_producto = :producto");
-    q.bindValue(":producto", producto);
-    q.exec();
-    if (!q.next()) {
+    MYSQL_RES *result = hacerSelect("SELECT stock, precio, id_usuario FROM tienda.producto_buffet WHERE id_producto = " + QString::number(producto));
+    MYSQL_ROW fila = NULL;
+    if (result != NULL) fila = mysql_fetch_row(result);
+    if (fila == NULL) {
+        if (result != NULL) mysql_free_result(result);
         fallar("Reserva de producto", "venta_buffet", "Ese producto ya no existe.");
         return;
     }
-    int stock = q.value(0).toInt();
-    int precio = q.value(1).toInt();
-    if (q.value(2).toInt() == idActual) {
+    int stock = QString(fila[0]).toInt();
+    int precio = QString(fila[1]).toInt();
+    int vendedor = QString(fila[2]).toInt();
+    mysql_free_result(result);
+    if (vendedor == idActual) {
         fallar("Reserva de producto", "venta_buffet", "No podés reservar tus propios productos.");
         return;
     }
@@ -1593,29 +1495,19 @@ void MainWindow::on_btnBuffetReservar_clicked()
         fallar("Reserva de producto", "venta_buffet", faltante);
         return;
     }
-    db.transaction();
-    q.prepare("INSERT INTO tienda.venta_buffet (fecha_hora, id_usuario, id_estado_venta) VALUES (:fecha, :usuario, :estado)");
-    q.bindValue(":fecha", valorAhora());
-    q.bindValue(":usuario", idActual);
-    q.bindValue(":estado", idEstado("tienda.estado_venta", "Reservada"));
-    bool ok = q.exec();
-    int venta = ultimoId(q);
-    q.prepare("INSERT INTO tienda.detalle_venta (id_venta, id_producto, cantidad, precio_unitario) VALUES (:venta, :producto, :cantidad, :precio)");
-    q.bindValue(":venta", venta);
-    q.bindValue(":producto", producto);
-    q.bindValue(":cantidad", cantidad);
-    q.bindValue(":precio", precio);
-    ok = ok && q.exec();
-    q.prepare("UPDATE tienda.producto_buffet SET stock = stock - :cantidad WHERE id_producto = :producto");
-    q.bindValue(":cantidad", cantidad);
-    q.bindValue(":producto", producto);
-    ok = ok && q.exec();
+    ejecutar("START TRANSACTION");
+    bool ok = ejecutar("INSERT INTO tienda.venta_buffet (fecha_hora, id_usuario, id_estado_venta) VALUES (" + valorAhora() + ", "
+                       + QString::number(idActual) + ", " + QString::number(idEstado("tienda.estado_venta", "Reservada")) + ")");
+    int venta = ultimoId();
+    ok = ok && ejecutar("INSERT INTO tienda.detalle_venta (id_venta, id_producto, cantidad, precio_unitario) VALUES (" + QString::number(venta) + ", "
+                        + QString::number(producto) + ", " + QString::number(cantidad) + ", " + QString::number(precio) + ")");
+    ok = ok && ejecutar("UPDATE tienda.producto_buffet SET stock = stock - " + QString::number(cantidad) + " WHERE id_producto = " + QString::number(producto));
     if (!ok) {
-        db.rollback();
+        ejecutar("ROLLBACK");
         fallar("Reserva de producto", "venta_buffet", "No se pudo hacer la reserva.");
         return;
     }
-    db.commit();
+    ejecutar("COMMIT");
     registrarLog("Reserva de producto", QString("Venta %1: producto %2 x%3").arg(venta).arg(producto).arg(cantidad), "venta_buffet", "Exitoso");
     ui->sbBuffetCantidad->setValue(1);
     cargarBuffet();
@@ -1655,40 +1547,33 @@ void MainWindow::on_btnBuffetCancelar_clicked()
 
 bool MainWindow::cancelarReserva(int venta)
 {
-    db.transaction();
-    QSqlQuery q;
-    q.prepare("UPDATE tienda.venta_buffet SET id_estado_venta = :estado WHERE id_venta = :venta");
-    q.bindValue(":estado", idEstado("tienda.estado_venta", "Cancelada"));
-    q.bindValue(":venta", venta);
-    bool ok = q.exec();
-    QSqlQuery detalle;
-    detalle.prepare("SELECT id_producto, cantidad FROM tienda.detalle_venta WHERE id_venta = :venta");
-    detalle.bindValue(":venta", venta);
-    detalle.exec();
-    while (detalle.next()) {
-        q.prepare("UPDATE tienda.producto_buffet SET stock = stock + :cantidad WHERE id_producto = :producto");
-        q.bindValue(":cantidad", detalle.value(1).toInt());
-        q.bindValue(":producto", detalle.value(0).toInt());
-        ok = ok && q.exec();
+    ejecutar("START TRANSACTION");
+    bool ok = ejecutar("UPDATE tienda.venta_buffet SET id_estado_venta = " + QString::number(idEstado("tienda.estado_venta", "Cancelada"))
+                       + " WHERE id_venta = " + QString::number(venta));
+    QStringList productos;
+    QStringList cantidades;
+    MYSQL_RES *result = hacerSelect("SELECT id_producto, cantidad FROM tienda.detalle_venta WHERE id_venta = " + QString::number(venta));
+    MYSQL_ROW fila;
+    while (result != NULL && (fila = mysql_fetch_row(result)) != NULL) {
+        productos << QString(fila[0]);
+        cantidades << QString(fila[1]);
+    }
+    if (result != NULL) mysql_free_result(result);
+    for (int i = 0; i < productos.size(); i++) {
+        ok = ok && ejecutar("UPDATE tienda.producto_buffet SET stock = stock + " + cantidades[i] + " WHERE id_producto = " + productos[i]);
     }
     if (!ok) {
-        db.rollback();
+        ejecutar("ROLLBACK");
         return false;
     }
-    db.commit();
+    ejecutar("COMMIT");
     return true;
 }
 
 bool MainWindow::ventaEsMia(int venta)
 {
-    QSqlQuery q;
-    q.prepare("SELECT COUNT(*) FROM tienda.detalle_venta d JOIN tienda.producto_buffet p ON p.id_producto = d.id_producto "
-              "WHERE d.id_venta = :venta AND p.id_usuario = :usuario");
-    q.bindValue(":venta", venta);
-    q.bindValue(":usuario", idActual);
-    q.exec();
-    q.next();
-    return q.value(0).toInt() > 0;
+    return valorUnico("SELECT COUNT(*) FROM tienda.detalle_venta d JOIN tienda.producto_buffet p ON p.id_producto = d.id_producto "
+                      "WHERE d.id_venta = :id AND p.id_usuario = " + QString::number(idActual), venta).toInt() > 0;
 }
 
 bool MainWindow::productoEsMio(int producto)
@@ -1699,24 +1584,23 @@ bool MainWindow::productoEsMio(int producto)
 void MainWindow::cargarMisVentas()
 {
     ui->listMisVentas->clear();
-    QSqlQuery q;
-    q.prepare("SELECT v.id_venta, p.nombre_producto, d.cantidad, d.cantidad * d.precio_unitario, "
-              "c.nombre_completo, c.contacto_telefono, v.fecha_hora, e.nombre_estado "
-              "FROM tienda.venta_buffet v JOIN tienda.detalle_venta d ON d.id_venta = v.id_venta "
-              "JOIN tienda.producto_buffet p ON p.id_producto = d.id_producto JOIN seguridad.usuario c ON c.id_usuario = v.id_usuario "
-              "JOIN tienda.estado_venta e ON e.id_estado_venta = v.id_estado_venta "
-              "WHERE p.id_usuario = :usuario ORDER BY v.id_venta DESC");
-    q.bindValue(":usuario", idActual);
-    q.exec();
+    MYSQL_RES *result = hacerSelect("SELECT v.id_venta, p.nombre_producto, d.cantidad, d.cantidad * d.precio_unitario, "
+                                    "c.nombre_completo, c.contacto_telefono, v.fecha_hora, e.nombre_estado "
+                                    "FROM tienda.venta_buffet v JOIN tienda.detalle_venta d ON d.id_venta = v.id_venta "
+                                    "JOIN tienda.producto_buffet p ON p.id_producto = d.id_producto JOIN seguridad.usuario c ON c.id_usuario = v.id_usuario "
+                                    "JOIN tienda.estado_venta e ON e.id_estado_venta = v.id_estado_venta "
+                                    "WHERE p.id_usuario = " + QString::number(idActual) + " ORDER BY v.id_venta DESC");
+    MYSQL_ROW fila;
     int pendientes = 0;
-    while (q.next()) {
-        QString estado = q.value(7).toString();
-        QString texto = QString("%1 · %2 x%3 · $%4 · reservó %5 (tel. %6) · %7").arg(estado).arg(q.value(1).toString()).arg(q.value(2).toInt())
-                .arg(q.value(3).toInt()).arg(q.value(4).toString()).arg(q.value(5).toString()).arg(formatoCorto(q.value(6).toString()));
-        agregarItem(ui->listMisVentas, texto, q.value(0).toInt());
+    while (result != NULL && (fila = mysql_fetch_row(result)) != NULL) {
+        QString estado = QString(fila[7]);
+        QString texto = QString("%1 · %2 x%3 · $%4 · reservó %5 (tel. %6) · %7").arg(estado).arg(QString(fila[1])).arg(QString(fila[2]).toInt())
+                .arg(QString(fila[3]).toInt()).arg(QString(fila[4])).arg(QString(fila[5])).arg(formatoCorto(QString(fila[6])));
+        agregarItem(ui->listMisVentas, texto, QString(fila[0]).toInt());
         pintarEstadoVenta(ui->listMisVentas->item(ui->listMisVentas->count() - 1), estado);
         if (estado == "Reservada") pendientes++;
     }
+    if (result != NULL) mysql_free_result(result);
     ui->lblMisVentasResumen->setText(plural(pendientes, "reserva por entregar", "reservas por entregar"));
     ui->lblMisVentasResumen->setVisible(ui->listMisVentas->count() > 0);
     alternarVacio(ui->listMisVentas, ui->lblMisVentasVacio);
@@ -1726,19 +1610,19 @@ void MainWindow::cargarMisProductos()
 {
     ui->tabBuffet->setTabVisible(5, rolEs("Alumno"));
     ui->listMisProductos->clear();
-    QSqlQuery q;
-    q.prepare("SELECT p.id_producto, p.nombre_producto, p.precio, p.stock, COALESCE(g.nombre_grupo, 'Venta individual') "
-              "FROM tienda.producto_buffet p LEFT JOIN tienda.grupo_buffet g ON g.id_grupo = p.id_grupo "
-              "WHERE p.id_usuario = :usuario ORDER BY p.nombre_producto");
-    q.bindValue(":usuario", idActual);
-    q.exec();
-    while (q.next()) {
-        QString texto = QString("%1 · $%2 · stock %3 · %4").arg(q.value(1).toString()).arg(q.value(2).toInt())
-                .arg(q.value(3).toInt()).arg(q.value(4).toString());
-        if (q.value(3).toInt() == 0) texto += " · SIN STOCK";
-        agregarItem(ui->listMisProductos, texto, q.value(0).toInt());
-        if (q.value(3).toInt() == 0) ui->listMisProductos->item(ui->listMisProductos->count() - 1)->setForeground(QBrush(colorToken("peligro")));
+    MYSQL_RES *result = hacerSelect("SELECT p.id_producto, p.nombre_producto, p.precio, p.stock, COALESCE(g.nombre_grupo, 'Venta individual') "
+                                    "FROM tienda.producto_buffet p LEFT JOIN tienda.grupo_buffet g ON g.id_grupo = p.id_grupo "
+                                    "WHERE p.id_usuario = " + QString::number(idActual) + " ORDER BY p.nombre_producto");
+    MYSQL_ROW fila;
+    while (result != NULL && (fila = mysql_fetch_row(result)) != NULL) {
+        int stock = QString(fila[3]).toInt();
+        QString texto = QString("%1 · $%2 · stock %3 · %4").arg(QString(fila[1])).arg(QString(fila[2]).toInt())
+                .arg(stock).arg(QString(fila[4]));
+        if (stock == 0) texto += " · SIN STOCK";
+        agregarItem(ui->listMisProductos, texto, QString(fila[0]).toInt());
+        if (stock == 0) ui->listMisProductos->item(ui->listMisProductos->count() - 1)->setForeground(QBrush(colorToken("peligro")));
     }
+    if (result != NULL) mysql_free_result(result);
     alternarVacio(ui->listMisProductos, ui->lblProdMisVacio);
 }
 
@@ -1759,11 +1643,8 @@ void MainWindow::on_btnBuffetEntregar_clicked()
         fallar("", "", "Esa reserva ya no está activa.");
         return;
     }
-    QSqlQuery q;
-    q.prepare("UPDATE tienda.venta_buffet SET id_estado_venta = :estado WHERE id_venta = :venta");
-    q.bindValue(":estado", idEstado("tienda.estado_venta", "Entregada"));
-    q.bindValue(":venta", venta);
-    if (!q.exec()) {
+    if (!ejecutar("UPDATE tienda.venta_buffet SET id_estado_venta = " + QString::number(idEstado("tienda.estado_venta", "Entregada"))
+                  + " WHERE id_venta = " + QString::number(venta))) {
         fallar("", "", "No se pudo marcar la entrega.");
         return;
     }
@@ -1824,12 +1705,8 @@ void MainWindow::on_btnProdQuitar_clicked()
         fallar("", "", QString("No podés quitar más de lo que hay: el producto tiene %1.").arg(plural(stock, "unidad", "unidades")));
         return;
     }
-    QSqlQuery q;
-    q.prepare("UPDATE tienda.producto_buffet SET stock = stock - :cantidad WHERE id_producto = :producto AND id_usuario = :usuario AND stock >= :cantidad");
-    q.bindValue(":cantidad", cantidad);
-    q.bindValue(":producto", producto);
-    q.bindValue(":usuario", idActual);
-    if (!q.exec()) {
+    if (!ejecutar("UPDATE tienda.producto_buffet SET stock = stock - " + QString::number(cantidad) + " WHERE id_producto = " + QString::number(producto)
+                  + " AND id_usuario = " + QString::number(idActual) + " AND stock >= " + QString::number(cantidad))) {
         fallar("", "", "No se pudo quitar el stock. Probá de nuevo.");
         return;
     }
@@ -1853,12 +1730,8 @@ void MainWindow::on_btnProdReponer_clicked()
         return;
     }
     int stock = valorUnico("SELECT stock FROM tienda.producto_buffet WHERE id_producto = :id", producto).toInt();
-    QSqlQuery q;
-    q.prepare("UPDATE tienda.producto_buffet SET stock = stock + :cantidad WHERE id_producto = :producto AND id_usuario = :usuario");
-    q.bindValue(":cantidad", cantidad);
-    q.bindValue(":producto", producto);
-    q.bindValue(":usuario", idActual);
-    if (!q.exec()) {
+    if (!ejecutar("UPDATE tienda.producto_buffet SET stock = stock + " + QString::number(cantidad) + " WHERE id_producto = " + QString::number(producto)
+                  + " AND id_usuario = " + QString::number(idActual))) {
         fallar("", "", "No se pudo reponer el stock. Probá de nuevo.");
         return;
     }
@@ -1880,32 +1753,20 @@ void MainWindow::on_btnProdEliminar_clicked()
         fallar("", "", "Ese producto no es tuyo.");
         return;
     }
-    QSqlQuery q;
-    q.prepare("SELECT COUNT(*) FROM tienda.detalle_venta d JOIN tienda.venta_buffet v ON v.id_venta = d.id_venta "
-              "WHERE d.id_producto = :producto AND v.id_estado_venta = :reservada");
-    q.bindValue(":producto", producto);
-    q.bindValue(":reservada", idEstado("tienda.estado_venta", "Reservada"));
-    q.exec();
-    q.next();
-    if (q.value(0).toInt() > 0) {
+    int reservas = valorUnico("SELECT COUNT(*) FROM tienda.detalle_venta d JOIN tienda.venta_buffet v ON v.id_venta = d.id_venta "
+                              "WHERE d.id_producto = :id AND v.id_estado_venta = " + QString::number(idEstado("tienda.estado_venta", "Reservada")), producto).toInt();
+    if (reservas > 0) {
         fallar("", "", "Tiene reservas activas. Entregalas o cancelalas antes de eliminar el producto.");
         return;
     }
-    q.prepare("SELECT COUNT(*) FROM tienda.detalle_venta WHERE id_producto = :producto");
-    q.bindValue(":producto", producto);
-    q.exec();
-    q.next();
-    if (q.value(0).toInt() > 0) {
+    if (valorUnico("SELECT COUNT(*) FROM tienda.detalle_venta WHERE id_producto = :id", producto).toInt() > 0) {
         fallar("", "", "Este producto ya tuvo ventas, así que no se puede eliminar (se conserva el historial).");
         return;
     }
     QString nombre = valorUnico("SELECT nombre_producto FROM tienda.producto_buffet WHERE id_producto = :id", producto);
     QString foto = valorUnico("SELECT COALESCE(ruta_foto, '') FROM tienda.producto_buffet WHERE id_producto = :id", producto);
     if (!confirmar("Eliminar producto", QString("¿Querés eliminar “%1”? No se puede deshacer.").arg(nombre))) return;
-    q.prepare("DELETE FROM tienda.producto_buffet WHERE id_producto = :producto AND id_usuario = :usuario");
-    q.bindValue(":producto", producto);
-    q.bindValue(":usuario", idActual);
-    if (!q.exec()) {
+    if (!ejecutar("DELETE FROM tienda.producto_buffet WHERE id_producto = " + QString::number(producto) + " AND id_usuario = " + QString::number(idActual))) {
         fallar("", "", "No se pudo eliminar el producto. Probá de nuevo.");
         return;
     }
@@ -1928,13 +1789,8 @@ void MainWindow::on_btnBuffetDonar_clicked()
         fallar("Donación", "donacion_buffet", "Escribí un monto en pesos, mayor a 0 y sin centavos.");
         return;
     }
-    QSqlQuery q;
-    q.prepare("INSERT INTO tienda.donacion_buffet (monto, fecha_hora, id_usuario, id_grupo) VALUES (:monto, :fecha, :usuario, :grupo)");
-    q.bindValue(":monto", monto);
-    q.bindValue(":fecha", valorAhora());
-    q.bindValue(":usuario", idActual);
-    q.bindValue(":grupo", grupo);
-    if (!q.exec()) {
+    if (!ejecutar("INSERT INTO tienda.donacion_buffet (monto, fecha_hora, id_usuario, id_grupo) VALUES (" + QString::number(monto) + ", "
+                  + valorAhora() + ", " + QString::number(idActual) + ", " + QString::number(grupo) + ")")) {
         fallar("Donación", "donacion_buffet", "No se pudo registrar la donación.");
         return;
     }
@@ -1963,20 +1819,11 @@ void MainWindow::on_btnBuffetUnirse_clicked()
         fallar("", "", "El PIN no coincide. Pedíselo a quien creó el grupo.");
         return;
     }
-    QSqlQuery q;
-    q.prepare("SELECT COUNT(*) FROM tienda.integrante_grupo WHERE id_usuario = :usuario AND id_grupo = :grupo");
-    q.bindValue(":usuario", idActual);
-    q.bindValue(":grupo", grupo);
-    q.exec();
-    q.next();
-    if (q.value(0).toInt() > 0) {
+    if (valorUnico("SELECT COUNT(*) FROM tienda.integrante_grupo WHERE id_usuario = " + QString::number(idActual) + " AND id_grupo = :id", grupo).toInt() > 0) {
         fallar("", "", "Ya sos integrante de ese grupo.");
         return;
     }
-    q.prepare("INSERT INTO tienda.integrante_grupo (id_usuario, id_grupo) VALUES (:usuario, :grupo)");
-    q.bindValue(":usuario", idActual);
-    q.bindValue(":grupo", grupo);
-    if (!q.exec()) {
+    if (!ejecutar("INSERT INTO tienda.integrante_grupo (id_usuario, id_grupo) VALUES (" + QString::number(idActual) + ", " + QString::number(grupo) + ")")) {
         fallar("", "", "No se pudo unir al grupo.");
         return;
     }
@@ -2019,19 +1866,11 @@ void MainWindow::on_btnProdPublicar_clicked()
         fallar("", "", "Elegí la categoría del producto.");
         return;
     }
-    QVariant valorGrupo;
     if (grupo > 0) {
-        QSqlQuery m;
-        m.prepare("SELECT COUNT(*) FROM tienda.integrante_grupo WHERE id_usuario = :usuario AND id_grupo = :grupo");
-        m.bindValue(":usuario", idActual);
-        m.bindValue(":grupo", grupo);
-        m.exec();
-        m.next();
-        if (m.value(0).toInt() == 0) {
+        if (valorUnico("SELECT COUNT(*) FROM tienda.integrante_grupo WHERE id_usuario = " + QString::number(idActual) + " AND id_grupo = :id", grupo).toInt() == 0) {
             fallar("", "", "Para vender en un grupo tenés que ser integrante.");
             return;
         }
-        valorGrupo = grupo;
     }
     QString archivo = "";
     QString carpeta = QCoreApplication::applicationDirPath() + "/imagenes_productos";
@@ -2043,19 +1882,10 @@ void MainWindow::on_btnProdPublicar_clicked()
             return;
         }
     }
-    QVariant valorFoto;
-    if (!archivo.isEmpty()) valorFoto = archivo;
-    QSqlQuery q;
-    q.prepare("INSERT INTO tienda.producto_buffet (nombre_producto, precio, stock, id_usuario, id_grupo, id_categoria_producto, ruta_foto) "
-              "VALUES (:nombre, :precio, :stock, :usuario, :grupo, :categoria, :foto)");
-    q.bindValue(":nombre", nombre);
-    q.bindValue(":precio", precio);
-    q.bindValue(":stock", stock);
-    q.bindValue(":usuario", idActual);
-    q.bindValue(":grupo", valorGrupo);
-    q.bindValue(":categoria", categoria);
-    q.bindValue(":foto", valorFoto);
-    if (!q.exec()) {
+    QString sql = "INSERT INTO tienda.producto_buffet (nombre_producto, precio, stock, id_usuario, id_grupo, id_categoria_producto, ruta_foto) VALUES ("
+                  + texto(nombre) + ", " + QString::number(precio) + ", " + QString::number(stock) + ", " + QString::number(idActual) + ", "
+                  + numeroONulo(grupo) + ", " + QString::number(categoria) + ", " + textoONulo(archivo) + ")";
+    if (!ejecutar(sql)) {
         if (!archivo.isEmpty()) QFile::remove(carpeta + "/" + archivo);
         fallar("", "", "No se pudo publicar el producto.");
         return;
@@ -2093,24 +1923,18 @@ void MainWindow::on_btnGrupoCrear_clicked()
         fallar("", "", "Ya existe un grupo con ese nombre.");
         return;
     }
-    db.transaction();
-    QSqlQuery q;
-    q.prepare("INSERT INTO tienda.grupo_buffet (nombre_grupo, pin_acceso, meta_monto) VALUES (:nombre, :pin, :meta)");
-    q.bindValue(":nombre", nombre);
-    q.bindValue(":pin", pin);
-    q.bindValue(":meta", meta);
-    bool correcto = q.exec();
-    int grupo = ultimoId(q);
-    q.prepare("INSERT INTO tienda.integrante_grupo (id_usuario, id_grupo) VALUES (:usuario, :grupo)");
-    q.bindValue(":usuario", idActual);
-    q.bindValue(":grupo", grupo);
-    correcto = correcto && q.exec();
+    ejecutar("START TRANSACTION");
+    bool correcto = ejecutar("INSERT INTO tienda.grupo_buffet (nombre_grupo, pin_acceso, meta_monto) VALUES (" + texto(nombre) + ", "
+                             + texto(pin) + ", " + QString::number(meta) + ")");
+    int grupo = ultimoId();
+    correcto = correcto && ejecutar("INSERT INTO tienda.integrante_grupo (id_usuario, id_grupo) VALUES (" + QString::number(idActual) + ", " + QString::number(grupo) + ")");
     if (!correcto) {
-        db.rollback();
+        ejecutar("ROLLBACK");
         fallar("", "", "No se pudo crear el grupo.");
         return;
     }
-    db.commit();
+    ejecutar("COMMIT");
+
     ui->leGrupoNombre->clear();
     ui->leGrupoMeta->clear();
     ui->leGrupoPin->clear();
@@ -2125,20 +1949,18 @@ void MainWindow::cargarPlanillas()
     ui->listPlanillas->clear();
     QString sql = "SELECT r.id_recurso, c.nombre_carro, r.numero_equipo, t.nombre_tipo FROM equipos.recursos_ct r "
                   "LEFT JOIN equipos.carro c ON c.id_carro = r.id_carro JOIN equipos.tipo_recurso t ON t.id_tipo_recurso = r.id_tipo_recurso "
-                  "WHERE r.id_estado_recurso = :disponible ";
-    if (programa > 0) sql += "AND EXISTS (SELECT 1 FROM equipos.recurso_software rs WHERE rs.id_recurso = r.id_recurso AND rs.id_software = :programa) ";
+                  "WHERE r.id_estado_recurso = " + QString::number(idEstado("equipos.estado_recurso", "Disponible")) + " ";
+    if (programa > 0) sql += "AND EXISTS (SELECT 1 FROM equipos.recurso_software rs WHERE rs.id_recurso = r.id_recurso AND rs.id_software = " + QString::number(programa) + ") ";
     sql += "ORDER BY t.nombre_tipo, c.nombre_carro, r.numero_equipo";
-    QSqlQuery q;
-    q.prepare(sql);
-    q.bindValue(":disponible", idEstado("equipos.estado_recurso", "Disponible"));
-    if (programa > 0) q.bindValue(":programa", programa);
-    q.exec();
-    while (q.next()) {
-        QString codigo = codigoRecurso(q.value(1).toString(), q.value(2).toInt());
+    MYSQL_RES *result = hacerSelect(sql);
+    MYSQL_ROW fila;
+    while (result != NULL && (fila = mysql_fetch_row(result)) != NULL) {
+        QString codigo = codigoRecurso(QString(fila[1]), QString(fila[2]).toInt());
         if (filtro.isEmpty() || codigo.contains(filtro, Qt::CaseInsensitive)) {
-            agregarItem(ui->listPlanillas, QString("%1 · %2").arg(codigo).arg(q.value(3).toString()), q.value(0).toInt());
+            agregarItem(ui->listPlanillas, QString("%1 · %2").arg(codigo).arg(QString(fila[3])), QString(fila[0]).toInt());
         }
     }
+    if (result != NULL) mysql_free_result(result);
     if (ui->listPlanillas->count() == 0) {
         if (filtro.isEmpty() && programa == 0) agregarVacio(ui->listPlanillas, "No hay equipos disponibles en este momento.");
         else agregarVacio(ui->listPlanillas, "No hay equipos disponibles con ese filtro.");
@@ -2151,19 +1973,19 @@ void MainWindow::cargarFueraServicio()
 {
     QString filtro = ui->leFiltroPlanillas->text().trimmed();
     ui->listFueraServicio->clear();
-    QSqlQuery q;
-    q.prepare("SELECT r.id_recurso, c.nombre_carro, r.numero_equipo, t.nombre_tipo FROM equipos.recursos_ct r "
-              "LEFT JOIN equipos.carro c ON c.id_carro = r.id_carro JOIN equipos.tipo_recurso t ON t.id_tipo_recurso = r.id_tipo_recurso "
-              "WHERE r.id_estado_recurso = :fuera ORDER BY t.nombre_tipo, c.nombre_carro, r.numero_equipo");
-    q.bindValue(":fuera", idEstado("equipos.estado_recurso", "Fuera de servicio"));
-    q.exec();
-    while (q.next()) {
-        QString codigo = codigoRecurso(q.value(1).toString(), q.value(2).toInt());
+    MYSQL_RES *result = hacerSelect("SELECT r.id_recurso, c.nombre_carro, r.numero_equipo, t.nombre_tipo FROM equipos.recursos_ct r "
+                                    "LEFT JOIN equipos.carro c ON c.id_carro = r.id_carro JOIN equipos.tipo_recurso t ON t.id_tipo_recurso = r.id_tipo_recurso "
+                                    "WHERE r.id_estado_recurso = " + QString::number(idEstado("equipos.estado_recurso", "Fuera de servicio"))
+                                    + " ORDER BY t.nombre_tipo, c.nombre_carro, r.numero_equipo");
+    MYSQL_ROW fila;
+    while (result != NULL && (fila = mysql_fetch_row(result)) != NULL) {
+        QString codigo = codigoRecurso(QString(fila[1]), QString(fila[2]).toInt());
         if (filtro.isEmpty() || codigo.contains(filtro, Qt::CaseInsensitive)) {
-            agregarItem(ui->listFueraServicio, QString("%1 · %2").arg(codigo).arg(q.value(3).toString()), q.value(0).toInt());
+            agregarItem(ui->listFueraServicio, QString("%1 · %2").arg(codigo).arg(QString(fila[3])), QString(fila[0]).toInt());
             pintarUltimo(ui->listFueraServicio, "peligro");
         }
     }
+    if (result != NULL) mysql_free_result(result);
     if (ui->listFueraServicio->count() == 0) agregarVacio(ui->listFueraServicio, "No hay equipos fuera de servicio.");
 }
 
@@ -2181,11 +2003,8 @@ void MainWindow::on_btnPlanillasReparar_clicked()
         fallar("", "", "Ese equipo ya no está fuera de servicio.");
         return;
     }
-    QSqlQuery q;
-    q.prepare("UPDATE equipos.recursos_ct SET id_estado_recurso = :estado WHERE id_recurso = :recurso");
-    q.bindValue(":estado", idEstado("equipos.estado_recurso", "Disponible"));
-    q.bindValue(":recurso", recurso);
-    if (!q.exec()) {
+    if (!ejecutar("UPDATE equipos.recursos_ct SET id_estado_recurso = " + QString::number(idEstado("equipos.estado_recurso", "Disponible"))
+                  + " WHERE id_recurso = " + QString::number(recurso))) {
         fallar("", "", "No se pudo marcar el equipo como reparado. Probá de nuevo.");
         return;
     }
@@ -2209,36 +2028,35 @@ void MainWindow::cargarPrestamos()
 {
     QString filtro = ui->leFiltroPlanillas->text().trimmed();
     ui->listPrestamos->clear();
-    QSqlQuery q;
     bool soloMios = rolActual() == "Alumno";
     QString donde = "";
-    if (soloMios) donde = "WHERE p.id_usuario_solicitante = :usuario ";
-    q.prepare(QString("SELECT p.id_prestamo, a.nombre_completo, an.numero_anio, dv.numero_division, c.nombre_carro, r.numero_equipo, "
+    if (soloMios) donde = "WHERE p.id_usuario_solicitante = " + QString::number(idActual) + " ";
+    MYSQL_RES *result = hacerSelect(QString("SELECT p.id_prestamo, a.nombre_completo, an.numero_anio, dv.numero_division, c.nombre_carro, r.numero_equipo, "
               "p.hora_prestamo, p.hora_devolucion, au.nombre_completo, p.fecha_prestamo FROM equipos.prestamo_ct p "
               "JOIN seguridad.usuario a ON a.id_usuario = p.id_usuario_solicitante LEFT JOIN academico.curso cu ON cu.id_curso = a.id_curso "
               "LEFT JOIN academico.anio an ON an.id_anio = cu.id_anio LEFT JOIN academico.division dv ON dv.id_division = cu.id_division "
               "JOIN seguridad.usuario au ON au.id_usuario = p.id_usuario_autorizador JOIN equipos.recursos_ct r ON r.id_recurso = p.id_recurso "
               "LEFT JOIN equipos.carro c ON c.id_carro = r.id_carro %1"
               "ORDER BY CASE WHEN p.hora_devolucion IS NULL THEN 0 ELSE 1 END, p.id_prestamo DESC").arg(donde));
-    if (soloMios) q.bindValue(":usuario", idActual);
-    q.exec();
+    MYSQL_ROW fila;
     int mostrados = 0;
-    while (q.next() && mostrados < 40) {
-        QString codigo = codigoRecurso(q.value(4).toString(), q.value(5).toInt());
+    while (result != NULL && mostrados < 40 && (fila = mysql_fetch_row(result)) != NULL) {
+        QString codigo = codigoRecurso(QString(fila[4]), QString(fila[5]).toInt());
         if (filtro.isEmpty() || codigo.contains(filtro, Qt::CaseInsensitive)) {
             QString curso = "sin curso";
-            if (!q.value(2).isNull()) curso = QString("%1°%2°").arg(q.value(2).toInt()).arg(q.value(3).toInt());
+            if (fila[2] != NULL) curso = QString("%1°%2°").arg(QString(fila[2]).toInt()).arg(QString(fila[3]).toInt());
             QString estado = "En préstamo";
-            if (!q.value(7).isNull()) estado = "Devuelto " + q.value(7).toString();
-            QString dia = QDate::fromString(q.value(9).toString(), "yyyy-MM-dd").toString("dd/MM");
-            QString texto = QString("%1 · %2 (%3)\nRetiró %4 %5 · Autorizó %6 · %7").arg(codigo).arg(q.value(1).toString()).arg(curso)
-                                .arg(dia).arg(q.value(6).toString()).arg(q.value(8).toString()).arg(estado);
-            agregarItem(ui->listPrestamos, texto, q.value(0).toInt());
-            if (q.value(7).isNull()) pintarUltimo(ui->listPrestamos, "ok");
+            if (fila[7] != NULL) estado = "Devuelto " + QString(fila[7]);
+            QString dia = QDate::fromString(QString(fila[9]), "yyyy-MM-dd").toString("dd/MM");
+            QString texto = QString("%1 · %2 (%3)\nRetiró %4 %5 · Autorizó %6 · %7").arg(codigo).arg(QString(fila[1])).arg(curso)
+                                .arg(dia).arg(QString(fila[6])).arg(QString(fila[8])).arg(estado);
+            agregarItem(ui->listPrestamos, texto, QString(fila[0]).toInt());
+            if (fila[7] == NULL) pintarUltimo(ui->listPrestamos, "ok");
             else pintarUltimo(ui->listPrestamos, "suave");
             mostrados++;
         }
     }
+    if (result != NULL) mysql_free_result(result);
     if (mostrados == 0) {
         if (filtro.isEmpty() && soloMios) agregarVacio(ui->listPrestamos, "Todavía no tenés préstamos registrados.");
         else if (filtro.isEmpty()) agregarVacio(ui->listPrestamos, "Todavía no hay préstamos registrados.");
@@ -2273,29 +2091,18 @@ void MainWindow::on_btnPlanillasPrestar_clicked()
         fallar("Préstamo de recurso", "prestamo_ct", "Ese equipo no está disponible.");
         return;
     }
-    QVariant valorObservaciones;
-    if (!observaciones.isEmpty()) valorObservaciones = observaciones;
-    db.transaction();
-    QSqlQuery q;
-    q.prepare("INSERT INTO equipos.prestamo_ct (fecha_prestamo, hora_prestamo, hora_devolucion, observaciones, id_usuario_solicitante, id_usuario_autorizador, id_recurso) "
-              "VALUES (:fecha, :hora, NULL, :observaciones, :alumno, :autorizador, :recurso)");
-    q.bindValue(":fecha", valorFecha(QDate::currentDate()));
-    q.bindValue(":hora", QTime::currentTime().toString("HH:mm"));
-    q.bindValue(":observaciones", valorObservaciones);
-    q.bindValue(":alumno", alumno);
-    q.bindValue(":autorizador", idActual);
-    q.bindValue(":recurso", recurso);
-    bool ok = q.exec();
-    q.prepare("UPDATE equipos.recursos_ct SET id_estado_recurso = :estado WHERE id_recurso = :recurso");
-    q.bindValue(":estado", idEstado("equipos.estado_recurso", "Prestado"));
-    q.bindValue(":recurso", recurso);
-    ok = ok && q.exec();
+    ejecutar("START TRANSACTION");
+    bool ok = ejecutar("INSERT INTO equipos.prestamo_ct (fecha_prestamo, hora_prestamo, hora_devolucion, observaciones, id_usuario_solicitante, id_usuario_autorizador, id_recurso) VALUES ("
+                       + valorFecha(QDate::currentDate()) + ", " + texto(QTime::currentTime().toString("HH:mm")) + ", NULL, " + textoONulo(observaciones) + ", "
+                       + QString::number(alumno) + ", " + QString::number(idActual) + ", " + QString::number(recurso) + ")");
+    ok = ok && ejecutar("UPDATE equipos.recursos_ct SET id_estado_recurso = " + QString::number(idEstado("equipos.estado_recurso", "Prestado"))
+                        + " WHERE id_recurso = " + QString::number(recurso));
     if (!ok) {
-        db.rollback();
+        ejecutar("ROLLBACK");
         fallar("Préstamo de recurso", "prestamo_ct", "No se pudo registrar el préstamo. Probá de nuevo.");
         return;
     }
-    db.commit();
+    ejecutar("COMMIT");
     registrarLog("Préstamo de recurso", QString("Equipo %1 prestado al alumno %2").arg(recurso).arg(alumno), "prestamo_ct", "Exitoso");
     ui->lePlanillasObs->clear();
     cargarPlanillas();
@@ -2312,48 +2119,46 @@ void MainWindow::on_btnPlanillasDevolver_clicked()
         fallar("Devolución de recurso", "prestamo_ct", "Elegí un préstamo de la lista.");
         return;
     }
-    QSqlQuery q;
-    q.prepare("SELECT hora_devolucion, id_recurso, id_usuario_solicitante FROM equipos.prestamo_ct WHERE id_prestamo = :prestamo");
-    q.bindValue(":prestamo", prestamo);
-    q.exec();
-    q.next();
-    if (!q.value(0).isNull()) {
+    MYSQL_RES *result = hacerSelect("SELECT hora_devolucion, id_recurso, id_usuario_solicitante FROM equipos.prestamo_ct WHERE id_prestamo = " + QString::number(prestamo));
+    MYSQL_ROW fila = NULL;
+    if (result != NULL) fila = mysql_fetch_row(result);
+    bool devuelto = fila == NULL || fila[0] != NULL;
+    int recurso = 0;
+    int solicitante = 0;
+    if (fila != NULL) {
+        recurso = QString(fila[1]).toInt();
+        solicitante = QString(fila[2]).toInt();
+    }
+    if (result != NULL) mysql_free_result(result);
+    if (devuelto) {
         fallar("Devolución de recurso", "prestamo_ct", "Ese préstamo ya fue devuelto.");
         return;
     }
-    if (rolActual() == "Alumno" && q.value(2).toInt() != idActual) {
+    if (rolActual() == "Alumno" && solicitante != idActual) {
         fallar("Devolución de recurso", "prestamo_ct", "Solo podés devolver tus propios préstamos.");
         return;
     }
-    int recurso = q.value(1).toInt();
     QString nuevoEstado = "Fuera de servicio";
     if (ui->cbPlanillasEstado->currentText() == "Funciona") nuevoEstado = "Disponible";
     if (nuevoEstado == "Fuera de servicio") {
         if (!confirmar("Devolver equipo", "Vas a devolver el equipo como que NO funciona. Queda fuera de servicio hasta que el preceptor o maestranza lo repare. ¿Confirmás?")) return;
     }
-    db.transaction();
-    q.prepare("UPDATE equipos.prestamo_ct SET hora_devolucion = :hora WHERE id_prestamo = :prestamo");
-    q.bindValue(":hora", QTime::currentTime().toString("HH:mm"));
-    q.bindValue(":prestamo", prestamo);
-    bool ok = q.exec();
+    ejecutar("START TRANSACTION");
+    bool ok = ejecutar("UPDATE equipos.prestamo_ct SET hora_devolucion = " + texto(QTime::currentTime().toString("HH:mm"))
+                       + " WHERE id_prestamo = " + QString::number(prestamo));
     if (!observaciones.isEmpty()) {
         QString anterior = valorUnico("SELECT COALESCE(observaciones, '') FROM equipos.prestamo_ct WHERE id_prestamo = :id", prestamo);
         if (!anterior.isEmpty()) observaciones = anterior + " / Devolución: " + observaciones;
-        q.prepare("UPDATE equipos.prestamo_ct SET observaciones = :observaciones WHERE id_prestamo = :prestamo");
-        q.bindValue(":observaciones", observaciones);
-        q.bindValue(":prestamo", prestamo);
-        ok = ok && q.exec();
+        ok = ok && ejecutar("UPDATE equipos.prestamo_ct SET observaciones = " + texto(observaciones) + " WHERE id_prestamo = " + QString::number(prestamo));
     }
-    q.prepare("UPDATE equipos.recursos_ct SET id_estado_recurso = :estado WHERE id_recurso = :recurso");
-    q.bindValue(":estado", idEstado("equipos.estado_recurso", nuevoEstado));
-    q.bindValue(":recurso", recurso);
-    ok = ok && q.exec();
+    ok = ok && ejecutar("UPDATE equipos.recursos_ct SET id_estado_recurso = " + QString::number(idEstado("equipos.estado_recurso", nuevoEstado))
+                        + " WHERE id_recurso = " + QString::number(recurso));
     if (!ok) {
-        db.rollback();
+        ejecutar("ROLLBACK");
         fallar("Devolución de recurso", "prestamo_ct", "No se pudo registrar la devolución. Probá de nuevo.");
         return;
     }
-    db.commit();
+    ejecutar("COMMIT");
     registrarLog("Devolución de recurso", QString("Préstamo %1 devuelto, queda: %2").arg(prestamo).arg(nuevoEstado), "prestamo_ct", "Exitoso");
     ui->lePlanillasObs->clear();
     cargarPlanillas();
@@ -2368,29 +2173,26 @@ void MainWindow::cargarOcupacion()
     if (sector <= 0) return;
     QString dia = ui->deSectoresDia->date().toString("dd/MM");
     ui->lblSectoresOcupacion->setText(QString("Ocupación de %1 el %2").arg(ui->cbSectoresLugar->currentText()).arg(dia));
-    QSqlQuery q;
-    q.prepare("SELECT r.hora_inicio, r.hora_fin, u.nombre_completo, e.nombre_estado FROM instalaciones.reserva_sector r "
-              "JOIN seguridad.usuario u ON u.id_usuario = r.id_usuario JOIN instalaciones.estado_reserva e ON e.id_estado_reserva = r.id_estado_reserva "
-              "WHERE r.id_sector = :sector AND r.fecha_reserva = :fecha AND r.id_estado_reserva IN (:pendiente, :aprobada) "
-              "ORDER BY r.hora_inicio");
-    q.bindValue(":sector", sector);
-    q.bindValue(":fecha", valorFecha(ui->deSectoresDia->date()));
-    q.bindValue(":pendiente", idEstado("instalaciones.estado_reserva", "Pendiente"));
-    q.bindValue(":aprobada", idEstado("instalaciones.estado_reserva", "Aprobada"));
-    q.exec();
+    MYSQL_RES *result = hacerSelect("SELECT r.hora_inicio, r.hora_fin, u.nombre_completo, e.nombre_estado FROM instalaciones.reserva_sector r "
+                                    "JOIN seguridad.usuario u ON u.id_usuario = r.id_usuario JOIN instalaciones.estado_reserva e ON e.id_estado_reserva = r.id_estado_reserva "
+                                    "WHERE r.id_sector = " + QString::number(sector) + " AND r.fecha_reserva = " + valorFecha(ui->deSectoresDia->date())
+                                    + " AND r.id_estado_reserva IN (" + QString::number(idEstado("instalaciones.estado_reserva", "Pendiente")) + ", "
+                                    + QString::number(idEstado("instalaciones.estado_reserva", "Aprobada")) + ") ORDER BY r.hora_inicio");
+    MYSQL_ROW fila;
     int pendientes = 0;
-    while (q.next()) {
-        QString estado = q.value(3).toString();
+    while (result != NULL && (fila = mysql_fetch_row(result)) != NULL) {
+        QString estado = QString(fila[3]);
         QString estadoTexto = estado;
         if (estado == "Pendiente") {
             pendientes++;
             estadoTexto = "Pendiente de aprobación";
         }
-        QString texto = QString("%1 a %2 - %3").arg(q.value(0).toString()).arg(q.value(1).toString()).arg(estadoTexto);
-        texto += "\n" + q.value(2).toString();
+        QString texto = QString("%1 a %2 - %3").arg(QString(fila[0])).arg(QString(fila[1])).arg(estadoTexto);
+        texto += "\n" + QString(fila[2]);
         agregarItem(ui->listOcupacion, texto, 0);
         pintarUltimo(ui->listOcupacion, "peligro");
     }
+    if (result != NULL) mysql_free_result(result);
     if (ui->listOcupacion->count() == 0) {
         agregarItem(ui->listOcupacion, "Sin reservas ese día: el sector está libre.", 0);
         pintarUltimo(ui->listOcupacion, "ok");
@@ -2412,31 +2214,29 @@ void MainWindow::cargarReservasSector()
     QString sql = "SELECT r.id_reserva, r.fecha_reserva, r.hora_inicio, r.hora_fin, s.nombre_sector, u.nombre_completo, "
                   "e.nombre_estado, r.id_usuario FROM instalaciones.reserva_sector r JOIN instalaciones.sector s ON s.id_sector = r.id_sector "
                   "JOIN seguridad.usuario u ON u.id_usuario = r.id_usuario JOIN instalaciones.estado_reserva e ON e.id_estado_reserva = r.id_estado_reserva "
-                  "WHERE r.fecha_reserva >= :hoy AND r.id_estado_reserva <> :cancelada ";
+                  "WHERE r.fecha_reserva >= " + valorFecha(QDate::currentDate())
+                  + " AND r.id_estado_reserva <> " + QString::number(idEstado("instalaciones.estado_reserva", "Cancelada")) + " ";
     bool preceptor = rolEs("Preceptor");
-    if (!preceptor) sql += "AND r.id_usuario = :usuario ";
+    if (!preceptor) sql += "AND r.id_usuario = " + QString::number(idActual) + " ";
     sql += "ORDER BY ";
     if (preceptor) sql += "CASE WHEN e.nombre_estado = 'Pendiente' THEN 0 ELSE 1 END, ";
     sql += "r.fecha_reserva, r.hora_inicio";
-    QSqlQuery q;
-    q.prepare(sql);
-    q.bindValue(":hoy", valorFecha(QDate::currentDate()));
-    q.bindValue(":cancelada", idEstado("instalaciones.estado_reserva", "Cancelada"));
-    if (!preceptor) q.bindValue(":usuario", idActual);
-    q.exec();
-    while (q.next()) {
-        QString dia = QDate::fromString(q.value(1).toString(), "yyyy-MM-dd").toString("dd/MM");
-        QString estado = q.value(6).toString();
+    MYSQL_RES *result = hacerSelect(sql);
+    MYSQL_ROW fila;
+    while (result != NULL && (fila = mysql_fetch_row(result)) != NULL) {
+        QString dia = QDate::fromString(QString(fila[1]), "yyyy-MM-dd").toString("dd/MM");
+        QString estado = QString(fila[6]);
         QString estadoTexto = estado;
         if (estado == "Pendiente") estadoTexto = "Pendiente de aprobación";
-        QString texto = QString("%1 - %2 %3 a %4").arg(q.value(4).toString()).arg(dia).arg(q.value(2).toString()).arg(q.value(3).toString());
-        texto += "\n" + estadoTexto + " - " + q.value(5).toString();
-        agregarItem(ui->listSectores, texto, q.value(0).toInt(), q.value(7).toInt());
+        QString texto = QString("%1 - %2 %3 a %4").arg(QString(fila[4])).arg(dia).arg(QString(fila[2])).arg(QString(fila[3]));
+        texto += "\n" + estadoTexto + " - " + QString(fila[5]);
+        agregarItem(ui->listSectores, texto, QString(fila[0]).toInt(), QString(fila[7]).toInt());
         ui->listSectores->item(ui->listSectores->count() - 1)->setToolTip(texto);
         if (estado == "Aprobada") pintarUltimo(ui->listSectores, "ok");
         else if (estado == "Rechazada") pintarUltimo(ui->listSectores, "peligro");
         else pintarUltimo(ui->listSectores, "suave");
     }
+    if (result != NULL) mysql_free_result(result);
     if (ui->listSectores->count() == 0) {
         if (preceptor) agregarVacio(ui->listSectores, "No hay reservas próximas.");
         else agregarVacio(ui->listSectores, "Todavía no tenés reservas próximas. Elegí un lugar, un día y un horario para reservar.");
@@ -2481,39 +2281,32 @@ void MainWindow::on_btnSectoresReservar_clicked()
         fallar("Reserva de sector", "reserva_sector", "Ese horario de inicio ya pasó. Elegí uno más tarde.");
         return;
     }
-    QSqlQuery q;
-    q.prepare("SELECT r.hora_inicio, r.hora_fin, u.nombre_completo FROM instalaciones.reserva_sector r JOIN seguridad.usuario u ON u.id_usuario = r.id_usuario "
-              "WHERE r.id_sector = :sector AND r.fecha_reserva = :fecha AND r.id_estado_reserva IN (:pendiente, :aprobada) "
-              "AND r.hora_inicio < :fin AND r.hora_fin > :inicio");
-    q.bindValue(":sector", sector);
-    q.bindValue(":fecha", valorFecha(dia));
-    q.bindValue(":pendiente", idEstado("instalaciones.estado_reserva", "Pendiente"));
-    q.bindValue(":aprobada", idEstado("instalaciones.estado_reserva", "Aprobada"));
-    q.bindValue(":fin", fin);
-    q.bindValue(":inicio", inicio);
-    q.exec();
-    if (q.next()) {
-        fallar("Reserva de sector", "reserva_sector", QString("Ese horario está ocupado: %1 tiene el sector de %2 a %3. Probá con otro.")
-               .arg(q.value(2).toString()).arg(q.value(0).toString()).arg(q.value(1).toString()));
+    MYSQL_RES *result = hacerSelect("SELECT r.hora_inicio, r.hora_fin, u.nombre_completo FROM instalaciones.reserva_sector r JOIN seguridad.usuario u ON u.id_usuario = r.id_usuario "
+                                    "WHERE r.id_sector = " + QString::number(sector) + " AND r.fecha_reserva = " + valorFecha(dia)
+                                    + " AND r.id_estado_reserva IN (" + QString::number(idEstado("instalaciones.estado_reserva", "Pendiente")) + ", "
+                                    + QString::number(idEstado("instalaciones.estado_reserva", "Aprobada")) + ") AND r.hora_inicio < " + texto(fin)
+                                    + " AND r.hora_fin > " + texto(inicio));
+    MYSQL_ROW fila = NULL;
+    if (result != NULL) fila = mysql_fetch_row(result);
+    if (fila != NULL) {
+        QString ocupado = QString("Ese horario está ocupado: %1 tiene el sector de %2 a %3. Probá con otro.")
+                              .arg(QString(fila[2])).arg(QString(fila[0])).arg(QString(fila[1]));
+        mysql_free_result(result);
+        fallar("Reserva de sector", "reserva_sector", ocupado);
         return;
     }
+    if (result != NULL) mysql_free_result(result);
     bool esPreceptor = rolEs("Preceptor");
     QString estado = "Pendiente";
-    QVariant autorizador;
+    int autorizador = 0;
     if (esPreceptor) {
         estado = "Aprobada";
         autorizador = idActual;
     }
-    q.prepare("INSERT INTO instalaciones.reserva_sector (fecha_reserva, hora_inicio, hora_fin, id_usuario, id_sector, id_estado_reserva, id_usuario_autorizador) "
-              "VALUES (:fecha, :inicio, :fin, :usuario, :sector, :estado, :autorizador)");
-    q.bindValue(":fecha", valorFecha(dia));
-    q.bindValue(":inicio", inicio);
-    q.bindValue(":fin", fin);
-    q.bindValue(":usuario", idActual);
-    q.bindValue(":sector", sector);
-    q.bindValue(":estado", idEstado("instalaciones.estado_reserva", estado));
-    q.bindValue(":autorizador", autorizador);
-    if (!q.exec()) {
+    QString sql = "INSERT INTO instalaciones.reserva_sector (fecha_reserva, hora_inicio, hora_fin, id_usuario, id_sector, id_estado_reserva, id_usuario_autorizador) VALUES ("
+                  + valorFecha(dia) + ", " + texto(inicio) + ", " + texto(fin) + ", " + QString::number(idActual) + ", " + QString::number(sector) + ", "
+                  + QString::number(idEstado("instalaciones.estado_reserva", estado)) + ", " + numeroONulo(autorizador) + ")";
+    if (!ejecutar(sql)) {
         fallar("Reserva de sector", "reserva_sector", "No se pudo guardar la reserva. Probá de nuevo.");
         return;
     }
@@ -2546,11 +2339,8 @@ void MainWindow::on_btnSectoresCancelar_clicked()
     QString detalle = ui->listSectores->currentItem()->text().split("\n").first();
     QString pregunta = QString("¿Querés cancelar la reserva de %1? El horario queda libre para otros.").arg(detalle);
     if (!confirmar("Cancelar reserva", pregunta)) return;
-    QSqlQuery q;
-    q.prepare("UPDATE instalaciones.reserva_sector SET id_estado_reserva = :estado WHERE id_reserva = :reserva");
-    q.bindValue(":estado", idEstado("instalaciones.estado_reserva", "Cancelada"));
-    q.bindValue(":reserva", reserva);
-    if (!q.exec()) {
+    if (!ejecutar("UPDATE instalaciones.reserva_sector SET id_estado_reserva = " + QString::number(idEstado("instalaciones.estado_reserva", "Cancelada"))
+                  + " WHERE id_reserva = " + QString::number(reserva))) {
         fallar("Reserva de sector", "reserva_sector", "No se pudo cancelar la reserva. Probá de nuevo.");
         return;
     }
@@ -2573,12 +2363,8 @@ void MainWindow::resolverReservaSector(const QString &estado, const QString &eve
         fallar(evento, "reserva_sector", "Solo se pueden aprobar o rechazar reservas pendientes.");
         return;
     }
-    QSqlQuery q;
-    q.prepare("UPDATE instalaciones.reserva_sector SET id_estado_reserva = :estado, id_usuario_autorizador = :autorizador WHERE id_reserva = :reserva");
-    q.bindValue(":estado", idEstado("instalaciones.estado_reserva", estado));
-    q.bindValue(":autorizador", idActual);
-    q.bindValue(":reserva", reserva);
-    if (!q.exec()) {
+    if (!ejecutar("UPDATE instalaciones.reserva_sector SET id_estado_reserva = " + QString::number(idEstado("instalaciones.estado_reserva", estado))
+                  + ", id_usuario_autorizador = " + QString::number(idActual) + " WHERE id_reserva = " + QString::number(reserva))) {
         fallar(evento, "reserva_sector", "No se pudo actualizar la reserva. Probá de nuevo.");
         return;
     }
@@ -2605,38 +2391,31 @@ void MainWindow::on_btnSectoresRechazar_clicked()
 
 QString MainWindow::chocaFranja(int dia, int franja, int curso)
 {
-    QSqlQuery q;
-    q.prepare("SELECT MIN(m.nombre_materia) FROM academico.franja_horaria f JOIN academico.horario_dia hd ON hd.id_dia = :dia "
-              "JOIN academico.horario_escolar he ON he.id_bloque = hd.id_bloque JOIN academico.materia m ON m.id_materia = he.id_materia "
-              "WHERE f.id_franja = :franja AND he.id_curso = :curso AND he.hora_inicio < f.hora_fin AND he.hora_fin > f.hora_inicio");
-    q.bindValue(":dia", dia);
-    q.bindValue(":franja", franja);
-    q.bindValue(":curso", curso);
-    q.exec();
-    q.next();
-    return q.value(0).toString();
+    return valorUnico("SELECT MIN(m.nombre_materia) FROM academico.franja_horaria f JOIN academico.horario_dia hd ON hd.id_dia = " + QString::number(dia) + " "
+                      "JOIN academico.horario_escolar he ON he.id_bloque = hd.id_bloque JOIN academico.materia m ON m.id_materia = he.id_materia "
+                      "WHERE f.id_franja = " + QString::number(franja) + " AND he.id_curso = :id AND he.hora_inicio < f.hora_fin AND he.hora_fin > f.hora_inicio", curso);
 }
 
 QString MainWindow::chocaHorario(int oferta, int curso)
 {
-    QSqlQuery q;
-    q.prepare("SELECT id_dia, id_franja FROM deportes.oferta_deporte WHERE id_oferta = :oferta");
-    q.bindValue(":oferta", oferta);
-    q.exec();
-    if (!q.next()) return "";
-    return chocaFranja(q.value(0).toInt(), q.value(1).toInt(), curso);
+    MYSQL_RES *result = hacerSelect("SELECT id_dia, id_franja FROM deportes.oferta_deporte WHERE id_oferta = " + QString::number(oferta));
+    if (result == NULL) return "";
+    MYSQL_ROW fila = mysql_fetch_row(result);
+    if (fila == NULL) {
+        mysql_free_result(result);
+        return "";
+    }
+    int dia = QString(fila[0]).toInt();
+    int franja = QString(fila[1]).toInt();
+    mysql_free_result(result);
+    return chocaFranja(dia, franja, curso);
 }
 
 int MainWindow::ofertaElegida()
 {
-    QSqlQuery q;
-    q.prepare("SELECT id_oferta FROM deportes.oferta_deporte WHERE id_deporte = :deporte AND id_dia = :dia AND id_franja = :franja");
-    q.bindValue(":deporte", ui->cbEdFisicaDeporte->currentData().toInt());
-    q.bindValue(":dia", ui->cbEdFisicaDia->currentData().toInt());
-    q.bindValue(":franja", ui->cbEdFisicaHora->currentData().toInt());
-    q.exec();
-    if (q.next()) return q.value(0).toInt();
-    return 0;
+    return valorUnico("SELECT id_oferta FROM deportes.oferta_deporte WHERE id_deporte = " + QString::number(ui->cbEdFisicaDeporte->currentData().toInt())
+                      + " AND id_dia = " + QString::number(ui->cbEdFisicaDia->currentData().toInt())
+                      + " AND id_franja = " + QString::number(ui->cbEdFisicaHora->currentData().toInt()), 0).toInt();
 }
 
 void MainWindow::cargarDiasEdFisica()
@@ -2645,36 +2424,46 @@ void MainWindow::cargarDiasEdFisica()
     int deporte = ui->cbEdFisicaDeporte->currentData().toInt();
     ui->cbEdFisicaDia->blockSignals(true);
     ui->cbEdFisicaDia->clear();
-    QSqlQuery q;
-    q.prepare("SELECT d.id_dia, d.nombre_dia, (SELECT COUNT(*) FROM deportes.oferta_deporte o WHERE o.id_dia = d.id_dia AND o.id_deporte = :deporte) "
-              "FROM academico.dia_semana d ORDER BY d.id_dia");
-    q.bindValue(":deporte", deporte);
-    q.exec();
+    QStringList ids;
+    QStringList nombres;
+    QStringList ofertas;
+    MYSQL_RES *result = hacerSelect("SELECT d.id_dia, d.nombre_dia, (SELECT COUNT(*) FROM deportes.oferta_deporte o WHERE o.id_dia = d.id_dia AND o.id_deporte = "
+                                    + QString::number(deporte) + ") FROM academico.dia_semana d ORDER BY d.id_dia");
+    MYSQL_ROW datos;
+    while (result != NULL && (datos = mysql_fetch_row(result)) != NULL) {
+        ids << QString(datos[0]);
+        nombres << QString(datos[1]);
+        ofertas << QString(datos[2]);
+    }
+    if (result != NULL) mysql_free_result(result);
     int curso = valorUnico("SELECT COALESCE(id_curso, 0) FROM seguridad.usuario WHERE id_usuario = :id", idActual).toInt();
     int primero = -1;
     int elegido = -1;
-    while (q.next()) {
-        int id = q.value(0).toInt();
+    for (int i = 0; i < ids.size(); i++) {
+        int id = ids[i].toInt();
         int fila = ui->cbEdFisicaDia->count();
         bool hayLibre = false;
-        if (q.value(2).toInt() > 0) {
-            QSqlQuery f;
-            f.prepare("SELECT id_franja FROM deportes.oferta_deporte WHERE id_dia = :dia AND id_deporte = :deporte");
-            f.bindValue(":dia", id);
-            f.bindValue(":deporte", deporte);
-            f.exec();
-            while (f.next() && !hayLibre) {
-                if (chocaFranja(id, f.value(0).toInt(), curso).isEmpty()) hayLibre = true;
+        if (ofertas[i].toInt() > 0) {
+            QStringList franjas;
+            MYSQL_RES *resultFranjas = hacerSelect("SELECT id_franja FROM deportes.oferta_deporte WHERE id_dia = " + QString::number(id)
+                                                   + " AND id_deporte = " + QString::number(deporte));
+            MYSQL_ROW f;
+            while (resultFranjas != NULL && (f = mysql_fetch_row(resultFranjas)) != NULL) {
+                franjas << QString(f[0]);
+            }
+            if (resultFranjas != NULL) mysql_free_result(resultFranjas);
+            for (int j = 0; j < franjas.size() && !hayLibre; j++) {
+                if (chocaFranja(id, franjas[j].toInt(), curso).isEmpty()) hayLibre = true;
             }
         }
         if (hayLibre) {
-            ui->cbEdFisicaDia->addItem(q.value(1).toString(), id);
+            ui->cbEdFisicaDia->addItem(nombres[i], id);
             if (primero < 0) primero = fila;
             if (id == dia) elegido = fila;
         } else {
             QString motivo = " (sin clase)";
-            if (q.value(2).toInt() > 0) motivo = " (choca con tu horario)";
-            ui->cbEdFisicaDia->addItem(q.value(1).toString() + motivo, id);
+            if (ofertas[i].toInt() > 0) motivo = " (choca con tu horario)";
+            ui->cbEdFisicaDia->addItem(nombres[i] + motivo, id);
             ui->cbEdFisicaDia->setItemData(fila, 0, Qt::UserRole - 1);
             ui->cbEdFisicaDia->setItemData(fila, QBrush(colorToken("suave")), Qt::ForegroundRole);
         }
@@ -2694,20 +2483,26 @@ void MainWindow::cargarFranjas()
     int curso = valorUnico("SELECT COALESCE(id_curso, 0) FROM seguridad.usuario WHERE id_usuario = :id", idActual).toInt();
     ui->cbEdFisicaHora->blockSignals(true);
     ui->cbEdFisicaHora->clear();
-    QSqlQuery q;
-    q.prepare("SELECT f.id_franja, f.hora_inicio, f.hora_fin, "
-              "(SELECT COUNT(*) FROM deportes.oferta_deporte o WHERE o.id_franja = f.id_franja AND o.id_dia = :dia AND o.id_deporte = :deporte) "
-              "FROM academico.franja_horaria f ORDER BY f.hora_inicio");
-    q.bindValue(":dia", dia);
-    q.bindValue(":deporte", deporte);
-    q.exec();
+    QStringList ids;
+    QStringList horarios;
+    QStringList ofertas;
+    MYSQL_RES *result = hacerSelect("SELECT f.id_franja, f.hora_inicio, f.hora_fin, "
+                                    "(SELECT COUNT(*) FROM deportes.oferta_deporte o WHERE o.id_franja = f.id_franja AND o.id_dia = " + QString::number(dia)
+                                    + " AND o.id_deporte = " + QString::number(deporte) + ") FROM academico.franja_horaria f ORDER BY f.hora_inicio");
+    MYSQL_ROW datos;
+    while (result != NULL && (datos = mysql_fetch_row(result)) != NULL) {
+        ids << QString(datos[0]);
+        horarios << QString(datos[1]) + " a " + QString(datos[2]);
+        ofertas << QString(datos[3]);
+    }
+    if (result != NULL) mysql_free_result(result);
     int primera = -1;
     int elegida = -1;
-    while (q.next()) {
-        int id = q.value(0).toInt();
+    for (int i = 0; i < ids.size(); i++) {
+        int id = ids[i].toInt();
         int fila = ui->cbEdFisicaHora->count();
-        QString texto = q.value(1).toString() + " a " + q.value(2).toString();
-        bool hayClase = q.value(3).toInt() > 0;
+        QString texto = horarios[i];
+        bool hayClase = ofertas[i].toInt() > 0;
         QString materia = "";
         if (hayClase) materia = chocaFranja(dia, id, curso);
         if (hayClase && materia.isEmpty()) {
@@ -2737,14 +2532,8 @@ void MainWindow::mostrarEstadoEdFisica()
         ui->btnEdFisicaInscribir->setEnabled(false);
         return;
     }
-    QSqlQuery q;
-    q.prepare("SELECT o.cupo_maximo, (SELECT COUNT(*) FROM deportes.inscripcion_ed_fisica i WHERE i.id_oferta = o.id_oferta) "
-              "FROM deportes.oferta_deporte o WHERE o.id_oferta = :oferta");
-    q.bindValue(":oferta", oferta);
-    q.exec();
-    q.next();
-    int maximo = q.value(0).toInt();
-    int libres = maximo - q.value(1).toInt();
+    int maximo = valorUnico("SELECT cupo_maximo FROM deportes.oferta_deporte WHERE id_oferta = :id", oferta).toInt();
+    int libres = maximo - valorUnico("SELECT COUNT(*) FROM deportes.inscripcion_ed_fisica WHERE id_oferta = :id", oferta).toInt();
     int miOferta = valorUnico("SELECT id_oferta FROM deportes.inscripcion_ed_fisica WHERE id_usuario = :id", idActual).toInt();
     int curso = valorUnico("SELECT COALESCE(id_curso, 0) FROM seguridad.usuario WHERE id_usuario = :id", idActual).toInt();
     QString materia = chocaHorario(oferta, curso);
@@ -2775,17 +2564,19 @@ void MainWindow::on_cbEdFisicaHora_currentIndexChanged(int) { mostrarEstadoEdFis
 
 void MainWindow::cargarEdFisica()
 {
-    QSqlQuery m;
-    m.prepare("SELECT d.nombre_deporte, ds.nombre_dia, f.hora_inicio, f.hora_fin FROM deportes.inscripcion_ed_fisica i "
-              "JOIN deportes.oferta_deporte o ON o.id_oferta = i.id_oferta JOIN deportes.deporte d ON d.id_deporte = o.id_deporte "
-              "JOIN academico.dia_semana ds ON ds.id_dia = o.id_dia JOIN academico.franja_horaria f ON f.id_franja = o.id_franja WHERE i.id_usuario = :usuario");
-    m.bindValue(":usuario", idActual);
-    m.exec();
-    bool inscripto = m.next();
+    MYSQL_RES *result = hacerSelect("SELECT d.nombre_deporte, ds.nombre_dia, f.hora_inicio, f.hora_fin FROM deportes.inscripcion_ed_fisica i "
+                                    "JOIN deportes.oferta_deporte o ON o.id_oferta = i.id_oferta JOIN deportes.deporte d ON d.id_deporte = o.id_deporte "
+                                    "JOIN academico.dia_semana ds ON ds.id_dia = o.id_dia JOIN academico.franja_horaria f ON f.id_franja = o.id_franja "
+                                    "WHERE i.id_usuario = " + QString::number(idActual));
+    MYSQL_ROW fila = NULL;
+    if (result != NULL) fila = mysql_fetch_row(result);
+    bool inscripto = fila != NULL;
     if (inscripto) {
-        ui->lblEdFisicaMia->setText(m.value(0).toString());
-        ui->lblEdFisicaMiaDetalle->setText(m.value(1).toString() + " de " + m.value(2).toString() + " a " + m.value(3).toString() + " hs");
-    } else {
+        ui->lblEdFisicaMia->setText(QString(fila[0]));
+        ui->lblEdFisicaMiaDetalle->setText(QString(fila[1]) + " de " + QString(fila[2]) + " a " + QString(fila[3]) + " hs");
+    }
+    if (result != NULL) mysql_free_result(result);
+    if (!inscripto) {
         ui->lblEdFisicaMia->setText("Todavía no te inscribiste.");
         ui->lblEdFisicaMiaDetalle->setText("Elegí deporte, día y hora, y tocá Inscribirme.");
     }
@@ -2805,13 +2596,9 @@ void MainWindow::on_btnEdFisicaInscribir_clicked()
         fallar("Inscripción a Ed. Física", "inscripcion_ed_fisica", "Ya estás inscripto. Cancelá tu inscripción antes de elegir otra.");
         return;
     }
-    QSqlQuery q;
-    q.prepare("SELECT o.cupo_maximo, (SELECT COUNT(*) FROM deportes.inscripcion_ed_fisica i WHERE i.id_oferta = o.id_oferta) "
-              "FROM deportes.oferta_deporte o WHERE o.id_oferta = :oferta");
-    q.bindValue(":oferta", oferta);
-    q.exec();
-    q.next();
-    if (q.value(1).toInt() >= q.value(0).toInt()) {
+    int cupo = valorUnico("SELECT cupo_maximo FROM deportes.oferta_deporte WHERE id_oferta = :id", oferta).toInt();
+    int inscriptos = valorUnico("SELECT COUNT(*) FROM deportes.inscripcion_ed_fisica WHERE id_oferta = :id", oferta).toInt();
+    if (inscriptos >= cupo) {
         fallar("Inscripción a Ed. Física", "inscripcion_ed_fisica", "Esa opción ya no tiene cupo.");
         return;
     }
@@ -2821,11 +2608,8 @@ void MainWindow::on_btnEdFisicaInscribir_clicked()
         fallar("Inscripción a Ed. Física", "inscripcion_ed_fisica", "Esa opción se superpone con " + materia + " en tu horario.");
         return;
     }
-    q.prepare("INSERT INTO deportes.inscripcion_ed_fisica (fecha_inscripcion, id_usuario, id_oferta) VALUES (:fecha, :usuario, :oferta)");
-    q.bindValue(":fecha", valorFecha(QDate::currentDate()));
-    q.bindValue(":usuario", idActual);
-    q.bindValue(":oferta", oferta);
-    if (!q.exec()) {
+    if (!ejecutar("INSERT INTO deportes.inscripcion_ed_fisica (fecha_inscripcion, id_usuario, id_oferta) VALUES (" + valorFecha(QDate::currentDate()) + ", "
+                  + QString::number(idActual) + ", " + QString::number(oferta) + ")")) {
         fallar("Inscripción a Ed. Física", "inscripcion_ed_fisica", "No se pudo guardar la inscripción.");
         return;
     }
@@ -2843,10 +2627,7 @@ void MainWindow::on_btnEdFisicaCancelar_clicked()
     }
     QString deporte = ui->lblEdFisicaMia->text();
     if (!confirmar("Cancelar inscripción", QString("¿Querés cancelar tu inscripción a %1? Después vas a poder elegir otra opción.").arg(deporte))) return;
-    QSqlQuery q;
-    q.prepare("DELETE FROM deportes.inscripcion_ed_fisica WHERE id_usuario = :usuario");
-    q.bindValue(":usuario", idActual);
-    if (!q.exec()) {
+    if (!ejecutar("DELETE FROM deportes.inscripcion_ed_fisica WHERE id_usuario = " + QString::number(idActual))) {
         fallar("", "", "No se pudo cancelar la inscripción. Probá de nuevo.");
         return;
     }
@@ -2863,22 +2644,21 @@ void MainWindow::cargarAuditoria()
                   "FROM seguridad.log_auditoria l JOIN seguridad.tipo_log t ON t.id_tipo_log = l.id_tipo_log "
                   "JOIN seguridad.resultado_log r ON r.id_resultado = l.id_resultado "
                   "LEFT JOIN seguridad.usuario u ON u.id_usuario = l.id_usuario ";
-    if (resultado != "Todos") sql += "WHERE r.nombre_resultado = :resultado ";
+    if (resultado != "Todos") sql += "WHERE r.nombre_resultado = " + texto(resultado) + " ";
     sql += "ORDER BY l.fecha_hora DESC, l.id_log DESC";
-    QSqlQuery q;
-    q.prepare(sql);
-    if (resultado != "Todos") q.bindValue(":resultado", resultado);
-    q.exec();
+    MYSQL_RES *result = hacerSelect(sql);
+    MYSQL_ROW fila;
     int mostrados = 0;
-    while (q.next() && mostrados < 50) {
+    while (result != NULL && mostrados < 50 && (fila = mysql_fetch_row(result)) != NULL) {
         QString usuario = "desconocido";
-        if (!q.value(1).isNull()) usuario = q.value(1).toString();
-        QString texto = QString("%1 · %2 · %3 · %4\n%5").arg(formatoCorto(q.value(0).toString())).arg(usuario)
-                            .arg(q.value(2).toString()).arg(q.value(3).toString()).arg(q.value(4).toString());
+        if (fila[1] != NULL) usuario = QString(fila[1]);
+        QString texto = QString("%1 · %2 · %3 · %4\n%5").arg(formatoCorto(QString(fila[0]))).arg(usuario)
+                            .arg(QString(fila[2])).arg(QString(fila[3])).arg(QString(fila[4]));
         agregarItem(ui->listAuditoria, texto, 0);
-        if (q.value(3).toString() == "Fallido") pintarUltimo(ui->listAuditoria, "peligro");
+        if (QString(fila[3]) == "Fallido") pintarUltimo(ui->listAuditoria, "peligro");
         mostrados++;
     }
+    if (result != NULL) mysql_free_result(result);
     if (mostrados == 0) agregarVacio(ui->listAuditoria, "No hay registros para este filtro.");
 }
 
@@ -2897,15 +2677,14 @@ void MainWindow::mostrarProgramas()
         ui->lblPlanillasProgramas->setText("Programas instalados: elegí un equipo de la lista.");
         return;
     }
-    QSqlQuery q;
-    q.prepare("SELECT s.nombre_software FROM equipos.recurso_software rs JOIN equipos.software s ON s.id_software = rs.id_software "
-              "WHERE rs.id_recurso = :recurso ORDER BY s.nombre_software");
-    q.bindValue(":recurso", recurso);
-    q.exec();
+    MYSQL_RES *result = hacerSelect("SELECT s.nombre_software FROM equipos.recurso_software rs JOIN equipos.software s ON s.id_software = rs.id_software "
+                                    "WHERE rs.id_recurso = " + QString::number(recurso) + " ORDER BY s.nombre_software");
+    MYSQL_ROW fila;
     QStringList programas;
-    while (q.next()) {
-        programas << q.value(0).toString();
+    while (result != NULL && (fila = mysql_fetch_row(result)) != NULL) {
+        programas << QString(fila[0]);
     }
+    if (result != NULL) mysql_free_result(result);
     if (programas.isEmpty()) ui->lblPlanillasProgramas->setText("Programas instalados: todavía no hay ninguno registrado.");
     else ui->lblPlanillasProgramas->setText("Programas instalados: " + programas.join(", "));
 }
@@ -3118,17 +2897,20 @@ void MainWindow::mostrarSeleccionBuffet()
         ui->lblBuffetSeleccion->setText("Elegí un producto para reservarlo. Con doble clic ves la foto en grande.");
         return;
     }
-    QSqlQuery q;
-    q.prepare("SELECT p.nombre_producto, p.precio, p.stock, p.id_usuario, u.nombre_completo, u.contacto_telefono "
-              "FROM tienda.producto_buffet p JOIN seguridad.usuario u ON u.id_usuario = p.id_usuario WHERE p.id_producto = :producto");
-    q.bindValue(":producto", producto);
-    q.exec();
-    if (!q.next()) return;
-    int stock = q.value(2).toInt();
-    QString texto = QString("%1 · $%2 · vende %3 (tel. %4)").arg(q.value(0).toString()).arg(q.value(1).toInt())
-            .arg(q.value(4).toString()).arg(q.value(5).toString());
+    MYSQL_RES *result = hacerSelect("SELECT p.nombre_producto, p.precio, p.stock, p.id_usuario, u.nombre_completo, u.contacto_telefono "
+                                    "FROM tienda.producto_buffet p JOIN seguridad.usuario u ON u.id_usuario = p.id_usuario WHERE p.id_producto = " + QString::number(producto));
+    if (result == NULL) return;
+    MYSQL_ROW fila = mysql_fetch_row(result);
+    if (fila == NULL) {
+        mysql_free_result(result);
+        return;
+    }
+    int stock = QString(fila[2]).toInt();
+    QString texto = QString("%1 · $%2 · vende %3 (tel. %4)").arg(QString(fila[0])).arg(QString(fila[1]).toInt())
+            .arg(QString(fila[4])).arg(QString(fila[5]));
     if (stock == 0) texto += " · SIN STOCK";
-    if (q.value(3).toInt() == idActual) texto += " · es tu producto";
+    if (QString(fila[3]).toInt() == idActual) texto += " · es tu producto";
+    mysql_free_result(result);
     ui->lblBuffetSeleccion->setText(texto);
     if (stock > 0) ui->sbBuffetCantidad->setMaximum(stock);
 }
@@ -3143,12 +2925,9 @@ void MainWindow::cargarDonaciones()
         alternarVacio(ui->listDonaciones, ui->lblDonacionesVacio);
         return;
     }
-    QSqlQuery g;
-    g.prepare("SELECT meta_monto FROM tienda.grupo_buffet WHERE id_grupo = :grupo");
-    g.bindValue(":grupo", grupo);
-    g.exec();
-    if (!g.next()) return;
-    int meta = g.value(0).toInt();
+    QString textoMeta = valorUnico("SELECT meta_monto FROM tienda.grupo_buffet WHERE id_grupo = :id", grupo);
+    if (textoMeta.isEmpty()) return;
+    int meta = textoMeta.toInt();
     int juntado = recaudado(grupo);
     int porcentaje = 0;
     if (meta > 0) porcentaje = juntado * 100 / meta;
@@ -3157,16 +2936,15 @@ void MainWindow::cargarDonaciones()
     ui->pbGrupoMeta->setValue(avance);
     ui->lblGrupoMeta->setText(QString("Se recaudaron $%1 de $%2 (%3%)").arg(juntado).arg(meta).arg(porcentaje));
 
-    QSqlQuery d;
-    d.prepare("SELECT u.nombre_completo, o.monto, o.fecha_hora FROM tienda.donacion_buffet o JOIN seguridad.usuario u ON u.id_usuario = o.id_usuario "
-              "WHERE o.id_grupo = :grupo ORDER BY o.id_donacion DESC");
-    d.bindValue(":grupo", grupo);
-    d.exec();
+    MYSQL_RES *result = hacerSelect("SELECT u.nombre_completo, o.monto, o.fecha_hora FROM tienda.donacion_buffet o JOIN seguridad.usuario u ON u.id_usuario = o.id_usuario "
+                                    "WHERE o.id_grupo = " + QString::number(grupo) + " ORDER BY o.id_donacion DESC");
+    MYSQL_ROW fila;
     int mostradas = 0;
-    while (d.next() && mostradas < 10) {
-        agregarItem(ui->listDonaciones, QString("%1 donó $%2 · %3").arg(d.value(0).toString()).arg(d.value(1).toInt()).arg(formatoCorto(d.value(2).toString())), 0);
+    while (result != NULL && mostradas < 10 && (fila = mysql_fetch_row(result)) != NULL) {
+        agregarItem(ui->listDonaciones, QString("%1 donó $%2 · %3").arg(QString(fila[0])).arg(QString(fila[1]).toInt()).arg(formatoCorto(QString(fila[2]))), 0);
         mostradas++;
     }
+    if (result != NULL) mysql_free_result(result);
     alternarVacio(ui->listDonaciones, ui->lblDonacionesVacio);
 }
 
@@ -3224,13 +3002,8 @@ void MainWindow::ponerDato(QComboBox *combo, int dato)
 
 void MainWindow::actualizarPendientesHigiene()
 {
-    QSqlQuery q;
-    q.prepare("SELECT COUNT(*) FROM instalaciones.reporte_higiene r JOIN instalaciones.estado_reporte e ON e.id_estado_reporte = r.id_estado_reporte "
-              "WHERE e.nombre_estado = :estado");
-    q.bindValue(":estado", "Pendiente");
-    q.exec();
-    int pendientes = 0;
-    if (q.next()) pendientes = q.value(0).toInt();
+    int pendientes = valorUnico("SELECT COUNT(*) FROM instalaciones.reporte_higiene r JOIN instalaciones.estado_reporte e ON e.id_estado_reporte = r.id_estado_reporte "
+                                "WHERE e.nombre_estado = 'Pendiente'", 0).toInt();
     if (pendientes == 0) ui->lblHigienePendientes->setText("No hay reportes pendientes. ¡Todo en orden!");
     else if (pendientes == 1) ui->lblHigienePendientes->setText("1 reporte pendiente de resolver");
     else ui->lblHigienePendientes->setText(QString("%1 reportes pendientes de resolver").arg(pendientes));
@@ -3249,15 +3022,16 @@ void MainWindow::actualizarResumenPlanillas()
     int disponibles = 0;
     int prestados = 0;
     int fuera = 0;
-    QSqlQuery q;
-    q.prepare("SELECT e.nombre_estado, COUNT(*) FROM equipos.recursos_ct r JOIN equipos.estado_recurso e ON e.id_estado_recurso = r.id_estado_recurso "
-              "GROUP BY e.nombre_estado");
-    q.exec();
-    while (q.next()) {
-        QString estado = q.value(0).toString();
-        if (estado == "Disponible") disponibles = q.value(1).toInt();
-        if (estado == "Prestado") prestados = q.value(1).toInt();
-        if (estado == "Fuera de servicio") fuera = q.value(1).toInt();
+    MYSQL_RES *result = hacerSelect("SELECT e.nombre_estado, COUNT(*) FROM equipos.recursos_ct r JOIN equipos.estado_recurso e ON e.id_estado_recurso = r.id_estado_recurso "
+                                    "GROUP BY e.nombre_estado");
+    MYSQL_ROW fila;
+    while (result != NULL && (fila = mysql_fetch_row(result)) != NULL) {
+        QString estado = QString(fila[0]);
+        if (estado == "Disponible") disponibles = QString(fila[1]).toInt();
+        if (estado == "Prestado") prestados = QString(fila[1]).toInt();
+        if (estado == "Fuera de servicio") fuera = QString(fila[1]).toInt();
     }
+    if (result != NULL) mysql_free_result(result);
+
     ui->lblPlanillasResumen->setText(QString("Disponibles: %1 · Prestados: %2 · Fuera de servicio: %3").arg(disponibles).arg(prestados).arg(fuera));
 }

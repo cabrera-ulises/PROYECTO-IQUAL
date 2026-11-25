@@ -25,7 +25,7 @@ En esta etapa, el proyecto avanza en la programación e implementación técnica
 | Lenguaje y framework | C++17 · Qt 6 (Qt Widgets y Qt Sql) · Qt Creator · CMake |
 | Kit de compilación | Desktop Qt 6.12.0 MinGW 64-bit (Windows) |
 | Target CMake | `PROYECTO_IQUAL` |
-| Base de datos | MySQL (por defecto `localhost:3306`, base `iqual`). Los datos de conexión viven en `iqual.ini`, que la app crea sola junto al ejecutable. Driver `QMYSQL` o, si Qt no lo tiene, ODBC.|
+| Base de datos | MySQL (por defecto `localhost:3306`, base `iqual`). Los datos de conexión viven en `iqual.ini`, que la app crea sola junto al ejecutable. Conexión con la librería de C de MySQL (`mysql.h`, `libmysqlclient`), como en la clase 006 de BBDD.|
 | Seguridad y auditoría | Contraseñas con hash SHA-256, consultas SQL preparadas (`bindValue`) y registro de auditoría en la base (`log_auditoria`, 14 tipos de evento, con resultado Exitoso o Fallido) |
 | Estructura de la interfaz | Una ventana con un `QStackedWidget` de 10 páginas: Landing, Acceso, Dashboard y una por módulo, más Mi Cuenta |
 
@@ -73,21 +73,19 @@ Para registrar cuentas de Profesor, Preceptor o Maestranza la app pide un PIN in
 2. **Conexión (`iqual.ini`).** La primera vez que se abre, la app crea `iqual.ini` junto al ejecutable, con una sección `[base]`:
    | Clave | Valor por defecto | Para qué |
    | :--- | :--- | :--- |
-   | `driver` | `auto` | `auto` (usa `QMYSQL` si Qt lo tiene; si no, ODBC), `qmysql` u `odbc` |
-   | `odbc_driver` | (vacío) | Nombre del driver ODBC de MySQL, si hay más de uno |
    | `host` | `localhost` | Servidor |
    | `puerto` | `3306` | Puerto |
    | `usuario` | `root` | Usuario |
    | `clave` | `12341234` | Contraseña (la de la clase de Bases de Datos) |
    | `nombre` | `iqual` | Nombre de la base |
-3. **Driver en Windows.** El Qt de MinGW no trae `QMYSQL` pero sí `QODBC`: el camino recomendado es instalar *MySQL Connector/ODBC* (no hay que compilar nada); el alternativo es compilar el plugin `QMYSQL`. Detalles en [`db/guias/GUIA_CONEXION_APP_MYSQL.md`](./db/guias/GUIA_CONEXION_APP_MYSQL.md).
-4. **Si MySQL falla** (servidor apagado, clave incorrecta, base vacía o sin driver), la app **avisa el motivo** y no abre: hay que revisar `iqual.ini`, que el servidor esté encendido y que `03`, `04` y `05` estén cargados. Si el conector ODBC no compara bien los textos, también avisa.
-5. **Qué motor está usando:** lo dice el título de la ventana ("· MySQL", "· MySQL (ODBC)").
+3. **Librería `mysql.h`.** En Windows alcanza con tener MySQL Server instalado (trae `include\mysql.h` y `lib\libmysql.lib`/`libmysql.dll`); `CMakeLists.txt` busca la carpeta solo y copia la DLL al lado del `.exe`. En Linux: `sudo apt install libmysqlclient-dev`. Detalles en [`db/guias/GUIA_APP_MYSQL_H.md`](./db/guias/GUIA_APP_MYSQL_H.md).
+4. **Si MySQL falla** (servidor apagado, clave incorrecta o base vacía), la app **avisa el motivo** (el texto de `mysql_error`) y no abre: hay que revisar `iqual.ini`, que el servidor esté encendido y que `03`, `04` y `05` estén cargados.
+5. **Qué motor está usando:** lo dice el título de la ventana ("· MySQL").
 6. **Plan de emergencia para una demostración:** tener la base cargada y probada en la PC de la demo con anticipación; como alternativa, mostrar los scripts y las consultas desde DBeaver.
 
 ### 4.3 Qué se probó y qué no
 * **Pruebas de la base de datos:** el script de 47 tablas y los 27 procedimientos se integraron en MariaDB 10.11; los 104 casos de los procedimientos se ejecutaron el 25/11/2026 en MariaDB 10.11 con los scripts recién cargados: **104 PASS** (salida de cada caso en `db/06_PruebasSQL.xlsx`, hojas «Casos SP» y «Evidencia»). Guía para repetirlas en MySQL Workbench: `db/06_Guia_Ejecucion_PruebasSQL.sql`.
-* **Pruebas de la aplicación:** se hicieron a mano, en Windows con Qt 6.12 (MinGW) y MySQL por ODBC. Los casos por pantalla suman 337: 285 OK, 21 con observación y 31 sin probar (detalle en `docs/CASOS_PRUEBA_CONSOLIDADO.md` y `docs/pdf/CASOS_PRUEBA_CON_RESULTADOS.pdf`).
+* **Pruebas de la aplicación:** se hicieron a mano, en Windows con Qt 6.12 (MinGW) y MySQL por ODBC. Esas pruebas son de la versión con Qt Sql (rama `main`); esta rama (`mysql.h`) se comparó contra `main` en Linux con una prueba automática de los 5 roles y dio los mismos resultados (ver `db/guias/GUIA_APP_MYSQL_H.md`). Falta probarla en Windows. Los casos por pantalla suman 337: 285 OK, 21 con observación y 31 sin probar (detalle en `docs/CASOS_PRUEBA_CONSOLIDADO.md` y `docs/pdf/CASOS_PRUEBA_CON_RESULTADOS.pdf`).
 * **No probado:** MySQL 8 de Oracle y SQL Server 2005.
 
 ---
@@ -154,7 +152,7 @@ Informe general: [`INFORME_PRUEBAS.md`](./docs/INFORME_PRUEBAS.md) y [`CASOS_PRU
 ---
 
 ## 8. Limitaciones Conocidas
-* **Motor:** MySQL está probado en MariaDB 10.11 sobre Linux; falta probar MySQL 8 de Oracle y SQL Server 2005, y el camino de Windows (driver ODBC o `QMYSQL`). Si la conexión falla, la app avisa y no abre. El motor final está a confirmar con el profesor de Bases de Datos.
+* **Motor:** MySQL está probado en MariaDB 10.11 sobre Linux; falta probar MySQL 8 de Oracle y SQL Server 2005, y compilar en Windows con `mysql.h` (MinGW + `libmysql`). Si la conexión falla, la app avisa y no abre. El motor final está a confirmar con el profesor de Bases de Datos.
 * Sin pagos reales: las reservas y donaciones de la tienda se coordinan en persona.
 * El cruce de horarios de Educación Física solo funciona para los cursos con horario cargado.
 * Sin notificaciones: para saber si una reserva fue aprobada o si un reporte se resolvió hay que entrar a la pantalla.
