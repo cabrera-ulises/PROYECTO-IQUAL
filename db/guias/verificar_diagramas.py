@@ -78,7 +78,7 @@ def leer_sql(ruta):
         texto = f.read()
     texto = re.sub(r"--[^\n]*", "", texto)
     tablas = {}
-    for m in re.finditer(r"CREATE\s+TABLE\s+`?(\w+)`?\s*\(", texto, re.I):
+    for m in re.finditer(r"CREATE\s+TABLE\s+(?:`?\w+`?\.)?`?(\w+)`?\s*\(", texto, re.I):
         nombre = m.group(1)
         i, nivel = m.end(), 1
         while nivel > 0 and i < len(texto):
@@ -99,7 +99,7 @@ def leer_sql(ruta):
                 mu = re.search(r"UNIQUE\s*\(([^)]*)\)", item, re.I)
                 if mu and not up.startswith("CHECK"):
                     unicas.append([c.strip().strip("`") for c in mu.group(1).split(",")])
-                mf = re.search(r"FOREIGN\s+KEY\s*\(([^)]*)\)\s*REFERENCES\s+`?(\w+)`?\s*\(([^)]*)\)", item, re.I)
+                mf = re.search(r"FOREIGN\s+KEY\s*\(([^)]*)\)\s*REFERENCES\s+(?:`?\w+`?\.)?`?(\w+)`?\s*\(([^)]*)\)", item, re.I)
                 if mf:
                     fks.append((mf.group(1).strip().strip("`"), mf.group(2), mf.group(3).strip().strip("`")))
             else:

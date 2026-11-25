@@ -25,7 +25,7 @@
 ## 3. Preguntas para Linares
 Detalle en `db/guias/PREGUNTAS_LINARES_BBDD.md`.
 1. Número de grupo.
-2. Si acepta **una sola base en MySQL** con los 7 schemas solo en el script de SQL Server (mapa en `db/SCHEMAS.md`).
+2. ~~Schemas en MySQL~~ **Hecho:** las 47 tablas están en 7 schemas reales también en MySQL (`db/SCHEMAS.md`).
 3. Si acepta los **catálogos con menos de 20 filas** (`db/DATOS_EXCEPCIONES.md`).
 4. Si está bien usar **`CREATE TEMPORARY TABLE`** en `sp_rep_ventas_por_producto_tuneado`.
 5. Si pide **SQL Server además de MySQL**.

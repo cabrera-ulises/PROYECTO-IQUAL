@@ -34,7 +34,7 @@ USE iqual;
 ```
 
 4. Ejecutá con el **rayo** (o `Ctrl+Enter` para una sola línea; `Ctrl+Shift+Enter` ejecuta todo). `IF NOT EXISTS` evita el error si la base ya existe (lo explica la diapositiva 7).
-5. En el panel **Schemas** (a la izquierda), apretá el botón de refrescar y vas a ver `iqual`.
+5. En el panel **Schemas** (a la izquierda), apretá el botón de refrescar y vas a ver `iqual`. Después de cargar el `03` aparecen también los 7 schemas: `academico`, `deportes`, `equipos`, `instalaciones`, `objetos`, `seguridad` y `tienda`.
 
 ### En DBeaver-ce (clase 006, Parte 02 final)
 1. **Database → New Database Connection → MySQL**.
@@ -72,7 +72,7 @@ Corré estas consultas (están completas en `consultas_verificacion_mysql.sql`, 
 ```sql
 USE iqual;
 SELECT COUNT(*) AS tablas FROM information_schema.tables
-WHERE table_schema = 'iqual' AND table_type = 'BASE TABLE';
+WHERE table_schema IN ('seguridad','academico','objetos','instalaciones','tienda','equipos','deportes') AND table_type = 'BASE TABLE';
 ```
 
 **Tiene que dar 47.** También podés ejecutar `SHOW TABLES;` y contar.

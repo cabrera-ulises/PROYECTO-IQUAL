@@ -171,14 +171,16 @@ bool MainWindow::abrirMySql(QSettings &cfg, QString &error)
     }
     QSqlQuery q;
     q.exec("SET NAMES utf8mb4");
-    if (!db.tables().contains("usuario")) {
-        error = "La base " + cfg.value("base/nombre").toString() + " existe pero está vacía. Cargá 03_ModeloSQL_Grupo06.sql y 04_DatosSQL_Grupo06.sql desde DBeaver.";
+    QSqlQuery hayTablas;
+    hayTablas.prepare("SELECT COUNT(*) FROM seguridad.usuario");
+    if (!hayTablas.exec()) {
+        error = "Los schemas de IQUAL no existen. Cargá 03_ModeloSQL_Grupo06.sql y 04_DatosSQL_Grupo06.sql desde DBeaver.";
         db.close();
         return false;
     }
     if (db.driverName() == "QODBC") {
         QSqlQuery prueba;
-        prueba.prepare("SELECT COUNT(*) FROM rol WHERE nombre_rol = :nombre");
+        prueba.prepare("SELECT COUNT(*) FROM seguridad.rol WHERE nombre_rol = :nombre");
         prueba.bindValue(":nombre", "Alumno");
         if (!prueba.exec() || !prueba.next() || prueba.value(0).toInt() < 1) {
             error = "El driver ODBC no compara bien los textos (le pasa al MariaDB Connector/ODBC). Instalá MySQL Connector/ODBC o usá el driver QMYSQL.";
@@ -199,29 +201,29 @@ void MainWindow::ponerIcono(QPushButton *boton, const QString &ruta, int tamano)
 
 void MainWindow::cargarCatalogos()
 {
-    cargarCombo(ui->cbRegRol, "SELECT id_rol, nombre_rol FROM rol ORDER BY id_rol", "Elegí tu rol", "");
+    cargarCombo(ui->cbRegRol, "SELECT id_rol, nombre_rol FROM seguridad.rol ORDER BY id_rol", "Elegí tu rol", "");
     cargarCursoCombos(ui->cbRegAnio, ui->cbRegDivision, ui->cbRegEspecialidad);
     cargarCursoCombos(ui->cbCuentaAnio, ui->cbCuentaDivision, ui->cbCuentaEspecialidad);
-    cargarCombo(ui->cbHigieneSector, "SELECT id_sector, nombre_sector FROM sector ORDER BY nombre_sector", "", "");
-    cargarCombo(ui->cbHigieneTipo, "SELECT id_tipo_reporte, nombre_tipo FROM tipo_reporte ORDER BY id_tipo_reporte", "", "");
-    cargarCombo(ui->cbObjCategoria, "SELECT id_categoria_objeto, nombre_categoria FROM categoria_objeto ORDER BY nombre_categoria", "Elegí una categoría", "");
-    cargarCombo(ui->cbObjFiltroCategoria, "SELECT id_categoria_objeto, nombre_categoria FROM categoria_objeto ORDER BY nombre_categoria", "Todas las categorías", "");
-    cargarCombo(ui->cbObjSector, "SELECT id_sector, nombre_sector FROM sector ORDER BY nombre_sector", "Elegí un sector", "");
-    cargarCombo(ui->cbBuffetCategoria, "SELECT id_categoria_producto, nombre_categoria FROM categoria_producto ORDER BY id_categoria_producto", "Todas", "");
-    cargarCombo(ui->cbProdCategoria, "SELECT id_categoria_producto, nombre_categoria FROM categoria_producto ORDER BY id_categoria_producto", "", "");
-    cargarCombo(ui->cbEdFisicaDeporte, "SELECT id_deporte, nombre_deporte FROM deporte ORDER BY nombre_deporte", "", "");
-    cargarCombo(ui->cbEdFisicaDia, "SELECT id_dia, nombre_dia FROM dia_semana ORDER BY id_dia", "", "");
-    cargarCombo(ui->cbSectoresLugar, "SELECT s.id_sector, s.nombre_sector FROM sector s JOIN tipo_sector t ON t.id_tipo_sector = s.id_tipo_sector "
+    cargarCombo(ui->cbHigieneSector, "SELECT id_sector, nombre_sector FROM instalaciones.sector ORDER BY nombre_sector", "", "");
+    cargarCombo(ui->cbHigieneTipo, "SELECT id_tipo_reporte, nombre_tipo FROM instalaciones.tipo_reporte ORDER BY id_tipo_reporte", "", "");
+    cargarCombo(ui->cbObjCategoria, "SELECT id_categoria_objeto, nombre_categoria FROM objetos.categoria_objeto ORDER BY nombre_categoria", "Elegí una categoría", "");
+    cargarCombo(ui->cbObjFiltroCategoria, "SELECT id_categoria_objeto, nombre_categoria FROM objetos.categoria_objeto ORDER BY nombre_categoria", "Todas las categorías", "");
+    cargarCombo(ui->cbObjSector, "SELECT id_sector, nombre_sector FROM instalaciones.sector ORDER BY nombre_sector", "Elegí un sector", "");
+    cargarCombo(ui->cbBuffetCategoria, "SELECT id_categoria_producto, nombre_categoria FROM tienda.categoria_producto ORDER BY id_categoria_producto", "Todas", "");
+    cargarCombo(ui->cbProdCategoria, "SELECT id_categoria_producto, nombre_categoria FROM tienda.categoria_producto ORDER BY id_categoria_producto", "", "");
+    cargarCombo(ui->cbEdFisicaDeporte, "SELECT id_deporte, nombre_deporte FROM deportes.deporte ORDER BY nombre_deporte", "", "");
+    cargarCombo(ui->cbEdFisicaDia, "SELECT id_dia, nombre_dia FROM academico.dia_semana ORDER BY id_dia", "", "");
+    cargarCombo(ui->cbSectoresLugar, "SELECT s.id_sector, s.nombre_sector FROM instalaciones.sector s JOIN instalaciones.tipo_sector t ON t.id_tipo_sector = s.id_tipo_sector "
                                           "WHERE t.nombre_tipo = 'Reservable' ORDER BY s.nombre_sector", "", "");
-    cargarCombo(ui->cbPlanillasPrograma, "SELECT id_software, nombre_software FROM software ORDER BY nombre_software", "Todos los programas", "");
+    cargarCombo(ui->cbPlanillasPrograma, "SELECT id_software, nombre_software FROM equipos.software ORDER BY nombre_software", "Todos los programas", "");
     actualizarRegistro();
 }
 
 void MainWindow::cargarCursoCombos(QComboBox *anio, QComboBox *division, QComboBox *especialidad)
 {
-    cargarCombo(anio, "SELECT id_anio, numero_anio FROM anio ORDER BY numero_anio", "Año", "°");
-    cargarCombo(division, "SELECT id_division, numero_division FROM division ORDER BY numero_division", "División", "°");
-    cargarCombo(especialidad, "SELECT id_especialidad, nombre_especialidad FROM especialidad ORDER BY nombre_especialidad", "Especialidad", "");
+    cargarCombo(anio, "SELECT id_anio, numero_anio FROM academico.anio ORDER BY numero_anio", "Año", "°");
+    cargarCombo(division, "SELECT id_division, numero_division FROM academico.division ORDER BY numero_division", "División", "°");
+    cargarCombo(especialidad, "SELECT id_especialidad, nombre_especialidad FROM academico.especialidad ORDER BY nombre_especialidad", "Especialidad", "");
 }
 
 void MainWindow::cargarTodo()
@@ -241,7 +243,7 @@ void MainWindow::cargarTodo()
     cargarMisReservas();
     cargarMisProductos();
     cargarMisVentas();
-    cargarCombo(ui->cbPlanillasAlumno, "SELECT u.id_usuario, u.nombre_completo FROM usuario u JOIN rol r ON r.id_rol = u.id_rol "
+    cargarCombo(ui->cbPlanillasAlumno, "SELECT u.id_usuario, u.nombre_completo FROM seguridad.usuario u JOIN seguridad.rol r ON r.id_rol = u.id_rol "
                                        "WHERE r.nombre_rol = 'Alumno' ORDER BY u.nombre_completo", "Elegí el alumno", "");
     if (rolActual() == "Alumno") elegirPorId(ui->cbPlanillasAlumno, idActual);
     cargarPlanillas();
@@ -318,7 +320,7 @@ int MainWindow::idPorNombre(const QString &tabla, const QString &columnaId, cons
 
 int MainWindow::idEstado(const QString &tabla, const QString &nombre)
 {
-    return idPorNombre(tabla, "id_" + tabla, "nombre_estado", nombre);
+    return idPorNombre(tabla, "id_" + tabla.section('.', -1), "nombre_estado", nombre);
 }
 
 QString MainWindow::valorUnico(const QString &sql, int id)
@@ -354,7 +356,7 @@ bool MainWindow::existe(const QString &tabla, const QString &columna, const QStr
 
 QString MainWindow::rolActual()
 {
-    return valorUnico("SELECT r.nombre_rol FROM usuario u JOIN rol r ON r.id_rol = u.id_rol WHERE u.id_usuario = :id", idActual);
+    return valorUnico("SELECT r.nombre_rol FROM seguridad.usuario u JOIN seguridad.rol r ON r.id_rol = u.id_rol WHERE u.id_usuario = :id", idActual);
 }
 
 bool MainWindow::rolEs(const QString &lista)
@@ -408,7 +410,7 @@ void MainWindow::registrarLog(const QString &evento, const QString &descripcion,
     QVariant nick;
     if (idActual > 0) {
         QSqlQuery qn;
-        qn.prepare("SELECT usuario_nick FROM usuario WHERE id_usuario = :id");
+        qn.prepare("SELECT usuario_nick FROM seguridad.usuario WHERE id_usuario = :id");
         qn.bindValue(":id", idActual);
         qn.exec();
         if (qn.next()) nick = qn.value(0).toString();
@@ -426,15 +428,15 @@ void MainWindow::registrarLog(const QString &evento, const QString &descripcion,
         return;
     }
     QSqlQuery q;
-    q.prepare("INSERT INTO log_auditoria (fecha_hora, direccion_ip, descripcion_evento, id_entidad, id_usuario, id_tipo_log, id_resultado) "
+    q.prepare("INSERT INTO seguridad.log_auditoria (fecha_hora, direccion_ip, descripcion_evento, id_entidad, id_usuario, id_tipo_log, id_resultado) "
               "VALUES (:fecha, :ip, :descripcion, :entidad, :usuario, :tipo, :resultado)");
     q.bindValue(":fecha", valorAhora());
     q.bindValue(":ip", QSysInfo::machineHostName());
     q.bindValue(":descripcion", descripcion);
-    q.bindValue(":entidad", idPorNombre("entidad_log", "id_entidad", "nombre_entidad", entidad));
+    q.bindValue(":entidad", idPorNombre("seguridad.entidad_log", "id_entidad", "nombre_entidad", entidad));
     q.bindValue(":usuario", usuario);
-    q.bindValue(":tipo", idPorNombre("tipo_log", "id_tipo_log", "nombre_evento", evento));
-    q.bindValue(":resultado", idPorNombre("resultado_log", "id_resultado", "nombre_resultado", resultado));
+    q.bindValue(":tipo", idPorNombre("seguridad.tipo_log", "id_tipo_log", "nombre_evento", evento));
+    q.bindValue(":resultado", idPorNombre("seguridad.resultado_log", "id_resultado", "nombre_resultado", resultado));
     q.exec();
 }
 
@@ -513,13 +515,13 @@ int MainWindow::seleccionado(QListWidget *lista, int rol)
 int MainWindow::obtenerCurso(QComboBox *anio, QComboBox *division, QComboBox *especialidad)
 {
     QSqlQuery q;
-    q.prepare("SELECT id_curso FROM curso WHERE id_anio = :a AND id_division = :d AND id_especialidad = :e");
+    q.prepare("SELECT id_curso FROM academico.curso WHERE id_anio = :a AND id_division = :d AND id_especialidad = :e");
     q.bindValue(":a", anio->currentData().toInt());
     q.bindValue(":d", division->currentData().toInt());
     q.bindValue(":e", especialidad->currentData().toInt());
     q.exec();
     if (q.next()) return q.value(0).toInt();
-    q.prepare("INSERT INTO curso (id_anio, id_division, id_especialidad) VALUES (:a, :d, :e)");
+    q.prepare("INSERT INTO academico.curso (id_anio, id_division, id_especialidad) VALUES (:a, :d, :e)");
     q.bindValue(":a", anio->currentData().toInt());
     q.bindValue(":d", division->currentData().toInt());
     q.bindValue(":e", especialidad->currentData().toInt());
@@ -531,9 +533,9 @@ QString MainWindow::textoCurso(int idCurso)
 {
     if (idCurso <= 0) return "sin curso";
     QSqlQuery q;
-    q.prepare("SELECT a.numero_anio, d.numero_division, e.nombre_especialidad FROM curso c "
-              "JOIN anio a ON a.id_anio = c.id_anio JOIN division d ON d.id_division = c.id_division "
-              "JOIN especialidad e ON e.id_especialidad = c.id_especialidad WHERE c.id_curso = :curso");
+    q.prepare("SELECT a.numero_anio, d.numero_division, e.nombre_especialidad FROM academico.curso c "
+              "JOIN academico.anio a ON a.id_anio = c.id_anio JOIN academico.division d ON d.id_division = c.id_division "
+              "JOIN academico.especialidad e ON e.id_especialidad = c.id_especialidad WHERE c.id_curso = :curso");
     q.bindValue(":curso", idCurso);
     q.exec();
     if (!q.next()) return "sin curso";
@@ -681,9 +683,9 @@ void MainWindow::on_btnRegistrar_clicked()
     else if (!QRegularExpression("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$").match(mail).hasMatch()) problema = "El correo no es válido. Tiene que ser algo como nombre@dominio.com.";
     else if (!soloDigitos(telefono, 8, 15)) problema = "El teléfono tiene que tener entre 8 y 15 números.";
     else if (!alumno && ui->leRegPin->text() != PIN_PERSONAL) problema = "El PIN de personal es incorrecto.";
-    else if (existe("usuario", "LOWER(usuario_nick)", nick)) problema = "Ese usuario ya existe, probá con otro.";
-    else if (existe("usuario", "dni", dni)) problema = "Ya hay una cuenta con ese DNI.";
-    else if (existe("usuario", "email", mail)) problema = "Ya hay una cuenta con ese correo.";
+    else if (existe("seguridad.usuario", "LOWER(usuario_nick)", nick)) problema = "Ese usuario ya existe, probá con otro.";
+    else if (existe("seguridad.usuario", "dni", dni)) problema = "Ya hay una cuenta con ese DNI.";
+    else if (existe("seguridad.usuario", "email", mail)) problema = "Ya hay una cuenta con ese correo.";
     if (!problema.isEmpty()) {
         fallar("Registro de usuario", "usuario", problema);
         return;
@@ -700,7 +702,7 @@ void MainWindow::on_btnRegistrar_clicked()
     }
 
     QSqlQuery q;
-    q.prepare("INSERT INTO usuario (dni, nombre_completo, usuario_nick, password_hash, email, contacto_telefono, id_rol, id_curso) "
+    q.prepare("INSERT INTO seguridad.usuario (dni, nombre_completo, usuario_nick, password_hash, email, contacto_telefono, id_rol, id_curso) "
               "VALUES (:dni, :nombre, :nick, :hash, :mail, :telefono, :rol, :curso)");
     q.bindValue(":dni", dni);
     q.bindValue(":nombre", nombre);
@@ -733,13 +735,13 @@ void MainWindow::on_btnLoginIngresar_clicked()
         return;
     }
     QSqlQuery q;
-    q.prepare("SELECT id_usuario FROM usuario WHERE LOWER(usuario_nick) = :nick AND password_hash = :hash");
+    q.prepare("SELECT id_usuario FROM seguridad.usuario WHERE LOWER(usuario_nick) = :nick AND password_hash = :hash");
     q.bindValue(":nick", nick);
     q.bindValue(":hash", hashClave(clave));
     q.exec();
     if (!q.next()) {
         intentosFallidos++;
-        idActual = idPorNombre("usuario", "id_usuario", "LOWER(usuario_nick)", nick);
+        idActual = idPorNombre("seguridad.usuario", "id_usuario", "LOWER(usuario_nick)", nick);
         QString detalle = "Intento fallido con un usuario inexistente";
         if (idActual > 0) detalle = QString("Intento fallido con el usuario %1").arg(nick);
         registrarLog("Inicio de sesión", detalle, "usuario", "Fallido");
@@ -765,8 +767,8 @@ void MainWindow::cargarCuenta()
 {
     QSqlQuery q;
     q.prepare("SELECT u.nombre_completo, u.usuario_nick, u.dni, u.email, u.contacto_telefono, r.nombre_rol, "
-              "u.id_curso, cu.id_anio, cu.id_division, cu.id_especialidad FROM usuario u "
-              "JOIN rol r ON r.id_rol = u.id_rol LEFT JOIN curso cu ON cu.id_curso = u.id_curso WHERE u.id_usuario = :usuario");
+              "u.id_curso, cu.id_anio, cu.id_division, cu.id_especialidad FROM seguridad.usuario u "
+              "JOIN seguridad.rol r ON r.id_rol = u.id_rol LEFT JOIN academico.curso cu ON cu.id_curso = u.id_curso WHERE u.id_usuario = :usuario");
     q.bindValue(":usuario", idActual);
     q.exec();
     if (!q.next()) return;
@@ -800,12 +802,12 @@ void MainWindow::on_btnCuentaGuardar_clicked()
         fallar("", "", "No se pudo cambiar tu curso. Probá de nuevo.");
         return;
     }
-    int cursoActual = valorUnico("SELECT COALESCE(id_curso, 0) FROM usuario WHERE id_usuario = :id", idActual).toInt();
+    int cursoActual = valorUnico("SELECT COALESCE(id_curso, 0) FROM seguridad.usuario WHERE id_usuario = :id", idActual).toInt();
     if (cursoActual == curso) {
         info("Ese ya es tu curso.");
         return;
     }
-    int oferta = valorUnico("SELECT id_oferta FROM inscripcion_ed_fisica WHERE id_usuario = :id", idActual).toInt();
+    int oferta = valorUnico("SELECT id_oferta FROM deportes.inscripcion_ed_fisica WHERE id_usuario = :id", idActual).toInt();
     QString materia = "";
     if (oferta != 0) materia = chocaHorario(oferta, curso);
     if (!materia.isEmpty()) {
@@ -816,7 +818,7 @@ void MainWindow::on_btnCuentaGuardar_clicked()
         }
     }
     QSqlQuery q;
-    q.prepare("UPDATE usuario SET id_curso = :curso WHERE id_usuario = :usuario");
+    q.prepare("UPDATE seguridad.usuario SET id_curso = :curso WHERE id_usuario = :usuario");
     q.bindValue(":curso", curso);
     q.bindValue(":usuario", idActual);
     if (!q.exec()) {
@@ -826,7 +828,7 @@ void MainWindow::on_btnCuentaGuardar_clicked()
     bool cancelada = false;
     if (!materia.isEmpty()) {
         QSqlQuery d;
-        d.prepare("DELETE FROM inscripcion_ed_fisica WHERE id_usuario = :usuario");
+        d.prepare("DELETE FROM deportes.inscripcion_ed_fisica WHERE id_usuario = :usuario");
         d.bindValue(":usuario", idActual);
         cancelada = d.exec();
     }
@@ -848,7 +850,7 @@ void MainWindow::on_btnCuentaClave_clicked()
     QString actual = ui->leCuentaClaveActual->text();
     QString nueva = ui->leCuentaClaveNueva->text();
     QString repetida = ui->leCuentaClaveRepetir->text();
-    QString guardada = valorUnico("SELECT password_hash FROM usuario WHERE id_usuario = :id", idActual);
+    QString guardada = valorUnico("SELECT password_hash FROM seguridad.usuario WHERE id_usuario = :id", idActual);
     if (actual.isEmpty()) {
         ui->leCuentaClaveActual->setFocus();
         fallar("", "", "Escribí tu contraseña actual.");
@@ -875,7 +877,7 @@ void MainWindow::on_btnCuentaClave_clicked()
         return;
     }
     QSqlQuery q;
-    q.prepare("UPDATE usuario SET password_hash = :hash WHERE id_usuario = :usuario");
+    q.prepare("UPDATE seguridad.usuario SET password_hash = :hash WHERE id_usuario = :usuario");
     q.bindValue(":hash", hashClave(nueva));
     q.bindValue(":usuario", idActual);
     if (!q.exec()) {
@@ -905,7 +907,7 @@ void MainWindow::on_btnCuentaTelefono_clicked()
         return;
     }
     QSqlQuery q;
-    q.prepare("UPDATE usuario SET contacto_telefono = :telefono WHERE id_usuario = :usuario");
+    q.prepare("UPDATE seguridad.usuario SET contacto_telefono = :telefono WHERE id_usuario = :usuario");
     q.bindValue(":telefono", telefono);
     q.bindValue(":usuario", idActual);
     if (!q.exec()) {
@@ -937,15 +939,15 @@ void MainWindow::cargarObjetos()
     bool preceptor = rolEs("Preceptor");
     ui->listObjetos->clear();
     QString sql = "SELECT o.id_objeto, o.titulo, o.descripcion, o.ruta_foto, c.nombre_categoria, s.nombre_sector, e.nombre_estado, "
-                  "(SELECT COUNT(*) FROM reclamo_objeto r WHERE r.id_objeto = o.id_objeto) "
-                  "FROM objeto_perdido o JOIN categoria_objeto c ON c.id_categoria_objeto = o.id_categoria_objeto "
-                  "JOIN sector s ON s.id_sector = o.id_sector JOIN estado_objeto e ON e.id_estado_objeto = o.id_estado_objeto "
+                  "(SELECT COUNT(*) FROM objetos.reclamo_objeto r WHERE r.id_objeto = o.id_objeto) "
+                  "FROM objetos.objeto_perdido o JOIN objetos.categoria_objeto c ON c.id_categoria_objeto = o.id_categoria_objeto "
+                  "JOIN instalaciones.sector s ON s.id_sector = o.id_sector JOIN objetos.estado_objeto e ON e.id_estado_objeto = o.id_estado_objeto "
                   "WHERE o.id_estado_objeto <> :archivado ";
     if (categoria > 0) sql += "AND o.id_categoria_objeto = :categoria ";
     sql += "ORDER BY o.id_objeto DESC";
     QSqlQuery q;
     q.prepare(sql);
-    q.bindValue(":archivado", idEstado("estado_objeto", "Archivado"));
+    q.bindValue(":archivado", idEstado("objetos.estado_objeto", "Archivado"));
     if (categoria > 0) q.bindValue(":categoria", categoria);
     q.exec();
     int disponibles = 0;
@@ -986,7 +988,7 @@ void MainWindow::cargarObjetos()
     }
     QString resumen = QString("Objetos para reclamar: %1 · Ya devueltos: %2").arg(disponibles).arg(devueltos);
     if (preceptor) {
-        QString pendientes = valorUnico("SELECT COUNT(*) FROM reclamo_objeto r JOIN estado_reclamo e ON e.id_estado_reclamo = r.id_estado_reclamo "
+        QString pendientes = valorUnico("SELECT COUNT(*) FROM objetos.reclamo_objeto r JOIN objetos.estado_reclamo e ON e.id_estado_reclamo = r.id_estado_reclamo "
                                         "WHERE e.nombre_estado = 'Pendiente' AND :id > 0", idActual);
         resumen += " · Reclamos pendientes: " + pendientes;
     }
@@ -998,7 +1000,7 @@ void MainWindow::on_listObjetos_itemDoubleClicked(QListWidgetItem *item)
     int objeto = item->data(Qt::UserRole).toInt();
     QSqlQuery q;
     q.prepare("SELECT titulo, COALESCE(descripcion, ''), COALESCE(ruta_foto, ''), COALESCE(detalle_reservado, '') "
-              "FROM objeto_perdido WHERE id_objeto = :objeto");
+              "FROM objetos.objeto_perdido WHERE id_objeto = :objeto");
     q.bindValue(":objeto", objeto);
     q.exec();
     if (!q.next()) return;
@@ -1015,10 +1017,10 @@ void MainWindow::cargarReclamos()
     if (!rolEs("Preceptor")) return;
     QSqlQuery q;
     q.prepare("SELECT r.id_reclamo, r.id_objeto, o.titulo, u.nombre_completo, r.prueba_pertenencia, COALESCE(o.detalle_reservado, '') "
-              "FROM reclamo_objeto r JOIN objeto_perdido o ON o.id_objeto = r.id_objeto "
-              "JOIN usuario u ON u.id_usuario = r.id_usuario WHERE r.id_estado_reclamo = :pendiente "
+              "FROM objetos.reclamo_objeto r JOIN objetos.objeto_perdido o ON o.id_objeto = r.id_objeto "
+              "JOIN seguridad.usuario u ON u.id_usuario = r.id_usuario WHERE r.id_estado_reclamo = :pendiente "
               "ORDER BY r.id_objeto, r.id_reclamo");
-    q.bindValue(":pendiente", idEstado("estado_reclamo", "Pendiente"));
+    q.bindValue(":pendiente", idEstado("objetos.estado_reclamo", "Pendiente"));
     q.exec();
     while (q.next()) {
         QString reservado = q.value(5).toString();
@@ -1041,7 +1043,7 @@ void MainWindow::on_btnObjReclamar_clicked()
         fallar("Reclamo de objeto", "reclamo_objeto", "Elegí un objeto de la lista.");
         return;
     }
-    QString estado = valorUnico("SELECT e.nombre_estado FROM objeto_perdido o JOIN estado_objeto e "
+    QString estado = valorUnico("SELECT e.nombre_estado FROM objetos.objeto_perdido o JOIN objetos.estado_objeto e "
                                 "ON e.id_estado_objeto = o.id_estado_objeto WHERE o.id_objeto = :id", objeto);
     if (estado == "Devuelto" || estado == "Archivado") {
         fallar("Reclamo de objeto", "reclamo_objeto", "Este objeto ya no se puede reclamar: se devolvió o se archivó.");
@@ -1052,15 +1054,15 @@ void MainWindow::on_btnObjReclamar_clicked()
         return;
     }
     QSqlQuery q;
-    q.prepare("INSERT INTO reclamo_objeto (prueba_pertenencia, fecha_reclamo, id_usuario, id_objeto, id_estado_reclamo) "
+    q.prepare("INSERT INTO objetos.reclamo_objeto (prueba_pertenencia, fecha_reclamo, id_usuario, id_objeto, id_estado_reclamo) "
               "VALUES (:prueba, :fecha, :usuario, :objeto, :estado)");
     q.bindValue(":prueba", detalle);
     q.bindValue(":fecha", valorFecha(QDate::currentDate()));
     q.bindValue(":usuario", idActual);
     q.bindValue(":objeto", objeto);
-    q.bindValue(":estado", idEstado("estado_reclamo", "Pendiente"));
+    q.bindValue(":estado", idEstado("objetos.estado_reclamo", "Pendiente"));
     if (!q.exec()) {
-        q.prepare("SELECT COUNT(*) FROM reclamo_objeto WHERE id_usuario = :usuario AND id_objeto = :objeto");
+        q.prepare("SELECT COUNT(*) FROM objetos.reclamo_objeto WHERE id_usuario = :usuario AND id_objeto = :objeto");
         q.bindValue(":usuario", idActual);
         q.bindValue(":objeto", objeto);
         q.exec();
@@ -1085,15 +1087,15 @@ void MainWindow::resolverReclamo(const QString &estadoReclamo, const QString &ev
         fallar(evento, "reclamo_objeto", "Elegí un reclamo de la lista.");
         return;
     }
-    QString actual = valorUnico("SELECT e.nombre_estado FROM reclamo_objeto r JOIN estado_reclamo e "
+    QString actual = valorUnico("SELECT e.nombre_estado FROM objetos.reclamo_objeto r JOIN objetos.estado_reclamo e "
                                 "ON e.id_estado_reclamo = r.id_estado_reclamo WHERE r.id_reclamo = :id", reclamo);
     if (actual != "Pendiente") {
         fallar(evento, "reclamo_objeto", "Ese reclamo ya fue resuelto.");
         cargarReclamos();
         return;
     }
-    QString titulo = valorUnico("SELECT titulo FROM objeto_perdido WHERE id_objeto = :id", objeto);
-    QString quien = valorUnico("SELECT u.nombre_completo FROM reclamo_objeto r JOIN usuario u ON u.id_usuario = r.id_usuario "
+    QString titulo = valorUnico("SELECT titulo FROM objetos.objeto_perdido WHERE id_objeto = :id", objeto);
+    QString quien = valorUnico("SELECT u.nombre_completo FROM objetos.reclamo_objeto r JOIN seguridad.usuario u ON u.id_usuario = r.id_usuario "
                                "WHERE r.id_reclamo = :id", reclamo);
     QString pregunta = QString("¿Querés rechazar el reclamo de %1 sobre “%2”? El objeto sigue en la lista.").arg(quien).arg(titulo);
     if (estadoReclamo == "Aprobado") {
@@ -1102,18 +1104,18 @@ void MainWindow::resolverReclamo(const QString &estadoReclamo, const QString &ev
     if (!confirmar("Confirmar", pregunta)) return;
     db.transaction();
     QSqlQuery q;
-    q.prepare("UPDATE reclamo_objeto SET id_estado_reclamo = :estado WHERE id_reclamo = :reclamo");
-    q.bindValue(":estado", idEstado("estado_reclamo", estadoReclamo));
+    q.prepare("UPDATE objetos.reclamo_objeto SET id_estado_reclamo = :estado WHERE id_reclamo = :reclamo");
+    q.bindValue(":estado", idEstado("objetos.estado_reclamo", estadoReclamo));
     q.bindValue(":reclamo", reclamo);
     bool ok = q.exec();
     if (estadoReclamo == "Aprobado") {
-        q.prepare("UPDATE reclamo_objeto SET id_estado_reclamo = :estado WHERE id_objeto = :objeto AND id_reclamo <> :reclamo");
-        q.bindValue(":estado", idEstado("estado_reclamo", "Rechazado"));
+        q.prepare("UPDATE objetos.reclamo_objeto SET id_estado_reclamo = :estado WHERE id_objeto = :objeto AND id_reclamo <> :reclamo");
+        q.bindValue(":estado", idEstado("objetos.estado_reclamo", "Rechazado"));
         q.bindValue(":objeto", objeto);
         q.bindValue(":reclamo", reclamo);
         ok = ok && q.exec();
-        q.prepare("UPDATE objeto_perdido SET id_estado_objeto = :estado WHERE id_objeto = :objeto");
-        q.bindValue(":estado", idEstado("estado_objeto", "Devuelto"));
+        q.prepare("UPDATE objetos.objeto_perdido SET id_estado_objeto = :estado WHERE id_objeto = :objeto");
+        q.bindValue(":estado", idEstado("objetos.estado_objeto", "Devuelto"));
         q.bindValue(":objeto", objeto);
         ok = ok && q.exec();
     }
@@ -1141,17 +1143,17 @@ void MainWindow::on_btnObjArchivar_clicked()
         fallar("", "", "Elegí un objeto de la lista.");
         return;
     }
-    int pendientes = valorUnico("SELECT COUNT(*) FROM reclamo_objeto r JOIN estado_reclamo e ON e.id_estado_reclamo = r.id_estado_reclamo "
+    int pendientes = valorUnico("SELECT COUNT(*) FROM objetos.reclamo_objeto r JOIN objetos.estado_reclamo e ON e.id_estado_reclamo = r.id_estado_reclamo "
                                 "WHERE r.id_objeto = :id AND e.nombre_estado = 'Pendiente'", objeto).toInt();
     if (pendientes > 0) {
         fallar("", "", "Ese objeto tiene reclamos pendientes. Resolvelos antes de archivarlo.");
         return;
     }
-    QString titulo = valorUnico("SELECT titulo FROM objeto_perdido WHERE id_objeto = :id", objeto);
+    QString titulo = valorUnico("SELECT titulo FROM objetos.objeto_perdido WHERE id_objeto = :id", objeto);
     if (!confirmar("Archivar objeto", QString("¿Querés archivar “%1”? Sale de la lista de objetos.").arg(titulo))) return;
     QSqlQuery q;
-    q.prepare("UPDATE objeto_perdido SET id_estado_objeto = :estado WHERE id_objeto = :objeto");
-    q.bindValue(":estado", idEstado("estado_objeto", "Archivado"));
+    q.prepare("UPDATE objetos.objeto_perdido SET id_estado_objeto = :estado WHERE id_objeto = :objeto");
+    q.bindValue(":estado", idEstado("objetos.estado_objeto", "Archivado"));
     q.bindValue(":objeto", objeto);
     if (!q.exec()) {
         fallar("", "", "No se pudo archivar el objeto. Probá de nuevo.");
@@ -1208,7 +1210,7 @@ void MainWindow::on_btnObjPublicar_clicked()
     QVariant valorReservado;
     if (!reservado.isEmpty()) valorReservado = reservado;
     QSqlQuery q;
-    q.prepare("INSERT INTO objeto_perdido (titulo, descripcion, ruta_foto, detalle_reservado, fecha_registro, id_usuario, id_categoria_objeto, id_estado_objeto, id_sector) "
+    q.prepare("INSERT INTO objetos.objeto_perdido (titulo, descripcion, ruta_foto, detalle_reservado, fecha_registro, id_usuario, id_categoria_objeto, id_estado_objeto, id_sector) "
               "VALUES (:titulo, :descripcion, :foto, :reservado, :fecha, :usuario, :categoria, :estado, :sector)");
     q.bindValue(":titulo", titulo);
     q.bindValue(":descripcion", valorDescripcion);
@@ -1217,7 +1219,7 @@ void MainWindow::on_btnObjPublicar_clicked()
     q.bindValue(":fecha", valorFecha(QDate::currentDate()));
     q.bindValue(":usuario", idActual);
     q.bindValue(":categoria", ui->cbObjCategoria->currentData().toInt());
-    q.bindValue(":estado", idEstado("estado_objeto", "Disponible"));
+    q.bindValue(":estado", idEstado("objetos.estado_objeto", "Disponible"));
     q.bindValue(":sector", ui->cbObjSector->currentData().toInt());
     if (!q.exec()) {
         fallar("Publicación de objeto", "objeto_perdido", "No se pudo publicar el objeto. Probá de nuevo.");
@@ -1240,7 +1242,7 @@ void MainWindow::cargarConsultas()
     ui->listConsultas->clear();
     QSqlQuery q;
     q.prepare("SELECT c.id_consulta, c.id_usuario, u.nombre_completo, u.contacto_telefono, c.descripcion_busqueda, c.fecha_publicacion "
-              "FROM consulta_objeto c JOIN usuario u ON u.id_usuario = c.id_usuario ORDER BY c.id_consulta DESC");
+              "FROM objetos.consulta_objeto c JOIN seguridad.usuario u ON u.id_usuario = c.id_usuario ORDER BY c.id_consulta DESC");
     q.exec();
     while (q.next()) {
         QString dia = QDate::fromString(q.value(5).toString().left(10), "yyyy-MM-dd").toString("dd/MM");
@@ -1258,7 +1260,7 @@ void MainWindow::on_btnConsultaPublicar_clicked()
         return;
     }
     QSqlQuery q;
-    q.prepare("INSERT INTO consulta_objeto (fecha_publicacion, descripcion_busqueda, id_usuario) VALUES (:fecha, :descripcion, :usuario)");
+    q.prepare("INSERT INTO objetos.consulta_objeto (fecha_publicacion, descripcion_busqueda, id_usuario) VALUES (:fecha, :descripcion, :usuario)");
     q.bindValue(":fecha", valorFecha(QDate::currentDate()));
     q.bindValue(":descripcion", descripcion);
     q.bindValue(":usuario", idActual);
@@ -1284,7 +1286,7 @@ void MainWindow::on_btnConsultaBorrar_clicked()
     }
     if (!confirmar("Borrar consulta", "¿Querés borrar esta consulta? No se puede deshacer.")) return;
     QSqlQuery q;
-    q.prepare("DELETE FROM consulta_objeto WHERE id_consulta = :consulta");
+    q.prepare("DELETE FROM objetos.consulta_objeto WHERE id_consulta = :consulta");
     q.bindValue(":consulta", consulta);
     if (!q.exec()) {
         fallar("", "", "No se pudo borrar la consulta. Probá de nuevo.");
@@ -1300,10 +1302,10 @@ void MainWindow::cargarHigiene()
     ui->listHigiene->clear();
     QString filtro = ui->cbHigieneFiltro->currentText();
     QString sql = "SELECT r.id_reporte, r.fecha_hora, r.observaciones, s.nombre_sector, t.nombre_tipo, e.nombre_estado, "
-                  "u.nombre_completo, r.fecha_hora_resolucion, rs.nombre_completo FROM reporte_higiene r "
-                  "JOIN sector s ON s.id_sector = r.id_sector JOIN tipo_reporte t ON t.id_tipo_reporte = r.id_tipo_reporte "
-                  "JOIN estado_reporte e ON e.id_estado_reporte = r.id_estado_reporte JOIN usuario u ON u.id_usuario = r.id_usuario "
-                  "LEFT JOIN usuario rs ON rs.id_usuario = r.id_usuario_resolutor ";
+                  "u.nombre_completo, r.fecha_hora_resolucion, rs.nombre_completo FROM instalaciones.reporte_higiene r "
+                  "JOIN instalaciones.sector s ON s.id_sector = r.id_sector JOIN instalaciones.tipo_reporte t ON t.id_tipo_reporte = r.id_tipo_reporte "
+                  "JOIN instalaciones.estado_reporte e ON e.id_estado_reporte = r.id_estado_reporte JOIN seguridad.usuario u ON u.id_usuario = r.id_usuario "
+                  "LEFT JOIN seguridad.usuario rs ON rs.id_usuario = r.id_usuario_resolutor ";
     if (filtro == "Pendientes") sql += "WHERE e.nombre_estado = 'Pendiente' ";
     if (filtro == "Resueltos") sql += "WHERE e.nombre_estado = 'Resuelto' ";
     sql += "ORDER BY CASE WHEN e.nombre_estado = 'Pendiente' THEN 0 ELSE 1 END, r.id_reporte DESC";
@@ -1339,8 +1341,8 @@ void MainWindow::cargarHigiene()
 void MainWindow::actualizarUltimoMantenimiento()
 {
     QSqlQuery q;
-    q.prepare("SELECT r.fecha_hora_resolucion, u.nombre_completo FROM reporte_higiene r "
-              "JOIN usuario u ON u.id_usuario = r.id_usuario_resolutor "
+    q.prepare("SELECT r.fecha_hora_resolucion, u.nombre_completo FROM instalaciones.reporte_higiene r "
+              "JOIN seguridad.usuario u ON u.id_usuario = r.id_usuario_resolutor "
               "WHERE r.id_sector = :sector AND r.fecha_hora_resolucion IS NOT NULL ORDER BY r.fecha_hora_resolucion DESC");
     q.bindValue(":sector", ui->cbHigieneSector->currentData().toInt());
     q.exec();
@@ -1362,14 +1364,14 @@ void MainWindow::on_btnHigieneReportar_clicked()
         return;
     }
     QSqlQuery q;
-    q.prepare("INSERT INTO reporte_higiene (fecha_hora, observaciones, id_usuario, id_sector, id_tipo_reporte, id_estado_reporte) "
+    q.prepare("INSERT INTO instalaciones.reporte_higiene (fecha_hora, observaciones, id_usuario, id_sector, id_tipo_reporte, id_estado_reporte) "
               "VALUES (:fecha, :observaciones, :usuario, :sector, :tipo, :estado)");
     q.bindValue(":fecha", valorAhora());
     q.bindValue(":observaciones", observaciones);
     q.bindValue(":usuario", idActual);
     q.bindValue(":sector", ui->cbHigieneSector->currentData().toInt());
     q.bindValue(":tipo", ui->cbHigieneTipo->currentData().toInt());
-    q.bindValue(":estado", idEstado("estado_reporte", "Pendiente"));
+    q.bindValue(":estado", idEstado("instalaciones.estado_reporte", "Pendiente"));
     if (!q.exec()) {
         fallar("Reporte de higiene", "reporte_higiene", "No se pudo enviar el reporte. Probá de nuevo.");
         return;
@@ -1390,17 +1392,17 @@ void MainWindow::on_btnHigieneResolver_clicked()
         fallar("Resolución de reporte", "reporte_higiene", "Elegí un reporte de la lista.");
         return;
     }
-    QString estado = valorUnico("SELECT e.nombre_estado FROM reporte_higiene r JOIN estado_reporte e "
+    QString estado = valorUnico("SELECT e.nombre_estado FROM instalaciones.reporte_higiene r JOIN instalaciones.estado_reporte e "
                                 "ON e.id_estado_reporte = r.id_estado_reporte WHERE r.id_reporte = :id", reporte);
     if (estado != "Pendiente") {
         fallar("Resolución de reporte", "reporte_higiene", "Ese reporte ya está resuelto.");
         return;
     }
-    int sectorResuelto = valorUnico("SELECT id_sector FROM reporte_higiene WHERE id_reporte = :id", reporte).toInt();
+    int sectorResuelto = valorUnico("SELECT id_sector FROM instalaciones.reporte_higiene WHERE id_reporte = :id", reporte).toInt();
     QSqlQuery q;
-    q.prepare("UPDATE reporte_higiene SET id_estado_reporte = :estado, fecha_hora_resolucion = :fecha, id_usuario_resolutor = :usuario "
+    q.prepare("UPDATE instalaciones.reporte_higiene SET id_estado_reporte = :estado, fecha_hora_resolucion = :fecha, id_usuario_resolutor = :usuario "
               "WHERE id_reporte = :reporte");
-    q.bindValue(":estado", idEstado("estado_reporte", "Resuelto"));
+    q.bindValue(":estado", idEstado("instalaciones.estado_reporte", "Resuelto"));
     q.bindValue(":fecha", valorAhora());
     q.bindValue(":usuario", idActual);
     q.bindValue(":reporte", reporte);
@@ -1420,19 +1422,19 @@ void MainWindow::cargarGrupos()
     int vista = -1;
     if (!primeraVez) vista = ui->cbBuffetVista->currentData().toInt();
     int donar = ui->cbDonarGrupo->currentData().toInt();
-    cargarCombo(ui->cbBuffetVista, "SELECT id_grupo, nombre_grupo FROM grupo_buffet ORDER BY nombre_grupo", "Productos sueltos de alumnos", "");
+    cargarCombo(ui->cbBuffetVista, "SELECT id_grupo, nombre_grupo FROM tienda.grupo_buffet ORDER BY nombre_grupo", "Productos sueltos de alumnos", "");
     ui->cbBuffetVista->blockSignals(true);
     ui->cbBuffetVista->insertItem(0, "TODOS", -1);
     ui->cbBuffetVista->blockSignals(false);
     elegirPorId(ui->cbBuffetVista, vista);
-    cargarCombo(ui->cbUnirseGrupo, "SELECT id_grupo, nombre_grupo FROM grupo_buffet ORDER BY nombre_grupo", "", "");
-    cargarCombo(ui->cbDonarGrupo, "SELECT id_grupo, nombre_grupo FROM grupo_buffet ORDER BY nombre_grupo", "", "");
+    cargarCombo(ui->cbUnirseGrupo, "SELECT id_grupo, nombre_grupo FROM tienda.grupo_buffet ORDER BY nombre_grupo", "", "");
+    cargarCombo(ui->cbDonarGrupo, "SELECT id_grupo, nombre_grupo FROM tienda.grupo_buffet ORDER BY nombre_grupo", "", "");
     elegirPorId(ui->cbDonarGrupo, donar);
 
     ui->cbProdGrupo->clear();
     ui->cbProdGrupo->addItem("Venta individual", 0);
     QSqlQuery q;
-    q.prepare("SELECT g.id_grupo, g.nombre_grupo FROM grupo_buffet g JOIN integrante_grupo i ON i.id_grupo = g.id_grupo "
+    q.prepare("SELECT g.id_grupo, g.nombre_grupo FROM tienda.grupo_buffet g JOIN tienda.integrante_grupo i ON i.id_grupo = g.id_grupo "
               "WHERE i.id_usuario = :usuario ORDER BY g.nombre_grupo");
     q.bindValue(":usuario", idActual);
     q.exec();
@@ -1446,12 +1448,12 @@ void MainWindow::cargarGrupos()
 int MainWindow::recaudado(int grupo)
 {
     QSqlQuery q;
-    q.prepare("SELECT COALESCE((SELECT SUM(monto) FROM donacion_buffet WHERE id_grupo = :grupo), 0) + "
-              "COALESCE((SELECT SUM(d.cantidad * d.precio_unitario) FROM detalle_venta d "
-              "JOIN venta_buffet v ON v.id_venta = d.id_venta JOIN producto_buffet p ON p.id_producto = d.id_producto "
+    q.prepare("SELECT COALESCE((SELECT SUM(monto) FROM tienda.donacion_buffet WHERE id_grupo = :grupo), 0) + "
+              "COALESCE((SELECT SUM(d.cantidad * d.precio_unitario) FROM tienda.detalle_venta d "
+              "JOIN tienda.venta_buffet v ON v.id_venta = d.id_venta JOIN tienda.producto_buffet p ON p.id_producto = d.id_producto "
               "WHERE p.id_grupo = :grupo AND v.id_estado_venta = :entregada), 0)");
     q.bindValue(":grupo", grupo);
-    q.bindValue(":entregada", idEstado("estado_venta", "Entregada"));
+    q.bindValue(":entregada", idEstado("tienda.estado_venta", "Entregada"));
     q.exec();
     q.next();
     return q.value(0).toInt();
@@ -1467,8 +1469,8 @@ void MainWindow::cargarBuffet()
     QString busqueda = ui->leBuffetBuscar->text().trimmed();
 
     QString sql = "SELECT p.id_producto, p.nombre_producto, p.precio, p.stock, u.nombre_completo, c.nombre_categoria, COALESCE(p.ruta_foto, '') "
-                  "FROM producto_buffet p JOIN usuario u ON u.id_usuario = p.id_usuario "
-                  "JOIN categoria_producto c ON c.id_categoria_producto = p.id_categoria_producto ";
+                  "FROM tienda.producto_buffet p JOIN seguridad.usuario u ON u.id_usuario = p.id_usuario "
+                  "JOIN tienda.categoria_producto c ON c.id_categoria_producto = p.id_categoria_producto ";
     if (grupo > 0) sql += "WHERE p.id_grupo = :grupo ";
     else if (grupo == 0) sql += "WHERE p.id_grupo IS NULL ";
     else sql += "WHERE 1 = 1 ";
@@ -1503,7 +1505,7 @@ void MainWindow::cargarBuffet()
     ui->lblBuffetMeta->setVisible(grupo > 0);
     if (grupo > 0) {
         QSqlQuery g;
-        g.prepare("SELECT meta_monto FROM grupo_buffet WHERE id_grupo = :grupo");
+        g.prepare("SELECT meta_monto FROM tienda.grupo_buffet WHERE id_grupo = :grupo");
         g.bindValue(":grupo", grupo);
         g.exec();
         if (g.next() && g.value(0).toInt() > 0) {
@@ -1525,8 +1527,8 @@ void MainWindow::on_listBuffet_itemDoubleClicked(QListWidgetItem *item)
     int producto = item->data(Qt::UserRole).toInt();
     QSqlQuery q;
     q.prepare("SELECT p.nombre_producto, c.nombre_categoria, p.precio, p.stock, u.nombre_completo, u.contacto_telefono, COALESCE(p.ruta_foto, '') "
-              "FROM producto_buffet p JOIN categoria_producto c ON c.id_categoria_producto = p.id_categoria_producto "
-              "JOIN usuario u ON u.id_usuario = p.id_usuario WHERE p.id_producto = :producto");
+              "FROM tienda.producto_buffet p JOIN tienda.categoria_producto c ON c.id_categoria_producto = p.id_categoria_producto "
+              "JOIN seguridad.usuario u ON u.id_usuario = p.id_usuario WHERE p.id_producto = :producto");
     q.bindValue(":producto", producto);
     q.exec();
     if (!q.next()) return;
@@ -1541,11 +1543,11 @@ void MainWindow::cargarMisReservas()
     ui->listMisReservas->clear();
     QSqlQuery q;
     q.prepare("SELECT v.id_venta, p.nombre_producto, d.cantidad, "
-              "(SELECT SUM(x.cantidad * x.precio_unitario) FROM detalle_venta x WHERE x.id_venta = v.id_venta), "
+              "(SELECT SUM(x.cantidad * x.precio_unitario) FROM tienda.detalle_venta x WHERE x.id_venta = v.id_venta), "
               "u.nombre_completo, u.contacto_telefono, v.fecha_hora, e.nombre_estado "
-              "FROM venta_buffet v JOIN detalle_venta d ON d.id_venta = v.id_venta "
-              "JOIN producto_buffet p ON p.id_producto = d.id_producto JOIN usuario u ON u.id_usuario = p.id_usuario "
-              "JOIN estado_venta e ON e.id_estado_venta = v.id_estado_venta "
+              "FROM tienda.venta_buffet v JOIN tienda.detalle_venta d ON d.id_venta = v.id_venta "
+              "JOIN tienda.producto_buffet p ON p.id_producto = d.id_producto JOIN seguridad.usuario u ON u.id_usuario = p.id_usuario "
+              "JOIN tienda.estado_venta e ON e.id_estado_venta = v.id_estado_venta "
               "WHERE v.id_usuario = :usuario ORDER BY v.id_venta DESC");
     q.bindValue(":usuario", idActual);
     q.exec();
@@ -1572,7 +1574,7 @@ void MainWindow::on_btnBuffetReservar_clicked()
         return;
     }
     QSqlQuery q;
-    q.prepare("SELECT stock, precio, id_usuario FROM producto_buffet WHERE id_producto = :producto");
+    q.prepare("SELECT stock, precio, id_usuario FROM tienda.producto_buffet WHERE id_producto = :producto");
     q.bindValue(":producto", producto);
     q.exec();
     if (!q.next()) {
@@ -1592,19 +1594,19 @@ void MainWindow::on_btnBuffetReservar_clicked()
         return;
     }
     db.transaction();
-    q.prepare("INSERT INTO venta_buffet (fecha_hora, id_usuario, id_estado_venta) VALUES (:fecha, :usuario, :estado)");
+    q.prepare("INSERT INTO tienda.venta_buffet (fecha_hora, id_usuario, id_estado_venta) VALUES (:fecha, :usuario, :estado)");
     q.bindValue(":fecha", valorAhora());
     q.bindValue(":usuario", idActual);
-    q.bindValue(":estado", idEstado("estado_venta", "Reservada"));
+    q.bindValue(":estado", idEstado("tienda.estado_venta", "Reservada"));
     bool ok = q.exec();
     int venta = ultimoId(q);
-    q.prepare("INSERT INTO detalle_venta (id_venta, id_producto, cantidad, precio_unitario) VALUES (:venta, :producto, :cantidad, :precio)");
+    q.prepare("INSERT INTO tienda.detalle_venta (id_venta, id_producto, cantidad, precio_unitario) VALUES (:venta, :producto, :cantidad, :precio)");
     q.bindValue(":venta", venta);
     q.bindValue(":producto", producto);
     q.bindValue(":cantidad", cantidad);
     q.bindValue(":precio", precio);
     ok = ok && q.exec();
-    q.prepare("UPDATE producto_buffet SET stock = stock - :cantidad WHERE id_producto = :producto");
+    q.prepare("UPDATE tienda.producto_buffet SET stock = stock - :cantidad WHERE id_producto = :producto");
     q.bindValue(":cantidad", cantidad);
     q.bindValue(":producto", producto);
     ok = ok && q.exec();
@@ -1628,16 +1630,16 @@ void MainWindow::on_btnBuffetCancelar_clicked()
         fallar("", "", "Elegí una reserva de la lista.");
         return;
     }
-    if (valorUnico("SELECT id_usuario FROM venta_buffet WHERE id_venta = :id", venta).toInt() != idActual) {
+    if (valorUnico("SELECT id_usuario FROM tienda.venta_buffet WHERE id_venta = :id", venta).toInt() != idActual) {
         fallar("", "", "Esa reserva no es tuya.");
         return;
     }
-    QString estado = valorUnico("SELECT e.nombre_estado FROM venta_buffet v JOIN estado_venta e ON e.id_estado_venta = v.id_estado_venta WHERE v.id_venta = :id", venta);
+    QString estado = valorUnico("SELECT e.nombre_estado FROM tienda.venta_buffet v JOIN tienda.estado_venta e ON e.id_estado_venta = v.id_estado_venta WHERE v.id_venta = :id", venta);
     if (estado != "Reservada") {
         fallar("", "", "Esa reserva ya no está activa.");
         return;
     }
-    QString producto = valorUnico("SELECT p.nombre_producto FROM detalle_venta d JOIN producto_buffet p ON p.id_producto = d.id_producto "
+    QString producto = valorUnico("SELECT p.nombre_producto FROM tienda.detalle_venta d JOIN tienda.producto_buffet p ON p.id_producto = d.id_producto "
                                   "WHERE d.id_venta = :id", venta);
     if (!confirmar("Cancelar reserva", QString("¿Querés cancelar tu reserva de “%1”? El stock vuelve al producto.").arg(producto))) return;
     if (!cancelarReserva(venta)) {
@@ -1655,16 +1657,16 @@ bool MainWindow::cancelarReserva(int venta)
 {
     db.transaction();
     QSqlQuery q;
-    q.prepare("UPDATE venta_buffet SET id_estado_venta = :estado WHERE id_venta = :venta");
-    q.bindValue(":estado", idEstado("estado_venta", "Cancelada"));
+    q.prepare("UPDATE tienda.venta_buffet SET id_estado_venta = :estado WHERE id_venta = :venta");
+    q.bindValue(":estado", idEstado("tienda.estado_venta", "Cancelada"));
     q.bindValue(":venta", venta);
     bool ok = q.exec();
     QSqlQuery detalle;
-    detalle.prepare("SELECT id_producto, cantidad FROM detalle_venta WHERE id_venta = :venta");
+    detalle.prepare("SELECT id_producto, cantidad FROM tienda.detalle_venta WHERE id_venta = :venta");
     detalle.bindValue(":venta", venta);
     detalle.exec();
     while (detalle.next()) {
-        q.prepare("UPDATE producto_buffet SET stock = stock + :cantidad WHERE id_producto = :producto");
+        q.prepare("UPDATE tienda.producto_buffet SET stock = stock + :cantidad WHERE id_producto = :producto");
         q.bindValue(":cantidad", detalle.value(1).toInt());
         q.bindValue(":producto", detalle.value(0).toInt());
         ok = ok && q.exec();
@@ -1680,7 +1682,7 @@ bool MainWindow::cancelarReserva(int venta)
 bool MainWindow::ventaEsMia(int venta)
 {
     QSqlQuery q;
-    q.prepare("SELECT COUNT(*) FROM detalle_venta d JOIN producto_buffet p ON p.id_producto = d.id_producto "
+    q.prepare("SELECT COUNT(*) FROM tienda.detalle_venta d JOIN tienda.producto_buffet p ON p.id_producto = d.id_producto "
               "WHERE d.id_venta = :venta AND p.id_usuario = :usuario");
     q.bindValue(":venta", venta);
     q.bindValue(":usuario", idActual);
@@ -1691,7 +1693,7 @@ bool MainWindow::ventaEsMia(int venta)
 
 bool MainWindow::productoEsMio(int producto)
 {
-    return valorUnico("SELECT id_usuario FROM producto_buffet WHERE id_producto = :id", producto).toInt() == idActual;
+    return valorUnico("SELECT id_usuario FROM tienda.producto_buffet WHERE id_producto = :id", producto).toInt() == idActual;
 }
 
 void MainWindow::cargarMisVentas()
@@ -1700,9 +1702,9 @@ void MainWindow::cargarMisVentas()
     QSqlQuery q;
     q.prepare("SELECT v.id_venta, p.nombre_producto, d.cantidad, d.cantidad * d.precio_unitario, "
               "c.nombre_completo, c.contacto_telefono, v.fecha_hora, e.nombre_estado "
-              "FROM venta_buffet v JOIN detalle_venta d ON d.id_venta = v.id_venta "
-              "JOIN producto_buffet p ON p.id_producto = d.id_producto JOIN usuario c ON c.id_usuario = v.id_usuario "
-              "JOIN estado_venta e ON e.id_estado_venta = v.id_estado_venta "
+              "FROM tienda.venta_buffet v JOIN tienda.detalle_venta d ON d.id_venta = v.id_venta "
+              "JOIN tienda.producto_buffet p ON p.id_producto = d.id_producto JOIN seguridad.usuario c ON c.id_usuario = v.id_usuario "
+              "JOIN tienda.estado_venta e ON e.id_estado_venta = v.id_estado_venta "
               "WHERE p.id_usuario = :usuario ORDER BY v.id_venta DESC");
     q.bindValue(":usuario", idActual);
     q.exec();
@@ -1726,7 +1728,7 @@ void MainWindow::cargarMisProductos()
     ui->listMisProductos->clear();
     QSqlQuery q;
     q.prepare("SELECT p.id_producto, p.nombre_producto, p.precio, p.stock, COALESCE(g.nombre_grupo, 'Venta individual') "
-              "FROM producto_buffet p LEFT JOIN grupo_buffet g ON g.id_grupo = p.id_grupo "
+              "FROM tienda.producto_buffet p LEFT JOIN tienda.grupo_buffet g ON g.id_grupo = p.id_grupo "
               "WHERE p.id_usuario = :usuario ORDER BY p.nombre_producto");
     q.bindValue(":usuario", idActual);
     q.exec();
@@ -1752,14 +1754,14 @@ void MainWindow::on_btnBuffetEntregar_clicked()
         fallar("", "", "Esa reserva es de un producto que no es tuyo.");
         return;
     }
-    QString estado = valorUnico("SELECT e.nombre_estado FROM venta_buffet v JOIN estado_venta e ON e.id_estado_venta = v.id_estado_venta WHERE v.id_venta = :id", venta);
+    QString estado = valorUnico("SELECT e.nombre_estado FROM tienda.venta_buffet v JOIN tienda.estado_venta e ON e.id_estado_venta = v.id_estado_venta WHERE v.id_venta = :id", venta);
     if (estado != "Reservada") {
         fallar("", "", "Esa reserva ya no está activa.");
         return;
     }
     QSqlQuery q;
-    q.prepare("UPDATE venta_buffet SET id_estado_venta = :estado WHERE id_venta = :venta");
-    q.bindValue(":estado", idEstado("estado_venta", "Entregada"));
+    q.prepare("UPDATE tienda.venta_buffet SET id_estado_venta = :estado WHERE id_venta = :venta");
+    q.bindValue(":estado", idEstado("tienda.estado_venta", "Entregada"));
     q.bindValue(":venta", venta);
     if (!q.exec()) {
         fallar("", "", "No se pudo marcar la entrega.");
@@ -1783,14 +1785,14 @@ void MainWindow::on_btnBuffetCancelarVenta_clicked()
         fallar("", "", "Esa reserva es de un producto que no es tuyo.");
         return;
     }
-    QString estado = valorUnico("SELECT e.nombre_estado FROM venta_buffet v JOIN estado_venta e ON e.id_estado_venta = v.id_estado_venta WHERE v.id_venta = :id", venta);
+    QString estado = valorUnico("SELECT e.nombre_estado FROM tienda.venta_buffet v JOIN tienda.estado_venta e ON e.id_estado_venta = v.id_estado_venta WHERE v.id_venta = :id", venta);
     if (estado != "Reservada") {
         fallar("", "", "Esa reserva ya no está activa.");
         return;
     }
-    QString comprador = valorUnico("SELECT u.nombre_completo FROM venta_buffet v JOIN usuario u ON u.id_usuario = v.id_usuario "
+    QString comprador = valorUnico("SELECT u.nombre_completo FROM tienda.venta_buffet v JOIN seguridad.usuario u ON u.id_usuario = v.id_usuario "
                                    "WHERE v.id_venta = :id", venta);
-    QString producto = valorUnico("SELECT p.nombre_producto FROM detalle_venta d JOIN producto_buffet p ON p.id_producto = d.id_producto "
+    QString producto = valorUnico("SELECT p.nombre_producto FROM tienda.detalle_venta d JOIN tienda.producto_buffet p ON p.id_producto = d.id_producto "
                                   "WHERE d.id_venta = :id", venta);
     if (!confirmar("Cancelar reserva", QString("¿Querés cancelar la reserva de %1 sobre “%2”? El stock vuelve a tu producto.").arg(comprador).arg(producto))) return;
     if (!cancelarReserva(venta)) {
@@ -1817,13 +1819,13 @@ void MainWindow::on_btnProdQuitar_clicked()
         fallar("", "", "Ese producto no es tuyo.");
         return;
     }
-    int stock = valorUnico("SELECT stock FROM producto_buffet WHERE id_producto = :id", producto).toInt();
+    int stock = valorUnico("SELECT stock FROM tienda.producto_buffet WHERE id_producto = :id", producto).toInt();
     if (cantidad > stock) {
         fallar("", "", QString("No podés quitar más de lo que hay: el producto tiene %1.").arg(plural(stock, "unidad", "unidades")));
         return;
     }
     QSqlQuery q;
-    q.prepare("UPDATE producto_buffet SET stock = stock - :cantidad WHERE id_producto = :producto AND id_usuario = :usuario AND stock >= :cantidad");
+    q.prepare("UPDATE tienda.producto_buffet SET stock = stock - :cantidad WHERE id_producto = :producto AND id_usuario = :usuario AND stock >= :cantidad");
     q.bindValue(":cantidad", cantidad);
     q.bindValue(":producto", producto);
     q.bindValue(":usuario", idActual);
@@ -1850,9 +1852,9 @@ void MainWindow::on_btnProdReponer_clicked()
         fallar("", "", "Ese producto no es tuyo.");
         return;
     }
-    int stock = valorUnico("SELECT stock FROM producto_buffet WHERE id_producto = :id", producto).toInt();
+    int stock = valorUnico("SELECT stock FROM tienda.producto_buffet WHERE id_producto = :id", producto).toInt();
     QSqlQuery q;
-    q.prepare("UPDATE producto_buffet SET stock = stock + :cantidad WHERE id_producto = :producto AND id_usuario = :usuario");
+    q.prepare("UPDATE tienda.producto_buffet SET stock = stock + :cantidad WHERE id_producto = :producto AND id_usuario = :usuario");
     q.bindValue(":cantidad", cantidad);
     q.bindValue(":producto", producto);
     q.bindValue(":usuario", idActual);
@@ -1879,17 +1881,17 @@ void MainWindow::on_btnProdEliminar_clicked()
         return;
     }
     QSqlQuery q;
-    q.prepare("SELECT COUNT(*) FROM detalle_venta d JOIN venta_buffet v ON v.id_venta = d.id_venta "
+    q.prepare("SELECT COUNT(*) FROM tienda.detalle_venta d JOIN tienda.venta_buffet v ON v.id_venta = d.id_venta "
               "WHERE d.id_producto = :producto AND v.id_estado_venta = :reservada");
     q.bindValue(":producto", producto);
-    q.bindValue(":reservada", idEstado("estado_venta", "Reservada"));
+    q.bindValue(":reservada", idEstado("tienda.estado_venta", "Reservada"));
     q.exec();
     q.next();
     if (q.value(0).toInt() > 0) {
         fallar("", "", "Tiene reservas activas. Entregalas o cancelalas antes de eliminar el producto.");
         return;
     }
-    q.prepare("SELECT COUNT(*) FROM detalle_venta WHERE id_producto = :producto");
+    q.prepare("SELECT COUNT(*) FROM tienda.detalle_venta WHERE id_producto = :producto");
     q.bindValue(":producto", producto);
     q.exec();
     q.next();
@@ -1897,10 +1899,10 @@ void MainWindow::on_btnProdEliminar_clicked()
         fallar("", "", "Este producto ya tuvo ventas, así que no se puede eliminar (se conserva el historial).");
         return;
     }
-    QString nombre = valorUnico("SELECT nombre_producto FROM producto_buffet WHERE id_producto = :id", producto);
-    QString foto = valorUnico("SELECT COALESCE(ruta_foto, '') FROM producto_buffet WHERE id_producto = :id", producto);
+    QString nombre = valorUnico("SELECT nombre_producto FROM tienda.producto_buffet WHERE id_producto = :id", producto);
+    QString foto = valorUnico("SELECT COALESCE(ruta_foto, '') FROM tienda.producto_buffet WHERE id_producto = :id", producto);
     if (!confirmar("Eliminar producto", QString("¿Querés eliminar “%1”? No se puede deshacer.").arg(nombre))) return;
-    q.prepare("DELETE FROM producto_buffet WHERE id_producto = :producto AND id_usuario = :usuario");
+    q.prepare("DELETE FROM tienda.producto_buffet WHERE id_producto = :producto AND id_usuario = :usuario");
     q.bindValue(":producto", producto);
     q.bindValue(":usuario", idActual);
     if (!q.exec()) {
@@ -1927,7 +1929,7 @@ void MainWindow::on_btnBuffetDonar_clicked()
         return;
     }
     QSqlQuery q;
-    q.prepare("INSERT INTO donacion_buffet (monto, fecha_hora, id_usuario, id_grupo) VALUES (:monto, :fecha, :usuario, :grupo)");
+    q.prepare("INSERT INTO tienda.donacion_buffet (monto, fecha_hora, id_usuario, id_grupo) VALUES (:monto, :fecha, :usuario, :grupo)");
     q.bindValue(":monto", monto);
     q.bindValue(":fecha", valorAhora());
     q.bindValue(":usuario", idActual);
@@ -1956,13 +1958,13 @@ void MainWindow::on_btnBuffetUnirse_clicked()
         fallar("", "", "Todavía no hay grupos para unirse.");
         return;
     }
-    QString pin = valorUnico("SELECT pin_acceso FROM grupo_buffet WHERE id_grupo = :id", grupo);
+    QString pin = valorUnico("SELECT pin_acceso FROM tienda.grupo_buffet WHERE id_grupo = :id", grupo);
     if (ui->leBuffetPin->text().trimmed() != pin) {
         fallar("", "", "El PIN no coincide. Pedíselo a quien creó el grupo.");
         return;
     }
     QSqlQuery q;
-    q.prepare("SELECT COUNT(*) FROM integrante_grupo WHERE id_usuario = :usuario AND id_grupo = :grupo");
+    q.prepare("SELECT COUNT(*) FROM tienda.integrante_grupo WHERE id_usuario = :usuario AND id_grupo = :grupo");
     q.bindValue(":usuario", idActual);
     q.bindValue(":grupo", grupo);
     q.exec();
@@ -1971,7 +1973,7 @@ void MainWindow::on_btnBuffetUnirse_clicked()
         fallar("", "", "Ya sos integrante de ese grupo.");
         return;
     }
-    q.prepare("INSERT INTO integrante_grupo (id_usuario, id_grupo) VALUES (:usuario, :grupo)");
+    q.prepare("INSERT INTO tienda.integrante_grupo (id_usuario, id_grupo) VALUES (:usuario, :grupo)");
     q.bindValue(":usuario", idActual);
     q.bindValue(":grupo", grupo);
     if (!q.exec()) {
@@ -2020,7 +2022,7 @@ void MainWindow::on_btnProdPublicar_clicked()
     QVariant valorGrupo;
     if (grupo > 0) {
         QSqlQuery m;
-        m.prepare("SELECT COUNT(*) FROM integrante_grupo WHERE id_usuario = :usuario AND id_grupo = :grupo");
+        m.prepare("SELECT COUNT(*) FROM tienda.integrante_grupo WHERE id_usuario = :usuario AND id_grupo = :grupo");
         m.bindValue(":usuario", idActual);
         m.bindValue(":grupo", grupo);
         m.exec();
@@ -2044,7 +2046,7 @@ void MainWindow::on_btnProdPublicar_clicked()
     QVariant valorFoto;
     if (!archivo.isEmpty()) valorFoto = archivo;
     QSqlQuery q;
-    q.prepare("INSERT INTO producto_buffet (nombre_producto, precio, stock, id_usuario, id_grupo, id_categoria_producto, ruta_foto) "
+    q.prepare("INSERT INTO tienda.producto_buffet (nombre_producto, precio, stock, id_usuario, id_grupo, id_categoria_producto, ruta_foto) "
               "VALUES (:nombre, :precio, :stock, :usuario, :grupo, :categoria, :foto)");
     q.bindValue(":nombre", nombre);
     q.bindValue(":precio", precio);
@@ -2087,19 +2089,19 @@ void MainWindow::on_btnGrupoCrear_clicked()
         fallar("", "", "El PIN necesita 4 caracteres o más.");
         return;
     }
-    if (existe("grupo_buffet", "nombre_grupo", nombre)) {
+    if (existe("tienda.grupo_buffet", "nombre_grupo", nombre)) {
         fallar("", "", "Ya existe un grupo con ese nombre.");
         return;
     }
     db.transaction();
     QSqlQuery q;
-    q.prepare("INSERT INTO grupo_buffet (nombre_grupo, pin_acceso, meta_monto) VALUES (:nombre, :pin, :meta)");
+    q.prepare("INSERT INTO tienda.grupo_buffet (nombre_grupo, pin_acceso, meta_monto) VALUES (:nombre, :pin, :meta)");
     q.bindValue(":nombre", nombre);
     q.bindValue(":pin", pin);
     q.bindValue(":meta", meta);
     bool correcto = q.exec();
     int grupo = ultimoId(q);
-    q.prepare("INSERT INTO integrante_grupo (id_usuario, id_grupo) VALUES (:usuario, :grupo)");
+    q.prepare("INSERT INTO tienda.integrante_grupo (id_usuario, id_grupo) VALUES (:usuario, :grupo)");
     q.bindValue(":usuario", idActual);
     q.bindValue(":grupo", grupo);
     correcto = correcto && q.exec();
@@ -2121,14 +2123,14 @@ void MainWindow::cargarPlanillas()
     QString filtro = ui->leFiltroPlanillas->text().trimmed();
     int programa = ui->cbPlanillasPrograma->currentData().toInt();
     ui->listPlanillas->clear();
-    QString sql = "SELECT r.id_recurso, c.nombre_carro, r.numero_equipo, t.nombre_tipo FROM recursos_ct r "
-                  "LEFT JOIN carro c ON c.id_carro = r.id_carro JOIN tipo_recurso t ON t.id_tipo_recurso = r.id_tipo_recurso "
+    QString sql = "SELECT r.id_recurso, c.nombre_carro, r.numero_equipo, t.nombre_tipo FROM equipos.recursos_ct r "
+                  "LEFT JOIN equipos.carro c ON c.id_carro = r.id_carro JOIN equipos.tipo_recurso t ON t.id_tipo_recurso = r.id_tipo_recurso "
                   "WHERE r.id_estado_recurso = :disponible ";
-    if (programa > 0) sql += "AND EXISTS (SELECT 1 FROM recurso_software rs WHERE rs.id_recurso = r.id_recurso AND rs.id_software = :programa) ";
+    if (programa > 0) sql += "AND EXISTS (SELECT 1 FROM equipos.recurso_software rs WHERE rs.id_recurso = r.id_recurso AND rs.id_software = :programa) ";
     sql += "ORDER BY t.nombre_tipo, c.nombre_carro, r.numero_equipo";
     QSqlQuery q;
     q.prepare(sql);
-    q.bindValue(":disponible", idEstado("estado_recurso", "Disponible"));
+    q.bindValue(":disponible", idEstado("equipos.estado_recurso", "Disponible"));
     if (programa > 0) q.bindValue(":programa", programa);
     q.exec();
     while (q.next()) {
@@ -2150,10 +2152,10 @@ void MainWindow::cargarFueraServicio()
     QString filtro = ui->leFiltroPlanillas->text().trimmed();
     ui->listFueraServicio->clear();
     QSqlQuery q;
-    q.prepare("SELECT r.id_recurso, c.nombre_carro, r.numero_equipo, t.nombre_tipo FROM recursos_ct r "
-              "LEFT JOIN carro c ON c.id_carro = r.id_carro JOIN tipo_recurso t ON t.id_tipo_recurso = r.id_tipo_recurso "
+    q.prepare("SELECT r.id_recurso, c.nombre_carro, r.numero_equipo, t.nombre_tipo FROM equipos.recursos_ct r "
+              "LEFT JOIN equipos.carro c ON c.id_carro = r.id_carro JOIN equipos.tipo_recurso t ON t.id_tipo_recurso = r.id_tipo_recurso "
               "WHERE r.id_estado_recurso = :fuera ORDER BY t.nombre_tipo, c.nombre_carro, r.numero_equipo");
-    q.bindValue(":fuera", idEstado("estado_recurso", "Fuera de servicio"));
+    q.bindValue(":fuera", idEstado("equipos.estado_recurso", "Fuera de servicio"));
     q.exec();
     while (q.next()) {
         QString codigo = codigoRecurso(q.value(1).toString(), q.value(2).toInt());
@@ -2173,15 +2175,15 @@ void MainWindow::on_btnPlanillasReparar_clicked()
         fallar("", "", "Elegí un equipo de la lista de fuera de servicio.");
         return;
     }
-    QString estado = valorUnico("SELECT e.nombre_estado FROM recursos_ct r JOIN estado_recurso e "
+    QString estado = valorUnico("SELECT e.nombre_estado FROM equipos.recursos_ct r JOIN equipos.estado_recurso e "
                                 "ON e.id_estado_recurso = r.id_estado_recurso WHERE r.id_recurso = :id", recurso);
     if (estado != "Fuera de servicio") {
         fallar("", "", "Ese equipo ya no está fuera de servicio.");
         return;
     }
     QSqlQuery q;
-    q.prepare("UPDATE recursos_ct SET id_estado_recurso = :estado WHERE id_recurso = :recurso");
-    q.bindValue(":estado", idEstado("estado_recurso", "Disponible"));
+    q.prepare("UPDATE equipos.recursos_ct SET id_estado_recurso = :estado WHERE id_recurso = :recurso");
+    q.bindValue(":estado", idEstado("equipos.estado_recurso", "Disponible"));
     q.bindValue(":recurso", recurso);
     if (!q.exec()) {
         fallar("", "", "No se pudo marcar el equipo como reparado. Probá de nuevo.");
@@ -2212,11 +2214,11 @@ void MainWindow::cargarPrestamos()
     QString donde = "";
     if (soloMios) donde = "WHERE p.id_usuario_solicitante = :usuario ";
     q.prepare(QString("SELECT p.id_prestamo, a.nombre_completo, an.numero_anio, dv.numero_division, c.nombre_carro, r.numero_equipo, "
-              "p.hora_prestamo, p.hora_devolucion, au.nombre_completo, p.fecha_prestamo FROM prestamo_ct p "
-              "JOIN usuario a ON a.id_usuario = p.id_usuario_solicitante LEFT JOIN curso cu ON cu.id_curso = a.id_curso "
-              "LEFT JOIN anio an ON an.id_anio = cu.id_anio LEFT JOIN division dv ON dv.id_division = cu.id_division "
-              "JOIN usuario au ON au.id_usuario = p.id_usuario_autorizador JOIN recursos_ct r ON r.id_recurso = p.id_recurso "
-              "LEFT JOIN carro c ON c.id_carro = r.id_carro %1"
+              "p.hora_prestamo, p.hora_devolucion, au.nombre_completo, p.fecha_prestamo FROM equipos.prestamo_ct p "
+              "JOIN seguridad.usuario a ON a.id_usuario = p.id_usuario_solicitante LEFT JOIN academico.curso cu ON cu.id_curso = a.id_curso "
+              "LEFT JOIN academico.anio an ON an.id_anio = cu.id_anio LEFT JOIN academico.division dv ON dv.id_division = cu.id_division "
+              "JOIN seguridad.usuario au ON au.id_usuario = p.id_usuario_autorizador JOIN equipos.recursos_ct r ON r.id_recurso = p.id_recurso "
+              "LEFT JOIN equipos.carro c ON c.id_carro = r.id_carro %1"
               "ORDER BY CASE WHEN p.hora_devolucion IS NULL THEN 0 ELSE 1 END, p.id_prestamo DESC").arg(donde));
     if (soloMios) q.bindValue(":usuario", idActual);
     q.exec();
@@ -2259,13 +2261,13 @@ void MainWindow::on_btnPlanillasPrestar_clicked()
         fallar("Préstamo de recurso", "prestamo_ct", "Elegí quién se lleva el equipo.");
         return;
     }
-    if (valorUnico("SELECT COUNT(*) FROM prestamo_ct WHERE id_usuario_solicitante = :id AND hora_devolucion IS NULL", alumno).toInt() > 0) {
+    if (valorUnico("SELECT COUNT(*) FROM equipos.prestamo_ct WHERE id_usuario_solicitante = :id AND hora_devolucion IS NULL", alumno).toInt() > 0) {
         QString mensaje = "Ese alumno ya tiene un equipo prestado. Tiene que devolverlo antes de retirar otro.";
         if (rolActual() == "Alumno") mensaje = "Ya tenés un equipo prestado. Devolvelo antes de retirar otro.";
         fallar("Préstamo de recurso", "prestamo_ct", mensaje);
         return;
     }
-    QString estado = valorUnico("SELECT e.nombre_estado FROM recursos_ct r JOIN estado_recurso e "
+    QString estado = valorUnico("SELECT e.nombre_estado FROM equipos.recursos_ct r JOIN equipos.estado_recurso e "
                                 "ON e.id_estado_recurso = r.id_estado_recurso WHERE r.id_recurso = :id", recurso);
     if (estado != "Disponible") {
         fallar("Préstamo de recurso", "prestamo_ct", "Ese equipo no está disponible.");
@@ -2275,7 +2277,7 @@ void MainWindow::on_btnPlanillasPrestar_clicked()
     if (!observaciones.isEmpty()) valorObservaciones = observaciones;
     db.transaction();
     QSqlQuery q;
-    q.prepare("INSERT INTO prestamo_ct (fecha_prestamo, hora_prestamo, hora_devolucion, observaciones, id_usuario_solicitante, id_usuario_autorizador, id_recurso) "
+    q.prepare("INSERT INTO equipos.prestamo_ct (fecha_prestamo, hora_prestamo, hora_devolucion, observaciones, id_usuario_solicitante, id_usuario_autorizador, id_recurso) "
               "VALUES (:fecha, :hora, NULL, :observaciones, :alumno, :autorizador, :recurso)");
     q.bindValue(":fecha", valorFecha(QDate::currentDate()));
     q.bindValue(":hora", QTime::currentTime().toString("HH:mm"));
@@ -2284,8 +2286,8 @@ void MainWindow::on_btnPlanillasPrestar_clicked()
     q.bindValue(":autorizador", idActual);
     q.bindValue(":recurso", recurso);
     bool ok = q.exec();
-    q.prepare("UPDATE recursos_ct SET id_estado_recurso = :estado WHERE id_recurso = :recurso");
-    q.bindValue(":estado", idEstado("estado_recurso", "Prestado"));
+    q.prepare("UPDATE equipos.recursos_ct SET id_estado_recurso = :estado WHERE id_recurso = :recurso");
+    q.bindValue(":estado", idEstado("equipos.estado_recurso", "Prestado"));
     q.bindValue(":recurso", recurso);
     ok = ok && q.exec();
     if (!ok) {
@@ -2311,7 +2313,7 @@ void MainWindow::on_btnPlanillasDevolver_clicked()
         return;
     }
     QSqlQuery q;
-    q.prepare("SELECT hora_devolucion, id_recurso, id_usuario_solicitante FROM prestamo_ct WHERE id_prestamo = :prestamo");
+    q.prepare("SELECT hora_devolucion, id_recurso, id_usuario_solicitante FROM equipos.prestamo_ct WHERE id_prestamo = :prestamo");
     q.bindValue(":prestamo", prestamo);
     q.exec();
     q.next();
@@ -2330,20 +2332,20 @@ void MainWindow::on_btnPlanillasDevolver_clicked()
         if (!confirmar("Devolver equipo", "Vas a devolver el equipo como que NO funciona. Queda fuera de servicio hasta que el preceptor o maestranza lo repare. ¿Confirmás?")) return;
     }
     db.transaction();
-    q.prepare("UPDATE prestamo_ct SET hora_devolucion = :hora WHERE id_prestamo = :prestamo");
+    q.prepare("UPDATE equipos.prestamo_ct SET hora_devolucion = :hora WHERE id_prestamo = :prestamo");
     q.bindValue(":hora", QTime::currentTime().toString("HH:mm"));
     q.bindValue(":prestamo", prestamo);
     bool ok = q.exec();
     if (!observaciones.isEmpty()) {
-        QString anterior = valorUnico("SELECT COALESCE(observaciones, '') FROM prestamo_ct WHERE id_prestamo = :id", prestamo);
+        QString anterior = valorUnico("SELECT COALESCE(observaciones, '') FROM equipos.prestamo_ct WHERE id_prestamo = :id", prestamo);
         if (!anterior.isEmpty()) observaciones = anterior + " / Devolución: " + observaciones;
-        q.prepare("UPDATE prestamo_ct SET observaciones = :observaciones WHERE id_prestamo = :prestamo");
+        q.prepare("UPDATE equipos.prestamo_ct SET observaciones = :observaciones WHERE id_prestamo = :prestamo");
         q.bindValue(":observaciones", observaciones);
         q.bindValue(":prestamo", prestamo);
         ok = ok && q.exec();
     }
-    q.prepare("UPDATE recursos_ct SET id_estado_recurso = :estado WHERE id_recurso = :recurso");
-    q.bindValue(":estado", idEstado("estado_recurso", nuevoEstado));
+    q.prepare("UPDATE equipos.recursos_ct SET id_estado_recurso = :estado WHERE id_recurso = :recurso");
+    q.bindValue(":estado", idEstado("equipos.estado_recurso", nuevoEstado));
     q.bindValue(":recurso", recurso);
     ok = ok && q.exec();
     if (!ok) {
@@ -2367,14 +2369,14 @@ void MainWindow::cargarOcupacion()
     QString dia = ui->deSectoresDia->date().toString("dd/MM");
     ui->lblSectoresOcupacion->setText(QString("Ocupación de %1 el %2").arg(ui->cbSectoresLugar->currentText()).arg(dia));
     QSqlQuery q;
-    q.prepare("SELECT r.hora_inicio, r.hora_fin, u.nombre_completo, e.nombre_estado FROM reserva_sector r "
-              "JOIN usuario u ON u.id_usuario = r.id_usuario JOIN estado_reserva e ON e.id_estado_reserva = r.id_estado_reserva "
+    q.prepare("SELECT r.hora_inicio, r.hora_fin, u.nombre_completo, e.nombre_estado FROM instalaciones.reserva_sector r "
+              "JOIN seguridad.usuario u ON u.id_usuario = r.id_usuario JOIN instalaciones.estado_reserva e ON e.id_estado_reserva = r.id_estado_reserva "
               "WHERE r.id_sector = :sector AND r.fecha_reserva = :fecha AND r.id_estado_reserva IN (:pendiente, :aprobada) "
               "ORDER BY r.hora_inicio");
     q.bindValue(":sector", sector);
     q.bindValue(":fecha", valorFecha(ui->deSectoresDia->date()));
-    q.bindValue(":pendiente", idEstado("estado_reserva", "Pendiente"));
-    q.bindValue(":aprobada", idEstado("estado_reserva", "Aprobada"));
+    q.bindValue(":pendiente", idEstado("instalaciones.estado_reserva", "Pendiente"));
+    q.bindValue(":aprobada", idEstado("instalaciones.estado_reserva", "Aprobada"));
     q.exec();
     int pendientes = 0;
     while (q.next()) {
@@ -2408,8 +2410,8 @@ void MainWindow::cargarReservasSector()
 {
     ui->listSectores->clear();
     QString sql = "SELECT r.id_reserva, r.fecha_reserva, r.hora_inicio, r.hora_fin, s.nombre_sector, u.nombre_completo, "
-                  "e.nombre_estado, r.id_usuario FROM reserva_sector r JOIN sector s ON s.id_sector = r.id_sector "
-                  "JOIN usuario u ON u.id_usuario = r.id_usuario JOIN estado_reserva e ON e.id_estado_reserva = r.id_estado_reserva "
+                  "e.nombre_estado, r.id_usuario FROM instalaciones.reserva_sector r JOIN instalaciones.sector s ON s.id_sector = r.id_sector "
+                  "JOIN seguridad.usuario u ON u.id_usuario = r.id_usuario JOIN instalaciones.estado_reserva e ON e.id_estado_reserva = r.id_estado_reserva "
                   "WHERE r.fecha_reserva >= :hoy AND r.id_estado_reserva <> :cancelada ";
     bool preceptor = rolEs("Preceptor");
     if (!preceptor) sql += "AND r.id_usuario = :usuario ";
@@ -2419,7 +2421,7 @@ void MainWindow::cargarReservasSector()
     QSqlQuery q;
     q.prepare(sql);
     q.bindValue(":hoy", valorFecha(QDate::currentDate()));
-    q.bindValue(":cancelada", idEstado("estado_reserva", "Cancelada"));
+    q.bindValue(":cancelada", idEstado("instalaciones.estado_reserva", "Cancelada"));
     if (!preceptor) q.bindValue(":usuario", idActual);
     q.exec();
     while (q.next()) {
@@ -2455,7 +2457,7 @@ void MainWindow::on_btnSectoresReservar_clicked()
         fallar("Reserva de sector", "reserva_sector", "Elegí un sector para reservar.");
         return;
     }
-    QString tipoSector = valorUnico("SELECT t.nombre_tipo FROM sector s JOIN tipo_sector t "
+    QString tipoSector = valorUnico("SELECT t.nombre_tipo FROM instalaciones.sector s JOIN instalaciones.tipo_sector t "
                                     "ON t.id_tipo_sector = s.id_tipo_sector WHERE s.id_sector = :id", sector);
     if (tipoSector != "Reservable") {
         fallar("Reserva de sector", "reserva_sector", "Ese sector no se puede reservar.");
@@ -2480,13 +2482,13 @@ void MainWindow::on_btnSectoresReservar_clicked()
         return;
     }
     QSqlQuery q;
-    q.prepare("SELECT r.hora_inicio, r.hora_fin, u.nombre_completo FROM reserva_sector r JOIN usuario u ON u.id_usuario = r.id_usuario "
+    q.prepare("SELECT r.hora_inicio, r.hora_fin, u.nombre_completo FROM instalaciones.reserva_sector r JOIN seguridad.usuario u ON u.id_usuario = r.id_usuario "
               "WHERE r.id_sector = :sector AND r.fecha_reserva = :fecha AND r.id_estado_reserva IN (:pendiente, :aprobada) "
               "AND r.hora_inicio < :fin AND r.hora_fin > :inicio");
     q.bindValue(":sector", sector);
     q.bindValue(":fecha", valorFecha(dia));
-    q.bindValue(":pendiente", idEstado("estado_reserva", "Pendiente"));
-    q.bindValue(":aprobada", idEstado("estado_reserva", "Aprobada"));
+    q.bindValue(":pendiente", idEstado("instalaciones.estado_reserva", "Pendiente"));
+    q.bindValue(":aprobada", idEstado("instalaciones.estado_reserva", "Aprobada"));
     q.bindValue(":fin", fin);
     q.bindValue(":inicio", inicio);
     q.exec();
@@ -2502,14 +2504,14 @@ void MainWindow::on_btnSectoresReservar_clicked()
         estado = "Aprobada";
         autorizador = idActual;
     }
-    q.prepare("INSERT INTO reserva_sector (fecha_reserva, hora_inicio, hora_fin, id_usuario, id_sector, id_estado_reserva, id_usuario_autorizador) "
+    q.prepare("INSERT INTO instalaciones.reserva_sector (fecha_reserva, hora_inicio, hora_fin, id_usuario, id_sector, id_estado_reserva, id_usuario_autorizador) "
               "VALUES (:fecha, :inicio, :fin, :usuario, :sector, :estado, :autorizador)");
     q.bindValue(":fecha", valorFecha(dia));
     q.bindValue(":inicio", inicio);
     q.bindValue(":fin", fin);
     q.bindValue(":usuario", idActual);
     q.bindValue(":sector", sector);
-    q.bindValue(":estado", idEstado("estado_reserva", estado));
+    q.bindValue(":estado", idEstado("instalaciones.estado_reserva", estado));
     q.bindValue(":autorizador", autorizador);
     if (!q.exec()) {
         fallar("Reserva de sector", "reserva_sector", "No se pudo guardar la reserva. Probá de nuevo.");
@@ -2535,7 +2537,7 @@ void MainWindow::on_btnSectoresCancelar_clicked()
         fallar("", "", "Solo podés cancelar tus propias reservas.");
         return;
     }
-    QString estado = valorUnico("SELECT e.nombre_estado FROM reserva_sector r JOIN estado_reserva e "
+    QString estado = valorUnico("SELECT e.nombre_estado FROM instalaciones.reserva_sector r JOIN instalaciones.estado_reserva e "
                                 "ON e.id_estado_reserva = r.id_estado_reserva WHERE r.id_reserva = :id", reserva);
     if (estado != "Pendiente" && estado != "Aprobada") {
         fallar("", "", "Esa reserva ya está rechazada o cancelada.");
@@ -2545,8 +2547,8 @@ void MainWindow::on_btnSectoresCancelar_clicked()
     QString pregunta = QString("¿Querés cancelar la reserva de %1? El horario queda libre para otros.").arg(detalle);
     if (!confirmar("Cancelar reserva", pregunta)) return;
     QSqlQuery q;
-    q.prepare("UPDATE reserva_sector SET id_estado_reserva = :estado WHERE id_reserva = :reserva");
-    q.bindValue(":estado", idEstado("estado_reserva", "Cancelada"));
+    q.prepare("UPDATE instalaciones.reserva_sector SET id_estado_reserva = :estado WHERE id_reserva = :reserva");
+    q.bindValue(":estado", idEstado("instalaciones.estado_reserva", "Cancelada"));
     q.bindValue(":reserva", reserva);
     if (!q.exec()) {
         fallar("Reserva de sector", "reserva_sector", "No se pudo cancelar la reserva. Probá de nuevo.");
@@ -2565,15 +2567,15 @@ void MainWindow::resolverReservaSector(const QString &estado, const QString &eve
         fallar(evento, "reserva_sector", "Elegí una reserva de la lista.");
         return;
     }
-    QString actual = valorUnico("SELECT e.nombre_estado FROM reserva_sector r JOIN estado_reserva e "
+    QString actual = valorUnico("SELECT e.nombre_estado FROM instalaciones.reserva_sector r JOIN instalaciones.estado_reserva e "
                                 "ON e.id_estado_reserva = r.id_estado_reserva WHERE r.id_reserva = :id", reserva);
     if (actual != "Pendiente") {
         fallar(evento, "reserva_sector", "Solo se pueden aprobar o rechazar reservas pendientes.");
         return;
     }
     QSqlQuery q;
-    q.prepare("UPDATE reserva_sector SET id_estado_reserva = :estado, id_usuario_autorizador = :autorizador WHERE id_reserva = :reserva");
-    q.bindValue(":estado", idEstado("estado_reserva", estado));
+    q.prepare("UPDATE instalaciones.reserva_sector SET id_estado_reserva = :estado, id_usuario_autorizador = :autorizador WHERE id_reserva = :reserva");
+    q.bindValue(":estado", idEstado("instalaciones.estado_reserva", estado));
     q.bindValue(":autorizador", idActual);
     q.bindValue(":reserva", reserva);
     if (!q.exec()) {
@@ -2590,7 +2592,7 @@ void MainWindow::on_btnSectoresRechazar_clicked()
 {
     int reserva = seleccionado(ui->listSectores);
     if (rolEs("Preceptor") && reserva != 0) {
-        QString estado = valorUnico("SELECT e.nombre_estado FROM reserva_sector r JOIN estado_reserva e "
+        QString estado = valorUnico("SELECT e.nombre_estado FROM instalaciones.reserva_sector r JOIN instalaciones.estado_reserva e "
                                     "ON e.id_estado_reserva = r.id_estado_reserva WHERE r.id_reserva = :id", reserva);
         if (estado == "Pendiente") {
             QString detalle = ui->listSectores->currentItem()->text().split("\n").first();
@@ -2604,8 +2606,8 @@ void MainWindow::on_btnSectoresRechazar_clicked()
 QString MainWindow::chocaFranja(int dia, int franja, int curso)
 {
     QSqlQuery q;
-    q.prepare("SELECT MIN(m.nombre_materia) FROM franja_horaria f JOIN horario_dia hd ON hd.id_dia = :dia "
-              "JOIN horario_escolar he ON he.id_bloque = hd.id_bloque JOIN materia m ON m.id_materia = he.id_materia "
+    q.prepare("SELECT MIN(m.nombre_materia) FROM academico.franja_horaria f JOIN academico.horario_dia hd ON hd.id_dia = :dia "
+              "JOIN academico.horario_escolar he ON he.id_bloque = hd.id_bloque JOIN academico.materia m ON m.id_materia = he.id_materia "
               "WHERE f.id_franja = :franja AND he.id_curso = :curso AND he.hora_inicio < f.hora_fin AND he.hora_fin > f.hora_inicio");
     q.bindValue(":dia", dia);
     q.bindValue(":franja", franja);
@@ -2618,7 +2620,7 @@ QString MainWindow::chocaFranja(int dia, int franja, int curso)
 QString MainWindow::chocaHorario(int oferta, int curso)
 {
     QSqlQuery q;
-    q.prepare("SELECT id_dia, id_franja FROM oferta_deporte WHERE id_oferta = :oferta");
+    q.prepare("SELECT id_dia, id_franja FROM deportes.oferta_deporte WHERE id_oferta = :oferta");
     q.bindValue(":oferta", oferta);
     q.exec();
     if (!q.next()) return "";
@@ -2628,7 +2630,7 @@ QString MainWindow::chocaHorario(int oferta, int curso)
 int MainWindow::ofertaElegida()
 {
     QSqlQuery q;
-    q.prepare("SELECT id_oferta FROM oferta_deporte WHERE id_deporte = :deporte AND id_dia = :dia AND id_franja = :franja");
+    q.prepare("SELECT id_oferta FROM deportes.oferta_deporte WHERE id_deporte = :deporte AND id_dia = :dia AND id_franja = :franja");
     q.bindValue(":deporte", ui->cbEdFisicaDeporte->currentData().toInt());
     q.bindValue(":dia", ui->cbEdFisicaDia->currentData().toInt());
     q.bindValue(":franja", ui->cbEdFisicaHora->currentData().toInt());
@@ -2644,11 +2646,11 @@ void MainWindow::cargarDiasEdFisica()
     ui->cbEdFisicaDia->blockSignals(true);
     ui->cbEdFisicaDia->clear();
     QSqlQuery q;
-    q.prepare("SELECT d.id_dia, d.nombre_dia, (SELECT COUNT(*) FROM oferta_deporte o WHERE o.id_dia = d.id_dia AND o.id_deporte = :deporte) "
-              "FROM dia_semana d ORDER BY d.id_dia");
+    q.prepare("SELECT d.id_dia, d.nombre_dia, (SELECT COUNT(*) FROM deportes.oferta_deporte o WHERE o.id_dia = d.id_dia AND o.id_deporte = :deporte) "
+              "FROM academico.dia_semana d ORDER BY d.id_dia");
     q.bindValue(":deporte", deporte);
     q.exec();
-    int curso = valorUnico("SELECT COALESCE(id_curso, 0) FROM usuario WHERE id_usuario = :id", idActual).toInt();
+    int curso = valorUnico("SELECT COALESCE(id_curso, 0) FROM seguridad.usuario WHERE id_usuario = :id", idActual).toInt();
     int primero = -1;
     int elegido = -1;
     while (q.next()) {
@@ -2657,7 +2659,7 @@ void MainWindow::cargarDiasEdFisica()
         bool hayLibre = false;
         if (q.value(2).toInt() > 0) {
             QSqlQuery f;
-            f.prepare("SELECT id_franja FROM oferta_deporte WHERE id_dia = :dia AND id_deporte = :deporte");
+            f.prepare("SELECT id_franja FROM deportes.oferta_deporte WHERE id_dia = :dia AND id_deporte = :deporte");
             f.bindValue(":dia", id);
             f.bindValue(":deporte", deporte);
             f.exec();
@@ -2689,13 +2691,13 @@ void MainWindow::cargarFranjas()
     int franja = ui->cbEdFisicaHora->currentData().toInt();
     int dia = ui->cbEdFisicaDia->currentData().toInt();
     int deporte = ui->cbEdFisicaDeporte->currentData().toInt();
-    int curso = valorUnico("SELECT COALESCE(id_curso, 0) FROM usuario WHERE id_usuario = :id", idActual).toInt();
+    int curso = valorUnico("SELECT COALESCE(id_curso, 0) FROM seguridad.usuario WHERE id_usuario = :id", idActual).toInt();
     ui->cbEdFisicaHora->blockSignals(true);
     ui->cbEdFisicaHora->clear();
     QSqlQuery q;
     q.prepare("SELECT f.id_franja, f.hora_inicio, f.hora_fin, "
-              "(SELECT COUNT(*) FROM oferta_deporte o WHERE o.id_franja = f.id_franja AND o.id_dia = :dia AND o.id_deporte = :deporte) "
-              "FROM franja_horaria f ORDER BY f.hora_inicio");
+              "(SELECT COUNT(*) FROM deportes.oferta_deporte o WHERE o.id_franja = f.id_franja AND o.id_dia = :dia AND o.id_deporte = :deporte) "
+              "FROM academico.franja_horaria f ORDER BY f.hora_inicio");
     q.bindValue(":dia", dia);
     q.bindValue(":deporte", deporte);
     q.exec();
@@ -2736,15 +2738,15 @@ void MainWindow::mostrarEstadoEdFisica()
         return;
     }
     QSqlQuery q;
-    q.prepare("SELECT o.cupo_maximo, (SELECT COUNT(*) FROM inscripcion_ed_fisica i WHERE i.id_oferta = o.id_oferta) "
-              "FROM oferta_deporte o WHERE o.id_oferta = :oferta");
+    q.prepare("SELECT o.cupo_maximo, (SELECT COUNT(*) FROM deportes.inscripcion_ed_fisica i WHERE i.id_oferta = o.id_oferta) "
+              "FROM deportes.oferta_deporte o WHERE o.id_oferta = :oferta");
     q.bindValue(":oferta", oferta);
     q.exec();
     q.next();
     int maximo = q.value(0).toInt();
     int libres = maximo - q.value(1).toInt();
-    int miOferta = valorUnico("SELECT id_oferta FROM inscripcion_ed_fisica WHERE id_usuario = :id", idActual).toInt();
-    int curso = valorUnico("SELECT COALESCE(id_curso, 0) FROM usuario WHERE id_usuario = :id", idActual).toInt();
+    int miOferta = valorUnico("SELECT id_oferta FROM deportes.inscripcion_ed_fisica WHERE id_usuario = :id", idActual).toInt();
+    int curso = valorUnico("SELECT COALESCE(id_curso, 0) FROM seguridad.usuario WHERE id_usuario = :id", idActual).toInt();
     QString materia = chocaHorario(oferta, curso);
     bool puede = true;
     QString texto = QString("Hay lugar. Cupos libres: %1 de %2.").arg(libres).arg(maximo);
@@ -2774,9 +2776,9 @@ void MainWindow::on_cbEdFisicaHora_currentIndexChanged(int) { mostrarEstadoEdFis
 void MainWindow::cargarEdFisica()
 {
     QSqlQuery m;
-    m.prepare("SELECT d.nombre_deporte, ds.nombre_dia, f.hora_inicio, f.hora_fin FROM inscripcion_ed_fisica i "
-              "JOIN oferta_deporte o ON o.id_oferta = i.id_oferta JOIN deporte d ON d.id_deporte = o.id_deporte "
-              "JOIN dia_semana ds ON ds.id_dia = o.id_dia JOIN franja_horaria f ON f.id_franja = o.id_franja WHERE i.id_usuario = :usuario");
+    m.prepare("SELECT d.nombre_deporte, ds.nombre_dia, f.hora_inicio, f.hora_fin FROM deportes.inscripcion_ed_fisica i "
+              "JOIN deportes.oferta_deporte o ON o.id_oferta = i.id_oferta JOIN deportes.deporte d ON d.id_deporte = o.id_deporte "
+              "JOIN academico.dia_semana ds ON ds.id_dia = o.id_dia JOIN academico.franja_horaria f ON f.id_franja = o.id_franja WHERE i.id_usuario = :usuario");
     m.bindValue(":usuario", idActual);
     m.exec();
     bool inscripto = m.next();
@@ -2799,13 +2801,13 @@ void MainWindow::on_btnEdFisicaInscribir_clicked()
         fallar("Inscripción a Ed. Física", "inscripcion_ed_fisica", "No hay clase de ese deporte en ese día y horario. Probá con otra combinación.");
         return;
     }
-    if (valorUnico("SELECT COUNT(*) FROM inscripcion_ed_fisica WHERE id_usuario = :id", idActual).toInt() > 0) {
+    if (valorUnico("SELECT COUNT(*) FROM deportes.inscripcion_ed_fisica WHERE id_usuario = :id", idActual).toInt() > 0) {
         fallar("Inscripción a Ed. Física", "inscripcion_ed_fisica", "Ya estás inscripto. Cancelá tu inscripción antes de elegir otra.");
         return;
     }
     QSqlQuery q;
-    q.prepare("SELECT o.cupo_maximo, (SELECT COUNT(*) FROM inscripcion_ed_fisica i WHERE i.id_oferta = o.id_oferta) "
-              "FROM oferta_deporte o WHERE o.id_oferta = :oferta");
+    q.prepare("SELECT o.cupo_maximo, (SELECT COUNT(*) FROM deportes.inscripcion_ed_fisica i WHERE i.id_oferta = o.id_oferta) "
+              "FROM deportes.oferta_deporte o WHERE o.id_oferta = :oferta");
     q.bindValue(":oferta", oferta);
     q.exec();
     q.next();
@@ -2813,13 +2815,13 @@ void MainWindow::on_btnEdFisicaInscribir_clicked()
         fallar("Inscripción a Ed. Física", "inscripcion_ed_fisica", "Esa opción ya no tiene cupo.");
         return;
     }
-    int curso = valorUnico("SELECT COALESCE(id_curso, 0) FROM usuario WHERE id_usuario = :id", idActual).toInt();
+    int curso = valorUnico("SELECT COALESCE(id_curso, 0) FROM seguridad.usuario WHERE id_usuario = :id", idActual).toInt();
     QString materia = chocaHorario(oferta, curso);
     if (!materia.isEmpty()) {
         fallar("Inscripción a Ed. Física", "inscripcion_ed_fisica", "Esa opción se superpone con " + materia + " en tu horario.");
         return;
     }
-    q.prepare("INSERT INTO inscripcion_ed_fisica (fecha_inscripcion, id_usuario, id_oferta) VALUES (:fecha, :usuario, :oferta)");
+    q.prepare("INSERT INTO deportes.inscripcion_ed_fisica (fecha_inscripcion, id_usuario, id_oferta) VALUES (:fecha, :usuario, :oferta)");
     q.bindValue(":fecha", valorFecha(QDate::currentDate()));
     q.bindValue(":usuario", idActual);
     q.bindValue(":oferta", oferta);
@@ -2835,14 +2837,14 @@ void MainWindow::on_btnEdFisicaInscribir_clicked()
 void MainWindow::on_btnEdFisicaCancelar_clicked()
 {
     if (!exigir("Alumno", "", "")) return;
-    if (valorUnico("SELECT COUNT(*) FROM inscripcion_ed_fisica WHERE id_usuario = :id", idActual).toInt() == 0) {
+    if (valorUnico("SELECT COUNT(*) FROM deportes.inscripcion_ed_fisica WHERE id_usuario = :id", idActual).toInt() == 0) {
         fallar("", "", "No tenés ninguna inscripción para cancelar.");
         return;
     }
     QString deporte = ui->lblEdFisicaMia->text();
     if (!confirmar("Cancelar inscripción", QString("¿Querés cancelar tu inscripción a %1? Después vas a poder elegir otra opción.").arg(deporte))) return;
     QSqlQuery q;
-    q.prepare("DELETE FROM inscripcion_ed_fisica WHERE id_usuario = :usuario");
+    q.prepare("DELETE FROM deportes.inscripcion_ed_fisica WHERE id_usuario = :usuario");
     q.bindValue(":usuario", idActual);
     if (!q.exec()) {
         fallar("", "", "No se pudo cancelar la inscripción. Probá de nuevo.");
@@ -2858,9 +2860,9 @@ void MainWindow::cargarAuditoria()
     if (!rolEs("Preceptor")) return;
     QString resultado = ui->cbAuditoriaResultado->currentText();
     QString sql = "SELECT l.fecha_hora, u.nombre_completo, t.nombre_evento, r.nombre_resultado, l.descripcion_evento "
-                  "FROM log_auditoria l JOIN tipo_log t ON t.id_tipo_log = l.id_tipo_log "
-                  "JOIN resultado_log r ON r.id_resultado = l.id_resultado "
-                  "LEFT JOIN usuario u ON u.id_usuario = l.id_usuario ";
+                  "FROM seguridad.log_auditoria l JOIN seguridad.tipo_log t ON t.id_tipo_log = l.id_tipo_log "
+                  "JOIN seguridad.resultado_log r ON r.id_resultado = l.id_resultado "
+                  "LEFT JOIN seguridad.usuario u ON u.id_usuario = l.id_usuario ";
     if (resultado != "Todos") sql += "WHERE r.nombre_resultado = :resultado ";
     sql += "ORDER BY l.fecha_hora DESC, l.id_log DESC";
     QSqlQuery q;
@@ -2896,7 +2898,7 @@ void MainWindow::mostrarProgramas()
         return;
     }
     QSqlQuery q;
-    q.prepare("SELECT s.nombre_software FROM recurso_software rs JOIN software s ON s.id_software = rs.id_software "
+    q.prepare("SELECT s.nombre_software FROM equipos.recurso_software rs JOIN equipos.software s ON s.id_software = rs.id_software "
               "WHERE rs.id_recurso = :recurso ORDER BY s.nombre_software");
     q.bindValue(":recurso", recurso);
     q.exec();
@@ -2998,40 +3000,40 @@ void MainWindow::cargarResumen()
     QString s3 = "";
     if (rol == "Alumno") {
         t1 = "Tus reclamos de objetos";
-        s1 = "SELECT COUNT(*) FROM reclamo_objeto WHERE id_usuario = :id";
+        s1 = "SELECT COUNT(*) FROM objetos.reclamo_objeto WHERE id_usuario = :id";
         t2 = "Tus reservas en la tienda";
-        s2 = "SELECT COUNT(*) FROM venta_buffet v JOIN estado_venta e ON e.id_estado_venta = v.id_estado_venta "
+        s2 = "SELECT COUNT(*) FROM tienda.venta_buffet v JOIN tienda.estado_venta e ON e.id_estado_venta = v.id_estado_venta "
              "WHERE v.id_usuario = :id AND e.nombre_estado = 'Reservada'";
         t3 = "Préstamos activos a tu nombre";
-        s3 = "SELECT COUNT(*) FROM prestamo_ct WHERE id_usuario_solicitante = :id AND hora_devolucion IS NULL";
+        s3 = "SELECT COUNT(*) FROM equipos.prestamo_ct WHERE id_usuario_solicitante = :id AND hora_devolucion IS NULL";
     } else if (rol == "Preceptor") {
         t1 = "Reclamos de objetos pendientes";
-        s1 = "SELECT COUNT(*) FROM reclamo_objeto r JOIN estado_reclamo e ON e.id_estado_reclamo = r.id_estado_reclamo "
+        s1 = "SELECT COUNT(*) FROM objetos.reclamo_objeto r JOIN objetos.estado_reclamo e ON e.id_estado_reclamo = r.id_estado_reclamo "
              "WHERE e.nombre_estado = 'Pendiente' AND :id > 0";
         t2 = "Reservas de sectores pendientes";
-        s2 = "SELECT COUNT(*) FROM reserva_sector r JOIN estado_reserva e ON e.id_estado_reserva = r.id_estado_reserva "
+        s2 = "SELECT COUNT(*) FROM instalaciones.reserva_sector r JOIN instalaciones.estado_reserva e ON e.id_estado_reserva = r.id_estado_reserva "
              "WHERE e.nombre_estado = 'Pendiente' AND r.fecha_reserva >= :hoy AND :id > 0";
         t3 = "Reportes de higiene pendientes";
-        s3 = "SELECT COUNT(*) FROM reporte_higiene r JOIN estado_reporte e ON e.id_estado_reporte = r.id_estado_reporte "
+        s3 = "SELECT COUNT(*) FROM instalaciones.reporte_higiene r JOIN instalaciones.estado_reporte e ON e.id_estado_reporte = r.id_estado_reporte "
              "WHERE e.nombre_estado = 'Pendiente' AND :id > 0";
     } else if (rol == "Profesor") {
         t1 = "Tus reservas de sectores";
-        s1 = "SELECT COUNT(*) FROM reserva_sector r JOIN estado_reserva e ON e.id_estado_reserva = r.id_estado_reserva "
+        s1 = "SELECT COUNT(*) FROM instalaciones.reserva_sector r JOIN instalaciones.estado_reserva e ON e.id_estado_reserva = r.id_estado_reserva "
              "WHERE r.id_usuario = :id AND e.nombre_estado IN ('Pendiente', 'Aprobada') AND r.fecha_reserva >= :hoy";
         t2 = "Reportes de higiene pendientes";
-        s2 = "SELECT COUNT(*) FROM reporte_higiene r JOIN estado_reporte e ON e.id_estado_reporte = r.id_estado_reporte "
+        s2 = "SELECT COUNT(*) FROM instalaciones.reporte_higiene r JOIN instalaciones.estado_reporte e ON e.id_estado_reporte = r.id_estado_reporte "
              "WHERE e.nombre_estado = 'Pendiente' AND :id > 0";
         t3 = "Préstamos activos en el colegio";
-        s3 = "SELECT COUNT(*) FROM prestamo_ct WHERE hora_devolucion IS NULL AND :id > 0";
+        s3 = "SELECT COUNT(*) FROM equipos.prestamo_ct WHERE hora_devolucion IS NULL AND :id > 0";
     } else {
         t1 = "Reportes de higiene pendientes";
-        s1 = "SELECT COUNT(*) FROM reporte_higiene r JOIN estado_reporte e ON e.id_estado_reporte = r.id_estado_reporte "
+        s1 = "SELECT COUNT(*) FROM instalaciones.reporte_higiene r JOIN instalaciones.estado_reporte e ON e.id_estado_reporte = r.id_estado_reporte "
              "WHERE e.nombre_estado = 'Pendiente' AND :id > 0";
         t2 = "Equipos fuera de servicio";
-        s2 = "SELECT COUNT(*) FROM recursos_ct r JOIN estado_recurso e ON e.id_estado_recurso = r.id_estado_recurso "
+        s2 = "SELECT COUNT(*) FROM equipos.recursos_ct r JOIN equipos.estado_recurso e ON e.id_estado_recurso = r.id_estado_recurso "
              "WHERE e.nombre_estado = 'Fuera de servicio' AND :id > 0";
         t3 = "Préstamos activos en el colegio";
-        s3 = "SELECT COUNT(*) FROM prestamo_ct WHERE hora_devolucion IS NULL AND :id > 0";
+        s3 = "SELECT COUNT(*) FROM equipos.prestamo_ct WHERE hora_devolucion IS NULL AND :id > 0";
     }
     ui->lblResumenTit1->setText(t1);
     ui->lblResumenTit2->setText(t2);
@@ -3099,8 +3101,8 @@ QPixmap MainWindow::miniaturaProducto(const QString &ruta)
 void MainWindow::cargarVendedores()
 {
     int actual = ui->cbBuffetVendedor->currentData().toInt();
-    cargarCombo(ui->cbBuffetVendedor, "SELECT DISTINCT u.id_usuario, u.nombre_completo FROM usuario u "
-                                      "JOIN producto_buffet p ON p.id_usuario = u.id_usuario ORDER BY u.nombre_completo",
+    cargarCombo(ui->cbBuffetVendedor, "SELECT DISTINCT u.id_usuario, u.nombre_completo FROM seguridad.usuario u "
+                                      "JOIN tienda.producto_buffet p ON p.id_usuario = u.id_usuario ORDER BY u.nombre_completo",
                 "Todos los vendedores", "");
     elegirPorId(ui->cbBuffetVendedor, actual);
 }
@@ -3118,7 +3120,7 @@ void MainWindow::mostrarSeleccionBuffet()
     }
     QSqlQuery q;
     q.prepare("SELECT p.nombre_producto, p.precio, p.stock, p.id_usuario, u.nombre_completo, u.contacto_telefono "
-              "FROM producto_buffet p JOIN usuario u ON u.id_usuario = p.id_usuario WHERE p.id_producto = :producto");
+              "FROM tienda.producto_buffet p JOIN seguridad.usuario u ON u.id_usuario = p.id_usuario WHERE p.id_producto = :producto");
     q.bindValue(":producto", producto);
     q.exec();
     if (!q.next()) return;
@@ -3142,7 +3144,7 @@ void MainWindow::cargarDonaciones()
         return;
     }
     QSqlQuery g;
-    g.prepare("SELECT meta_monto FROM grupo_buffet WHERE id_grupo = :grupo");
+    g.prepare("SELECT meta_monto FROM tienda.grupo_buffet WHERE id_grupo = :grupo");
     g.bindValue(":grupo", grupo);
     g.exec();
     if (!g.next()) return;
@@ -3156,7 +3158,7 @@ void MainWindow::cargarDonaciones()
     ui->lblGrupoMeta->setText(QString("Se recaudaron $%1 de $%2 (%3%)").arg(juntado).arg(meta).arg(porcentaje));
 
     QSqlQuery d;
-    d.prepare("SELECT u.nombre_completo, o.monto, o.fecha_hora FROM donacion_buffet o JOIN usuario u ON u.id_usuario = o.id_usuario "
+    d.prepare("SELECT u.nombre_completo, o.monto, o.fecha_hora FROM tienda.donacion_buffet o JOIN seguridad.usuario u ON u.id_usuario = o.id_usuario "
               "WHERE o.id_grupo = :grupo ORDER BY o.id_donacion DESC");
     d.bindValue(":grupo", grupo);
     d.exec();
@@ -3223,7 +3225,7 @@ void MainWindow::ponerDato(QComboBox *combo, int dato)
 void MainWindow::actualizarPendientesHigiene()
 {
     QSqlQuery q;
-    q.prepare("SELECT COUNT(*) FROM reporte_higiene r JOIN estado_reporte e ON e.id_estado_reporte = r.id_estado_reporte "
+    q.prepare("SELECT COUNT(*) FROM instalaciones.reporte_higiene r JOIN instalaciones.estado_reporte e ON e.id_estado_reporte = r.id_estado_reporte "
               "WHERE e.nombre_estado = :estado");
     q.bindValue(":estado", "Pendiente");
     q.exec();
@@ -3248,7 +3250,7 @@ void MainWindow::actualizarResumenPlanillas()
     int prestados = 0;
     int fuera = 0;
     QSqlQuery q;
-    q.prepare("SELECT e.nombre_estado, COUNT(*) FROM recursos_ct r JOIN estado_recurso e ON e.id_estado_recurso = r.id_estado_recurso "
+    q.prepare("SELECT e.nombre_estado, COUNT(*) FROM equipos.recursos_ct r JOIN equipos.estado_recurso e ON e.id_estado_recurso = r.id_estado_recurso "
               "GROUP BY e.nombre_estado");
     q.exec();
     while (q.next()) {

@@ -131,4 +131,5 @@
   * El profesor confirmó el número de grupo: **Grupo 6** (Arce Thiago y Cabrera Ulises). Los scripts pasan a llamarse `03_ModeloSQL_Grupo06.sql`, `04_DatosSQL_Grupo06.sql` y `05_Backend_Grupo06.sql`.
   * Ejecución de los 104 casos de prueba de los procedimientos (4 por cada uno de los 26 SP) en MariaDB 10.11, con resultado real en `06_PruebasSQL.xlsx`: 104 PASS. Guía para repetirlos en MySQL Workbench.
   * Revisión de los diagramas de Chen y Codd contra el script `03` (sin diferencias) y exportación en PNG con fondo blanco.
+  * División real en **7 schemas también en MySQL** (`seguridad`, `academico`, `objetos`, `instalaciones`, `tienda`, `equipos`, `deportes`): cada schema es una base, las tablas se nombran `schema.tabla` en los scripts, las pruebas y la app, y la base `iqual` guarda los procedimientos. Se volvieron a correr los 104 casos (104 PASS) y la app con los 5 roles.
 * **Entregables / Artefactos:** Hito 2 de BBDD (diagramas PNG, scripts 03, 04 y 05, planilla 06_PruebasSQL.xlsx).

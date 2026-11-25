@@ -35,7 +35,7 @@ La base no impide que un préstamo lo pida alguien que no es alumno (D8) ni dos 
 ## Para preguntarle a Linares (abiertas, 19/11/2026)
 
 1. **Número de grupo:** respondido: somos el **Grupo 6** (Arce Thiago y Cabrera Ulises). Los archivos ya dicen `Grupo06`.
-2. **Esquemas en MySQL:** en SQL Server hay 7 esquemas (`seguridad`, `academico`, `objetos`, `instalaciones`, `tienda`, `equipos`, `deportes`). En MySQL un esquema es una base, y nosotros tenemos una sola (`iqual`) con las 47 tablas. ¿Alcanza con eso o quiere 7 bases en MySQL? [COMPLETAR: respuesta]
+2. **Esquemas en MySQL:** en SQL Server hay 7 esquemas (`seguridad`, `academico`, `objetos`, `instalaciones`, `tienda`, `equipos`, `deportes`). **Resuelto:** en MySQL también están los 7 como bases separadas (`schema.tabla`); `iqual` queda para los procedimientos (ver `db/SCHEMAS.md`).
 3. **Catálogos con menos de 20 filas:** casi todos los catálogos tienen entre 2 y 14 filas (rol 4, turno 2, estado_venta 3, etc.). Si la consigna pide mínimo 20 filas por tabla, ¿vale para los catálogos o solo para las entidades? [COMPLETAR: respuesta]
 4. **Tablas temporales en el procedimiento tuneado:** `sp_rep_ventas_por_producto_tuneado` usa `CREATE TEMPORARY TABLE` (técnica de la clase 004). ¿Está bien usar tabla temporal, o prefiere que el tuning sea solo con índices y pre-agregado? [COMPLETAR: respuesta]
 5. **¿Pide SQL Server además de MySQL?** Entregamos los dos scripts (03 y 04) en SQL Server 2005 por las dudas, pero **no se ejecutaron** en SQL Server. Si solo pide MySQL, no hace falta presentarlos. [COMPLETAR: respuesta]

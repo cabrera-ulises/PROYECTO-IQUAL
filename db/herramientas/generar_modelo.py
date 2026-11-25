@@ -6,6 +6,8 @@ generar_modelo.py - PROYECTO IQUAL (SGE)
 Genera 03_ModeloSQL_Grupo06.sql (MySQL) y 03_ModeloSQL_Grupo06_sqlserver.sql (SQL Server 2005) a partir de
 iqual_mysql.sql e iqual_sqlserver.sql. NO cambia la estructura: las 47 tablas, claves, FK e indices salen
 identicos. Solo agrega el encabezado (con el mapa de schemas), el borrado previo y, en SQL Server, los schemas.
+AVISO (25/11/2026): el 03 de MySQL ya no sale de aca. Ahora crea los 7 schemas como bases (schema.tabla) y se
+mantiene a mano; NO correr este script para MySQL porque lo pisaria con la version vieja de una sola base.
 Usa solo la biblioteca estandar de Python 3.8 o mas nueva.
 
 Uso:

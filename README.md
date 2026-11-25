@@ -16,7 +16,7 @@ Este sistema integrado surge para dar solución a la desorganización operativa 
 
 ## 2. Desarrollo del 4° Bimestre (Implementación y Código)
 En esta etapa, el proyecto avanza en la programación e implementación técnica del software en dupla de desarrollo:
-* **Modelo relacional:** esquema de base de datos en 3FN con integridad referencial, de **47 tablas**. La aplicación **se conecta a MySQL** (base `iqual`); si el servidor, el driver o la base fallan, avisa el motivo y no abre. El modelo también se entrega como script para **SQL Server 2005**, y hay 27 procedimientos almacenados para MySQL (`db/05_Backend_Grupo06.sql`).
+* **Modelo relacional:** esquema de base de datos en 3FN con integridad referencial, de **47 tablas**. Las tablas están divididas en **7 schemas** (`seguridad`, `academico`, `objetos`, `instalaciones`, `tienda`, `equipos`, `deportes`; ver `db/SCHEMAS.md`). La aplicación **se conecta a MySQL** (base `iqual`, que guarda los procedimientos); si el servidor, el driver o la base fallan, avisa el motivo y no abre. El modelo también se entrega como script para **SQL Server 2005**, y hay 27 procedimientos almacenados para MySQL (`db/05_Backend_Grupo06.sql`).
 * **Interfaz y lógica de negocio:** aplicación de **escritorio** con una barra lateral de navegación, una barra superior (título de la página, usuario con su rol y botón de tema) y **dos temas**, claro y oscuro, que se recuerdan entre sesiones. Parte de las especificaciones y maquetados de la Carpeta V1 y los ajusta en el 4° Bimestre (ver [cambios respecto al diseño inicial](./docs/cambios-respecto-al-diseno-inicial.md)).
 
 ### 🧰 Tecnología
@@ -69,7 +69,7 @@ Para registrar cuentas de Profesor, Preceptor o Maestranza la app pide un PIN in
 4. Si CMake falla, revisá que abriste el `CMakeLists.txt` de la raíz y que el kit sea MinGW 64-bit con Widgets y Sql instalados.
 
 ### 4.2 Base de datos (MySQL)
-1. Instalar MySQL, crear la base `iqual` y ejecutar en este orden, con Alt+X en DBeaver o MySQL Workbench: `db/03_ModeloSQL_Grupo06.sql` (47 tablas), `db/04_DatosSQL_Grupo06.sql` (datos, 62 usuarios) y `db/05_Backend_Grupo06.sql` (procedimientos almacenados). Pasos detallados en [`db/guias/GUIA_INSTALACION_MYSQL.md`](./db/guias/GUIA_INSTALACION_MYSQL.md). La app **no crea** las tablas en MySQL; si la base existe pero está vacía, lo avisa.
+1. Instalar MySQL, crear la base `iqual` y ejecutar en este orden, con Alt+X en DBeaver o MySQL Workbench: `db/03_ModeloSQL_Grupo06.sql` (7 schemas, 47 tablas), `db/04_DatosSQL_Grupo06.sql` (datos, 62 usuarios) y `db/05_Backend_Grupo06.sql` (procedimientos almacenados). Pasos detallados en [`db/guias/GUIA_INSTALACION_MYSQL.md`](./db/guias/GUIA_INSTALACION_MYSQL.md). La app **no crea** las tablas en MySQL; si la base existe pero está vacía, lo avisa.
 2. **Conexión (`iqual.ini`).** La primera vez que se abre, la app crea `iqual.ini` junto al ejecutable, con una sección `[base]`:
    | Clave | Valor por defecto | Para qué |
    | :--- | :--- | :--- |

@@ -103,7 +103,7 @@ Toda acción relevante (alta, baja, cambio de estado, intento fallido) termina e
 ### 3.2 Scripts
 | Script | Para qué sirve | Quién lo usa |
 |---|---|---|
-| `03_ModeloSQL_Grupo06.sql` | Crea la base `iqual` y las 47 tablas | Se carga a mano en DBeaver o Workbench |
+| `03_ModeloSQL_Grupo06.sql` | Crea los 7 schemas con las 47 tablas (`schema.tabla`) y la base `iqual`, donde van los procedimientos | Se carga a mano en DBeaver o Workbench |
 | `04_DatosSQL_Grupo06.sql` | Carga los datos de demostración (62 usuarios) | Se carga a mano, después del 03 |
 | `05_Backend_Grupo06.sql` | Crea los 27 procedimientos almacenados (usa `DELIMITER`, se carga aparte) | Se carga a mano, después del 04 |
 | `03_ModeloSQL_Grupo06_sqlserver.sql` y `04_DatosSQL_Grupo06_sqlserver.sql` | Versión para SQL Server 2005 | Entrega del proyecto; **no se probó** |
@@ -112,7 +112,7 @@ Toda acción relevante (alta, baja, cambio de estado, intento fallido) termina e
 
 La app no trae ningún script embebido: no crea tablas ni datos.
 
-**Importante:** la app **no crea las tablas en MySQL**. Si la base `iqual` existe pero está vacía, la app avisa que hay que cargar `03_ModeloSQL_Grupo06.sql` y `04_DatosSQL_Grupo06.sql` desde DBeaver.
+**Importante:** la app **no crea las tablas en MySQL**. Si no existen los schemas (falla `SELECT COUNT(*) FROM seguridad.usuario`), la app avisa que hay que cargar `03_ModeloSQL_Grupo06.sql` y `04_DatosSQL_Grupo06.sql` desde DBeaver.
 
 ### 3.3 Procedimientos almacenados
 `db/05_Backend_Grupo06.sql` crea **27 rutinas**: 15 procedimientos de funcionalidades (registrar log y usuario, objetos y reclamos, préstamo y devolución de equipos, reservas de sectores, higiene, compras y donaciones, inscripciones de Educación Física), 9 de reportes y auditoría, 2 versiones tuneadas de reportes y el auxiliar `sp_aux_solo_digitos`. Los 12 índices del tuning se crean al final de `03_ModeloSQL_Grupo06.sql`. Cada procedimiento devuelve un único resultado: `estado = 'OK'` con los ids, o `estado = 'ERROR'` con `codigo_sql` y `descripcion_error`; `sp_registrar_log` no devuelve nada cuando guarda bien (solo la fila de error si falla).

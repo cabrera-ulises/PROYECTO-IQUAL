@@ -113,7 +113,7 @@ cmake --install .
 La app **no tiene base de respaldo**: si no conecta a MySQL, no se puede usar. Por eso hay que probarla en la compu donde se va a presentar, de preferencia la víspera y otra vez un rato antes.
 
 1. **Servidor encendido.** Conectate con DBeaver o Workbench con los mismos datos que `iqual.ini` (por defecto `localhost`, puerto `3306`, usuario `root`, base `iqual`).
-2. **Base cargada.** Corré `SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'iqual';` y comprobá que dé **47** (si da 0, falta cargar `03_ModeloSQL_Grupo06.sql` y `04_DatosSQL_Grupo06.sql`).
+2. **Base cargada.** Corré `SELECT COUNT(*) FROM information_schema.tables WHERE table_schema IN ('seguridad','academico','objetos','instalaciones','tienda','equipos','deportes');` y comprobá que dé **47** (si da 0, falta cargar `03_ModeloSQL_Grupo06.sql` y `04_DatosSQL_Grupo06.sql`).
 3. **`iqual.ini`.** Está junto al `.exe`; `host`, `puerto`, `usuario`, `clave` y `nombre` tienen que ser los del paso 1.
 4. **Abrir la app.** El título de la ventana tiene que terminar en **· MySQL** o **· MySQL (ODBC)**. Entrá con una cuenta de demostración (por ejemplo `alumno1`, clave `1234`, CONTEXTO §8).
 5. **Si no conecta, qué muestra la app.** Dos cuadros «Atención», uno atrás del otro, y después la ventana con todo deshabilitado y el título sin sufijo:

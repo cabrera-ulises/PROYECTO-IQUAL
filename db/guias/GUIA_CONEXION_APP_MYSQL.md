@@ -44,7 +44,7 @@ Qt para Windows (MinGW) **no trae `QMYSQL`**, pero **sí trae `QODBC`**. Hay dos
 La app **no tiene base de respaldo**: si no conecta, no se puede usar. Probala en la compu de la presentación, de preferencia la víspera y otra vez un rato antes:
 
 1. Servidor MySQL encendido y conexión desde DBeaver o Workbench con los datos de `iqual.ini` (por defecto `localhost`, `3306`, `root`, base `iqual`).
-2. `SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'iqual';` tiene que dar **47**.
+2. `SELECT COUNT(*) FROM information_schema.tables WHERE table_schema IN ('seguridad','academico','objetos','instalaciones','tienda','equipos','deportes');` tiene que dar **47**.
 3. `iqual.ini` (junto al `.exe`) con los mismos `host`, `puerto`, `usuario`, `clave` y `nombre`.
 4. Abrí la app: el título tiene que terminar en **· MySQL** o **· MySQL (ODBC)**. Entrá con una cuenta de demostración (por ejemplo `alumno1`, clave `1234`).
 

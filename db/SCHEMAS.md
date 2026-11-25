@@ -16,26 +16,26 @@ Total: 6 + 10 + 6 + 7 + 8 + 7 + 3 = 47.
 
 ## Cómo queda en cada motor
 
-- **SQL Server 2005:** schemas reales. `03_ModeloSQL_Grupo06_sqlserver.sql` crea los 7 con `CREATE SCHEMA` y cada tabla vive en el suyo (`seguridad.usuario`). Las claves foráneas entre schemas llevan el nombre completo. Las consultas `_sqlserver` ya traen los nombres calificados.
-- **MySQL 8 / MariaDB 10.11:** una sola base, `iqual`, con las 47 tablas sin prefijo. El mapa está como comentario al principio de `03_ModeloSQL_Grupo06.sql`.
+- **MySQL 8 / MariaDB 10.11:** schemas reales. En MySQL un schema es una base, así que `03_ModeloSQL_Grupo06.sql` crea 8 bases con `CREATE DATABASE`: las 7 de la tabla y `iqual`. Cada tabla vive en su schema (`seguridad.usuario`, `tienda.venta_buffet`) y las claves foráneas entre schemas llevan el nombre completo (`REFERENCES seguridad.usuario (id_usuario)`). La base `iqual` no tiene tablas: guarda los 27 procedimientos de `05_Backend_Grupo06.sql` y es la base a la que se conecta la app (`iqual.ini`).
+- **SQL Server 2005:** `03_ModeloSQL_Grupo06_sqlserver.sql` crea los 7 con `CREATE SCHEMA` dentro de la base `iqual`. Mismos nombres.
 
-## Por qué MySQL queda con una sola base
+## Qué hubo que cambiar
 
-En MySQL «schema» y «base de datos» son lo mismo. Dividir en 7 bases obligaría a escribir `schema.tabla` en cada consulta de la app (C++), los 15 procedimientos de funcionalidades, los reportes, las pruebas y los documentos, y cualquier error de nombre rompería todo. Como la consigna pide no cambiar el contrato de nombres de tablas y columnas, la división se muestra en el motor que la soporta de verdad (SQL Server), en el diagrama y en la documentación.
+- Scripts 03, 04, 05, consultas de demo y de verificación, pruebas (06) y la app: todas las tablas se escriben `schema.tabla`.
+- `03` empieza con `DROP DATABASE IF EXISTS` de las 8 bases, así que se puede correr de nuevo y borra la carga vieja (la que tenía todo en `iqual`).
+- Los nombres de tablas y columnas no cambiaron.
 
-## Cómo defenderlo ante Linares
+## Verificación (25/11/2026, MariaDB 10.11)
 
-1. «Dividimos en 7 schemas por área funcional; el mapa está en el script, en el diagrama y en este documento.»
-2. «En SQL Server están creados de verdad. En MySQL un schema es una base: partir `iqual` en 7 bases obliga a calificar todo y no aporta seguridad extra en un proyecto con un solo usuario de conexión.»
-3. Si pide MySQL dividido igual: se puede generar con el mismo script (`generar_modelo.py`), pero hay que cambiar la app y los procedimientos; es una decisión a tomar con Arce Thiago y Cabrera Ulises.
-4. La normalización (3FN) no cambia: los schemas agrupan tablas, no modifican columnas ni claves.
+- 03 → 04 → 05 cargados dos veces seguidas sin errores.
+- 47 tablas repartidas 6/10/6/7/8/7/3; `iqual` con 0 tablas y 27 procedimientos; 57 claves foráneas.
+- Los 104 casos de `06_PruebasSQL.xlsx` dan PASS.
+- La app abrió con los 5 roles y se recorrieron todos los módulos; de 2022 sentencias registradas por el servidor, ninguna usó una tabla sin schema.
 
-## Desvíos
+## Cómo defenderlo
 
-- Los schemas reales solo existen en la versión SQL Server, que no se ejecutó en un servidor (`CREATE SCHEMA` dentro de `EXEC` y el borrado de tablas viejas en `dbo` están sin probar). 🔶
-- No cambié el nombre de ninguna tabla ni columna.
-
-## Datos que faltan
-
-- [COMPLETAR: respuesta de Linares sobre si acepta una sola base en MySQL con el mapa documentado]
-- [COMPLETAR: confirmar los nombres de schema con el equipo si quieren otros]
+1. «Dividimos en 7 schemas por área funcional: seguridad, académico, objetos, instalaciones, tienda, equipos y deportes.»
+2. «En MySQL un schema es una base de datos; por eso el 03 hace `CREATE DATABASE` de cada uno y las tablas se nombran `schema.tabla`.»
+3. «Las claves foráneas cruzan schemas sin problema: por ejemplo `tienda.venta_buffet` apunta a `seguridad.usuario`.»
+4. «Los procedimientos están en `iqual`, que es la base de conexión de la app.»
+5. La normalización (3FN) no cambia: los schemas agrupan tablas, no modifican columnas ni claves.

@@ -4,7 +4,7 @@
 
 | Archivo | Para qué |
 |---|---|
-| `03_ModeloSQL_Grupo06.sql` / `_sqlserver.sql` | Borra y crea las 47 tablas vacías (MySQL: una base `iqual`; SQL Server: 7 schemas) |
+| `03_ModeloSQL_Grupo06.sql` / `_sqlserver.sql` | Borra y crea las 47 tablas vacías (en los dos motores: 7 schemas; en MySQL además la base `iqual` guarda los procedimientos) |
 | `04_DatosSQL_Grupo06.sql` / `_sqlserver.sql` | Vacía las 47 tablas y carga catálogos y datos (62 usuarios) |
 | `05_Backend_Grupo06.sql` | 27 procedimientos: 15 de funcionalidades (el 1 es `sp_registrar_log`), 9 de reportes y auditoría, 2 `_tuneado` y el auxiliar `sp_aux_solo_digitos`. Solo MySQL; usa `DELIMITER` |
 | `06_PruebasSQL.xlsx` | Planilla de pruebas (104 casos de los procedimientos), no es un script |
@@ -44,7 +44,7 @@ Consola: `sqlcmd -S .\SQLEXPRESS -i 03_ModeloSQL_Grupo06_sqlserver.sql` y lo mis
 
 | Qué | Consulta | Esperado |
 |---|---|---|
-| Tablas (MySQL) | `SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'iqual';` | **47** |
+| Tablas (MySQL) | `SELECT COUNT(*) FROM information_schema.tables WHERE table_schema IN ('seguridad','academico','objetos','instalaciones','tienda','equipos','deportes');` | **47** |
 | Tablas (SQL Server) | `SELECT COUNT(*) FROM sys.tables;` | **47** (48 si SSMS creó `sysdiagrams`) |
 | Usuarios | `SELECT COUNT(*) FROM usuario;` | **62** (46 alumnos, 9 profesores, 4 preceptores, 3 maestranza; mínimo pedido: 50) |
 | Filas por tabla | consulta 17 de verificación | 47 filas de resultado; las cantidades están en el comentario (por ejemplo equipos 60, ventas 28) |
