@@ -46,6 +46,7 @@ Y un modelo de negocio: cómo se cobraría (secciones 6 y 7). Es un ejercicio co
 | DBeaver Community / MySQL Workbench | Apache 2.0 / GPL | **0** |
 | Sistema operativo | Windows de las PC que la escuela ya tiene, o Linux (gratuito) | **0** adicional |
 | MySQL Connector/ODBC (camino ODBC) | GPL | **0** |
+| Claude Pro (asistente de IA para desarrollo y mantenimiento del código) | Suscripción mensual | Unos **$35.000 a $40.000 por mes** (≈ $450.000 por año); dato del equipo, sin fuente verificada | — |
 
 **Dos advertencias de licencia que sí están en las fuentes y afectan al negocio:**
 - **MySQL:** según una consultora de licencias, el uso interno de Community es gratis; **se paga** si se usan funciones exclusivas de Enterprise, si se **distribuye MySQL dentro de un producto** sin publicar bajo licencia compatible con GPL, o si se contrata soporte de Oracle. La lista de Oracle del 11/09/2025 para MySQL Standard es **2.140 USD por servidor por año** (1 a 4 sockets). No es asesoramiento legal [3]. Para IQUAL: que **la escuela instale su MySQL** (como hoy) y IQUAL no lo incluya en el instalador.
@@ -92,7 +93,7 @@ Los cuatro modelos que pide el plan, aplicados a IQUAL **tal como es hoy** (apli
 
 **Combinación posible:** llave en mano (instalación y capacitación) + soporte mensual. Es la que mejor se corresponde con el estado actual del producto; el SaaS queda como una etapa futura.
 
-**Qué precio fijar:** propuesta del equipo: llave en mano $4.500.000 + soporte $80.000 por mes (el soporte anual, $960.000, contra un mantenimiento estimado de $720.000). Criterios para decidirlo: Criterios: (1) cubrir el costo de las secciones 2 y 5, (2) quedar por debajo de lo que la escuela pagaría por una plataforma comercial. Como referencia, `ANALISIS_COMPETENCIA.md` **no pudo sostener ningún precio comercial con fecha** (las fuentes dan «bajo cotización» o «consultar precios», o no tienen fecha de publicación); lo que sí figura es que Google Workspace for Education Fundamentals se ofrece sin cargo a instituciones elegibles (vigencia a confirmar). El precio es una propuesta del equipo; no se pudieron sostener precios comerciales con fecha.
+**Qué precio fijar:** propuesta del equipo: llave en mano $4.500.000 + soporte $80.000 por mes (el soporte anual, $960.000, contra un mantenimiento estimado de $720.000; si además se suma la herramienta de IA, unos $450.000 por año, el soporte no alcanza a cubrir ambos y habría que ajustar el precio). Criterios para decidirlo: Criterios: (1) cubrir el costo de las secciones 2 y 5, (2) quedar por debajo de lo que la escuela pagaría por una plataforma comercial. Como referencia, `ANALISIS_COMPETENCIA.md` **no pudo sostener ningún precio comercial con fecha** (las fuentes dan «bajo cotización» o «consultar precios», o no tienen fecha de publicación); lo que sí figura es que Google Workspace for Education Fundamentals se ofrece sin cargo a instituciones elegibles (vigencia a confirmar). El precio es una propuesta del equipo; no se pudieron sostener precios comerciales con fecha.
 
 ## 7. Retorno de la inversión
 Hay dos retornos, y el segundo suele ser el más fuerte en una escuela.
@@ -132,6 +133,7 @@ Cuando el equipo cargue los datos, en una hoja de cálculo alcanza con: una colu
 |---|---|
 | Costo de desarrollo (horas hombre) | 320 horas × $10.000 = $3.200.000 |
 | Licencias | **0** con MySQL Community y Qt Community en uso educativo |
+| Herramienta de IA | Claude Pro: unos $35.000 a $40.000 por mes (≈ $450.000 por año), dato del equipo |
 | Infraestructura inicial | $870.000 (servidor $600.000, UPS $150.000, disco de copias $120.000) |
 | Mantenimiento anual | 6 horas por mes × 12 × $10.000 = $720.000 |
 | Modelo de ingreso elegido | Llave en mano + soporte mensual |

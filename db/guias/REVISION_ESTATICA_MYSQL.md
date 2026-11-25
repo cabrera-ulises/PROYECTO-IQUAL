@@ -5,7 +5,7 @@
 **Ejecutado de verdad (CONTEXTO §22; dato que me pasaron, no lo corrí yo en esta sesión):** en un **MariaDB 10.11** (compatible con MySQL 8, pero **no es** MySQL 8) con `ONLY_FULL_GROUP_BY` activada:
 
 - `03_ModeloSQL_Grupo00.sql` y `04_DatosSQL_Grupo00.sql` cargan sin errores: 47 tablas, 62 usuarios.
-- `05_Backend_Grupo00.sql` carga y crea los 27 procedimientos; los 104 casos de `06_PruebasSQL.xlsx` dieron PASS.
+- `05_Backend_Grupo00.sql` carga y crea los 27 procedimientos; hay 104 casos planificados en `06_PruebasSQL.xlsx`.
 - `consultas_demo.sql` (10 consultas) y `consultas_verificacion_mysql.sql` (28 sentencias) corrieron con 0 errores en la ronda anterior (recaudado 3500; 47 tablas).
 
 **Valores esperados (19/11/2026):** los comentarios de `consultas_demo.sql` y `consultas_verificacion_mysql.sql` traen la cantidad de filas esperada con los 62 usuarios (y los 21 controles de integridad en 0). Esos valores se calcularon con una carga de prueba fuera de MySQL y **no están confirmados con los datos ampliados en MariaDB ni en MySQL 8**. `[COMPLETAR: correr las consultas en MariaDB o MySQL y anotar si coinciden]`

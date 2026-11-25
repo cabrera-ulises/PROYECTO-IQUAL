@@ -1,4 +1,6 @@
 # Cambios a hacer en la Presentación (Defensa Oral)
+
+> **Documento histórico.** Corresponde a una etapa previa de la presentación. La versión final está en `docs/presentacion/` y `docs/GUION_PITCH.md`.
 **Sistema:** PROYECTO IQUAL® (Sistema de Gestión Escolar-SGE)  
 
 La presentación está hecha en Canva y no se puede editar desde acá, así que este documento lista, **lámina por lámina**, qué corregir para que coincida con la documentación y con la aplicación actual (**app v3**, `iqual_integrado_v3`: rediseño con barra lateral y dos temas, MySQL, 47 tablas). La revisión se hizo sobre el PDF exportado de 15 láminas. **Reemplaza** a la versión anterior de este archivo: sigue valiendo lo que no cambió y se actualizó lo que la app modificó desde entonces (motor de base de datos, nombres de módulos, colores, fotos de productos, Higiene, Sectores y Educación Física) más lo de la semana del 12 al 13/11 (ver la sección 4).

@@ -13,7 +13,7 @@
 | `consultas_verificacion_mysql.sql` / `_sqlserver.sql` | Controles con el valor esperado en cada consulta |
 | `consultas_demo.sql` / `consultas_demo_sqlserver.sql` | Las 10 consultas para la defensa |
 
-**Qué se probó de verdad:** en **MariaDB 10.11** se integraron y probaron 03, 04 y 05 (62 usuarios, 27 procedimientos) y los 104 casos de `06_PruebasSQL.xlsx` dieron PASS (CONTEXTO §22; dato que me pasaron, no lo corrí yo). Los valores esperados de los comentarios de `consultas_demo.sql` y `consultas_verificacion_*.sql` (con los 62 usuarios) se calcularon con una carga de prueba fuera de MySQL el 19/11/2026: **no están confirmados en MariaDB ni en MySQL 8**. `[COMPLETAR: correr las consultas en MariaDB o MySQL y anotar si las cantidades coinciden]` **Nunca se ejecutó:** MySQL 8 de Oracle, SQL Server 2005 y Windows. De SQL Server solo hay revisión estática (`REVISION_ESTATICA_SQLSERVER.md`).
+**Qué se probó de verdad:** en **MariaDB 10.11** se integraron y probaron 03, 04 y 05 (62 usuarios, 27 procedimientos) y hay 104 casos planificados en `06_PruebasSQL.xlsx` (CONTEXTO §22; dato que me pasaron, no lo corrí yo). Los valores esperados de los comentarios de `consultas_demo.sql` y `consultas_verificacion_*.sql` (con los 62 usuarios) se calcularon con una carga de prueba fuera de MySQL el 19/11/2026: **no están confirmados en MariaDB ni en MySQL 8**. `[COMPLETAR: correr las consultas en MariaDB o MySQL y anotar si las cantidades coinciden]` **Nunca se ejecutó:** MySQL 8 de Oracle, SQL Server 2005 y Windows. De SQL Server solo hay revisión estática (`REVISION_ESTATICA_SQLSERVER.md`).
 
 ## 1. MySQL 8 / MariaDB (DBeaver)
 
