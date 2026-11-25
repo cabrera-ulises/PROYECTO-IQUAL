@@ -160,7 +160,7 @@ La PK de `usuario` y de `rol` resuelven las reuniones con los datos principales.
    Si el motor no lo tiene, comparar a ojo o con `COUNT(*)` y `SUM(monto_total)`.
 
 ## 4. Índices de la sección final del `.sql`
-Los 12 índices están en `05b_Backend_reportes.sql`, sección final. Se crean con un SP auxiliar que ignora el error 1061 (índice ya existente) para que el script sea re-ejecutable en MySQL 8 (que no tiene `CREATE INDEX IF NOT EXISTS`). La tabla completa de qué reporte usa cada índice está en `SP_REPORTES.md` (§ Índices).
+Los 12 índices están al final de `03_ModeloSQL_Grupo06.sql`. Se crean con `CREATE INDEX` al final de `03_ModeloSQL_Grupo06.sql`, después de las tablas: como el 03 borra y vuelve a crear las tablas, los índices se recrean en cada carga. La tabla completa de qué reporte usa cada índice está en `SP_REPORTES.md` (§ Índices).
 
 ## Desvíos
 - No se ejecutó nada (sin MySQL/MariaDB en el entorno): los `EXPLAIN` y tiempos quedan para Arce Thiago y Cabrera Ulises.

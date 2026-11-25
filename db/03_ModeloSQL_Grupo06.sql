@@ -529,3 +529,29 @@ CREATE TABLE log_auditoria (
   CONSTRAINT fk_log_auditoria_id_tipo_log FOREIGN KEY (id_tipo_log) REFERENCES tipo_log (id_tipo_log),
   CONSTRAINT fk_log_auditoria_id_resultado FOREIGN KEY (id_resultado) REFERENCES resultado_log (id_resultado)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Indices para el tuning de los reportes (ver 05_Backend, seccion reportes). No repiten los de PK, UNIQUE y FK.
+-- rango de fechas + reunion con recurso (sp_rep_prestamos_por_carro)
+CREATE INDEX ix_prestamo_fecha_recurso ON prestamo_ct (fecha_prestamo, id_recurso);
+-- conteo por usuario y fecha (actividad_por_usuario y su tuneado)
+CREATE INDEX ix_prestamo_solic_fecha ON prestamo_ct (id_usuario_solicitante, fecha_prestamo);
+-- rango de fechas + sector (sp_rep_ocupacion_sectores)
+CREATE INDEX ix_reserva_fecha_sector ON reserva_sector (fecha_reserva, id_sector);
+-- conteo por usuario y fecha (actividad_por_usuario y su tuneado)
+CREATE INDEX ix_reserva_usuario_fecha ON reserva_sector (id_usuario, fecha_reserva);
+-- conteo por usuario y fecha (actividad_por_usuario y su tuneado)
+CREATE INDEX ix_reclamo_usuario_fecha ON reclamo_objeto (id_usuario, fecha_reclamo);
+-- indice cubridor de sp_rep_objetos_por_categoria_estado
+CREATE INDEX ix_objeto_fecha_cat_estado ON objeto_perdido (fecha_registro, id_categoria_objeto, id_estado_objeto);
+-- rango de fechas (sp_rep_higiene_por_sector)
+CREATE INDEX ix_higiene_fecha_sector ON reporte_higiene (fecha_hora, id_sector);
+-- igualdad por estado + rango de fechas (ventas_por_producto y su tuneado, recaudado_por_grupo)
+CREATE INDEX ix_venta_estado_fecha ON venta_buffet (id_estado_venta, fecha_hora);
+-- rango de fechas (sp_rep_recaudado_por_grupo)
+CREATE INDEX ix_donacion_fecha_grupo ON donacion_buffet (fecha_hora, id_grupo);
+-- rango de fechas (sp_rep_inscriptos_por_deporte)
+CREATE INDEX ix_inscripcion_fecha_oferta ON inscripcion_ed_fisica (fecha_inscripcion, id_oferta);
+-- rango de fechas obligatorio (sp_rep_auditoria)
+CREATE INDEX ix_log_fecha_tipo ON log_auditoria (fecha_hora, id_tipo_log);
+-- filtro por usuario + fecha (sp_rep_auditoria)
+CREATE INDEX ix_log_usuario_fecha ON log_auditoria (id_usuario, fecha_hora);

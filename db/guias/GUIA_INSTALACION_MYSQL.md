@@ -112,7 +112,7 @@ Las reservas de ejemplo de sectores se cargan con fechas **relativas al día de 
 - **15 de funcionalidades:** `sp_registrar_log`, `sp_registrar_usuario`, `sp_publicar_objeto`, `sp_reclamar_objeto`, `sp_resolver_reclamo`, `sp_prestar_equipo`, `sp_devolver_equipo`, `sp_reservar_sector`, `sp_resolver_reserva_sector`, `sp_reportar_higiene`, `sp_resolver_reporte_higiene`, `sp_comprar_producto`, `sp_donar_grupo`, `sp_inscribir_ed_fisica`, `sp_cancelar_inscripcion_ed_fisica`.
 - **9 de reportes y auditoría:** `sp_rep_prestamos_por_carro`, `sp_rep_objetos_por_categoria_estado`, `sp_rep_higiene_por_sector`, `sp_rep_ocupacion_sectores`, `sp_rep_ventas_por_producto`, `sp_rep_recaudado_por_grupo`, `sp_rep_inscriptos_por_deporte`, `sp_rep_actividad_por_usuario` y `sp_rep_auditoria`.
 - **2 tuneados:** `sp_rep_ventas_por_producto_tuneado` y `sp_rep_actividad_por_usuario_tuneado`.
-- **1 auxiliar:** `sp_aux_solo_digitos`. (El archivo también crea y borra `sp_aux_crear_indices`, que solo sirve durante la carga.)
+- **1 auxiliar:** `sp_aux_solo_digitos`. Los 12 índices del tuning se crean al final de `03_ModeloSQL_Grupo06.sql`.
 
 1. Abrí el archivo `05_Backend_Grupo06.sql` en Workbench (**File → Open SQL Script**) o DBeaver.
 2. Ejecutalo **entero**: rayo en Workbench, **Alt+X** en DBeaver. (Si ejecutás una sola sentencia suelta, el `DELIMITER` no se interpreta bien: ver «Script cortado por el DELIMITER» en la sección 6.) También anda desde la consola: `mysql -u root -p --default-character-set=utf8mb4 < 05_Backend_Grupo06.sql`.

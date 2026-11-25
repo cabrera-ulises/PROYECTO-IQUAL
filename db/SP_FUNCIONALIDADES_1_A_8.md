@@ -11,7 +11,7 @@ PROYECTO IQUAL® (SGE) · MySQL 8 / MariaDB 10.11 · archivo `05a_Backend_funcio
 - **Auditoría:** todos llaman a `sp_registrar_log`, con resultado `Exitoso` al terminar bien y `Fallido` en el handler. Así `log_auditoria` se llena sola al ejecutar los SP.
 - **Quién actúa:** se identifica por `usuario_nick` y los catálogos por nombre, como hace la app. El rol se controla dentro del SP con el mensaje `Esta acción es solo para estos roles: ...`.
 - **Qué se usa de SQL:** `JOIN`, `WHERE`, `COUNT`, `IN`, `LIMIT`, `COALESCE`/`NULLIF`, `TRIM`, `CURDATE`/`NOW`/`CURTIME`, `IF/ELSEIF`, variables `DECLARE`. No hay cursores, triggers, SQL dinámico ni expresiones regulares.
-- **Silenciar el log:** cada SP pone `@iqual_log_silencioso = 1` antes de llamar a `sp_registrar_log` para que el log no agregue una segunda fila de resultado. Es una variable de sesión; vale 0 si nadie la tocó.
+- **El log no devuelve filas:** `sp_registrar_log` solo guarda el registro, así cada SP que lo llama devuelve una sola fila de resultado (la suya). Simplificado el 25/11/2026: antes se usaba una variable de sesión para silenciarlo.
 
 ---
 
@@ -26,9 +26,8 @@ PROYECTO IQUAL® (SGE) · MySQL 8 / MariaDB 10.11 · archivo `05a_Backend_funcio
 - Evento, entidad y resultado tienen que existir en sus catálogos.
 - Si `p_nick` es NULL o no existe, `id_usuario` queda en NULL (la columna lo admite).
 - Si `p_ip` viene vacía se guarda el host del cliente: `SUBSTRING_INDEX(USER(), '@', -1)`.
-- Si falla estando en modo silencioso, no tumba la operación que la llamó.
 
-**Devuelve:** `OK` + `id_log` + `mensaje`, o la fila `ERROR` (salvo en modo silencioso).
+**Devuelve:** nada si guardó bien (se verifica con un `SELECT` a `log_auditoria`); la fila `ERROR` si algo falla.
 
 ```sql
 CALL sp_registrar_log('Inicio de sesión', 'Inicio de sesión exitoso de alumno1', 'usuario', 'alumno1', 'Exitoso', 'PC-LAB-01');
@@ -104,7 +103,6 @@ CALL sp_reclamar_objeto('alumno1', 1, 'Es mi campera, tiene un parche en la mang
 - Usuario con rol Preceptor; reclamo elegido y existente; `p_aprobar` tiene que ser 0 o 1; el reclamo tiene que estar Pendiente (`Ese reclamo ya fue resuelto.`).
 - **Aprobar:** el reclamo pasa a Aprobado, los otros reclamos Pendientes del mismo objeto pasan a Rechazado y el objeto queda `Devuelto`.
 - **Rechazar:** el reclamo pasa a Rechazado. El objeto solo vuelve a `Disponible` si estaba `En reclamo` y no le quedan reclamos Pendientes (con la app actual el objeto nunca llega a `En reclamo`, así que en la práctica no cambia).
-- Lee el reclamo con `FOR UPDATE` para que dos preceptores no lo resuelvan a la vez.
 
 **Devuelve:** `OK` + `id_reclamo` + `resultado` (`Aprobado` o `Rechazado`) + `mensaje`.
 
@@ -121,7 +119,7 @@ CALL sp_resolver_reclamo('preceptor1', 1, 1);
 **Reglas:**
 - Autoriza un Alumno, un Profesor o un Preceptor. Un Alumno solo puede retirar a su propio nombre.
 - El solicitante tiene que ser Alumno y no puede tener otro equipo sin devolver (los mensajes cambian si se retira uno mismo o lo hace otro).
-- El equipo tiene que existir y estar `Disponible` (se lee con `FOR UPDATE`).
+- El equipo tiene que existir y estar `Disponible`.
 - Observaciones opcionales, hasta 200 caracteres. Guarda fecha de hoy y hora actual `HH:MM`.
 
 **Devuelve:** `OK` + `id_prestamo` + `equipo` (por ejemplo `C4-01` o `Tablero 03`) + `Préstamo registrado.`.
@@ -189,7 +187,7 @@ CALL sp_reservar_sector('profe1', 'Biblioteca', DATE_ADD(CURDATE(), INTERVAL 30 
 ## Desvíos
 
 1. **`sp_aux_solo_digitos` (SP extra).** El contrato pide 8 SP; agregué este auxiliar porque sin expresiones regulares había que repetir diez `REPLACE` en dos lugares. Arce Thiago y Cabrera Ulises lo tiene que incluir en `05_Backend` (va en el mismo archivo, antes de `sp_registrar_usuario`).
-2. **Variable de sesión `@iqual_log_silencioso`.** El contrato dice que cada SP llama a `sp_registrar_log` y a la vez que cada SP devuelve una fila `estado`. Con las dos cosas a la vez el cliente recibiría dos resultados y la app leería primero el del log. Mi solución es esa variable; no está en el contrato. **Los SP 9 a 15 de Arce Thiago y Cabrera Ulises y los de Arce Thiago y Cabrera Ulises tienen que hacer lo mismo** (`SET @iqual_log_silencioso = 1;` antes de cada `CALL sp_registrar_log` y `= 0` después), o Arce Thiago y Cabrera Ulises lo corrige al unir. Si un SP no la pone, el log devuelve su fila `OK` y la app (o el cliente) verá ese resultado primero.
+2. **Variable de sesión `@iqual_log_silencioso` (eliminada el 25/11/2026).** Se usaba para que el log no devolviera su propia fila cuando lo llamaba otro SP. Se reemplazó por algo más simple: `sp_registrar_log` ya no devuelve filas cuando guarda bien.
 3. **El PIN de personal no se controla en el SP.** La app valida `IQUAL2026` antes de registrar a un Profesor, Preceptor o Maestranza (`PIN_PERSONAL` en `mainwindow.cpp`); la firma del contrato no tiene parámetro para eso. Hoy cualquiera que haga `CALL sp_registrar_usuario(..., 'Preceptor', ...)` crea un Preceptor. Opciones para Arce Thiago y Cabrera Ulises: seguir controlando el PIN en la app antes del `CALL` (lo más simple) o agregar un parámetro `p_pin`.
 4. **La longitud mínima de la contraseña (4) no se puede controlar:** el SP recibe el hash. Solo valida que sea de 64 caracteres. Sigue en la app.
 5. **`sp_reclamar_objeto`: se sigue la app, no el §6.** El §6 y el contrato dicen «exige objeto Disponible» y «pasa el objeto a En reclamo»; la app v3 permite reclamar un objeto ya reclamado por otro (solo bloquea `Devuelto` y `Archivado`), no cambia el estado del objeto y cuenta como «para reclamar» los que están `Disponible`. Si Arce Thiago y Cabrera Ulises prefiere el §6, hay que cambiar el SP **y** la app a la vez. También por eso en `sp_resolver_reclamo` rechazar no cambia el objeto, salvo que estuviera `En reclamo` sin otros reclamos pendientes.

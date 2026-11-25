@@ -98,7 +98,7 @@
 
 ## Índices (sección final del `.sql`)
 
-No se repiten los de las claves (PK, `UNIQUE`, FK). Se crean con un SP auxiliar que ignora el error 1061 (índice ya existente), así el script se puede ejecutar varias veces en MySQL 8 y MariaDB 10.11.
+No se repiten los de las claves (PK, `UNIQUE`, FK). Se crean con `CREATE INDEX` al final de `03_ModeloSQL_Grupo06.sql`, después de las tablas: como el 03 borra y vuelve a crear las tablas, los índices se recrean en cada carga.
 
 | Índice | Tabla (columnas) | Para qué |
 |---|---|---|

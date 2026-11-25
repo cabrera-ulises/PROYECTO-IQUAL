@@ -1,11 +1,11 @@
 -- 05_Backend_Grupo06.sql - PROYECTO IQUAL (SGE) - Stored Procedures: funcionalidades (1 a 15), reportes, auditoria y tuneados
--- Orden: 05a (funcionalidades 1 a 8) + 05c (9 a 15) + 05b (reportes e indices). Re-ejecutable. Ejecutar completo (Alt+X en DBeaver).
+-- Orden: funcionalidades 1 a 8, funcionalidades 9 a 15 y reportes. Re-ejecutable. Ejecutar completo (Alt+X en DBeaver).
 
 -- PROYECTO IQUAL (SGE) - 05a Backend: funcionalidades 1 a 8 (MySQL 8 / MariaDB 10.11)
 -- Re-ejecutable: cada procedimiento se borra y se vuelve a crear.
 -- En DBeaver o Workbench ejecutar el script completo (Alt+X) para que respete el DELIMITER.
--- Convención de log: cada SP llama a sp_registrar_log con @iqual_log_silencioso = 1 para que el log no
--- agregue su propia fila de resultado. Si se llama a sp_registrar_log a mano, devuelve estado OK + id_log.
+-- Convención de log: cada SP llama a sp_registrar_log para dejar su evento en log_auditoria.
+-- sp_registrar_log solo inserta el registro (no devuelve filas, salvo la de ERROR si algo falla).
 
 USE iqual;
 SET NAMES utf8mb4;
@@ -32,16 +32,13 @@ BEGIN
     DECLARE v_id_usuario INT DEFAULT NULL;
     DECLARE v_descripcion VARCHAR(200) DEFAULT '';
     DECLARE v_ip VARCHAR(80) DEFAULT '';
-    DECLARE v_id_log INT DEFAULT 0;
 
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         GET DIAGNOSTICS CONDITION 1
             v_codigo = MYSQL_ERRNO,
             v_mensaje = MESSAGE_TEXT;
-        IF COALESCE(@iqual_log_silencioso, 0) = 0 THEN
-            SELECT 'ERROR' AS estado, v_codigo AS codigo_sql, v_mensaje AS descripcion_error;
-        END IF;
+        SELECT 'ERROR' AS estado, v_codigo AS codigo_sql, v_mensaje AS descripcion_error;
     END;
 
     SET v_descripcion = LEFT(TRIM(COALESCE(p_descripcion, '')), 200);
@@ -73,11 +70,6 @@ BEGIN
 
     INSERT INTO log_auditoria (fecha_hora, direccion_ip, descripcion_evento, id_entidad, id_usuario, id_tipo_log, id_resultado)
     VALUES (NOW(), v_ip, v_descripcion, v_id_entidad, v_id_usuario, v_id_tipo, v_id_resultado);
-    SET v_id_log = LAST_INSERT_ID();
-
-    IF COALESCE(@iqual_log_silencioso, 0) = 0 THEN
-        SELECT 'OK' AS estado, v_id_log AS id_log, 'Evento registrado.' AS mensaje;
-    END IF;
 END //
 
 -- Auxiliar: dice si un texto tiene solo dígitos y una cantidad de caracteres entre p_min y p_max (reemplaza al control con toLongLong de la app).
@@ -144,9 +136,7 @@ BEGIN
             v_codigo = MYSQL_ERRNO,
             v_mensaje = MESSAGE_TEXT;
         ROLLBACK;
-        SET @iqual_log_silencioso = 1;
         CALL sp_registrar_log('Registro de usuario', v_mensaje, 'usuario', NULL, 'Fallido', NULL);
-        SET @iqual_log_silencioso = 0;
         SELECT 'ERROR' AS estado, v_codigo AS codigo_sql, v_mensaje AS descripcion_error;
     END;
 
@@ -241,9 +231,7 @@ BEGIN
     VALUES (CAST(v_dni AS UNSIGNED), v_nombre, v_nick, v_hash, v_email, v_telefono, v_id_rol, v_id_curso);
     SET v_id_usuario = LAST_INSERT_ID();
 
-    SET @iqual_log_silencioso = 1;
     CALL sp_registrar_log('Registro de usuario', CONCAT('Se creó la cuenta ', v_nick), 'usuario', v_nick, 'Exitoso', NULL);
-    SET @iqual_log_silencioso = 0;
     COMMIT;
 
     SELECT 'OK' AS estado, v_id_usuario AS id_usuario, 'Cuenta creada. Ya podés iniciar sesión.' AS mensaje;
@@ -280,9 +268,7 @@ BEGIN
             v_codigo = MYSQL_ERRNO,
             v_mensaje = MESSAGE_TEXT;
         ROLLBACK;
-        SET @iqual_log_silencioso = 1;
         CALL sp_registrar_log('Publicación de objeto', v_mensaje, 'objeto_perdido', p_nick, 'Fallido', NULL);
-        SET @iqual_log_silencioso = 0;
         SELECT 'ERROR' AS estado, v_codigo AS codigo_sql, v_mensaje AS descripcion_error;
     END;
 
@@ -335,9 +321,7 @@ BEGIN
     VALUES (v_titulo, v_descripcion, v_foto, v_reservado, CURDATE(), v_id_usuario, v_id_categoria, v_id_estado, v_id_sector);
     SET v_id_objeto = LAST_INSERT_ID();
 
-    SET @iqual_log_silencioso = 1;
     CALL sp_registrar_log('Publicación de objeto', CONCAT('Objeto publicado: ', v_titulo), 'objeto_perdido', p_nick, 'Exitoso', NULL);
-    SET @iqual_log_silencioso = 0;
     COMMIT;
 
     SELECT 'OK' AS estado, v_id_objeto AS id_objeto, 'Objeto publicado.' AS mensaje;
@@ -368,9 +352,7 @@ BEGIN
             v_codigo = MYSQL_ERRNO,
             v_mensaje = MESSAGE_TEXT;
         ROLLBACK;
-        SET @iqual_log_silencioso = 1;
         CALL sp_registrar_log('Reclamo de objeto', v_mensaje, 'reclamo_objeto', p_nick, 'Fallido', NULL);
-        SET @iqual_log_silencioso = 0;
         SELECT 'ERROR' AS estado, v_codigo AS codigo_sql, v_mensaje AS descripcion_error;
     END;
 
@@ -418,9 +400,7 @@ BEGIN
     VALUES (v_prueba, CURDATE(), v_id_usuario, v_id_objeto, v_id_estado);
     SET v_id_reclamo = LAST_INSERT_ID();
 
-    SET @iqual_log_silencioso = 1;
     CALL sp_registrar_log('Reclamo de objeto', CONCAT('Reclamo sobre el objeto ', v_id_objeto), 'reclamo_objeto', p_nick, 'Exitoso', NULL);
-    SET @iqual_log_silencioso = 0;
     COMMIT;
 
     SELECT 'OK' AS estado, v_id_reclamo AS id_reclamo, 'Reclamo enviado. El preceptor lo va a revisar.' AS mensaje;
@@ -458,9 +438,7 @@ BEGIN
             v_codigo = MYSQL_ERRNO,
             v_mensaje = MESSAGE_TEXT;
         ROLLBACK;
-        SET @iqual_log_silencioso = 1;
         CALL sp_registrar_log('Resolución de reclamo', v_mensaje, 'reclamo_objeto', p_nick_preceptor, 'Fallido', NULL);
-        SET @iqual_log_silencioso = 0;
         SELECT 'ERROR' AS estado, v_codigo AS codigo_sql, v_mensaje AS descripcion_error;
     END;
 
@@ -485,8 +463,7 @@ BEGIN
 
     SELECT r.id_reclamo, r.id_objeto, e.nombre_estado INTO v_id_reclamo, v_id_objeto, v_estado_reclamo
     FROM reclamo_objeto r JOIN estado_reclamo e ON e.id_estado_reclamo = r.id_estado_reclamo
-    WHERE r.id_reclamo = p_id_reclamo
-    FOR UPDATE;
+    WHERE r.id_reclamo = p_id_reclamo;
     IF v_id_reclamo IS NULL THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se encontró el reclamo indicado.';
     END IF;
@@ -520,9 +497,7 @@ BEGIN
         SET v_texto = 'Reclamo rechazado. El objeto sigue en la lista.';
     END IF;
 
-    SET @iqual_log_silencioso = 1;
     CALL sp_registrar_log('Resolución de reclamo', CONCAT('Reclamo ', v_id_reclamo, ': ', v_resultado), 'reclamo_objeto', p_nick_preceptor, 'Exitoso', NULL);
-    SET @iqual_log_silencioso = 0;
     COMMIT;
 
     SELECT 'OK' AS estado, v_id_reclamo AS id_reclamo, v_resultado AS resultado, v_texto AS mensaje;
@@ -559,9 +534,7 @@ BEGIN
             v_codigo = MYSQL_ERRNO,
             v_mensaje = MESSAGE_TEXT;
         ROLLBACK;
-        SET @iqual_log_silencioso = 1;
         CALL sp_registrar_log('Préstamo de recurso', v_mensaje, 'prestamo_ct', p_nick_autorizador, 'Fallido', NULL);
-        SET @iqual_log_silencioso = 0;
         SELECT 'ERROR' AS estado, v_codigo AS codigo_sql, v_mensaje AS descripcion_error;
     END;
 
@@ -612,8 +585,7 @@ BEGIN
     FROM recursos_ct r
     JOIN estado_recurso e ON e.id_estado_recurso = r.id_estado_recurso
     LEFT JOIN carro c ON c.id_carro = r.id_carro
-    WHERE r.id_recurso = p_id_recurso
-    FOR UPDATE;
+    WHERE r.id_recurso = p_id_recurso;
     IF v_id_recurso IS NULL THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se encontró el equipo indicado.';
     END IF;
@@ -634,9 +606,7 @@ BEGIN
     SET v_id_prestamo = LAST_INSERT_ID();
     UPDATE recursos_ct SET id_estado_recurso = v_id_prestado WHERE id_recurso = v_id_recurso;
 
-    SET @iqual_log_silencioso = 1;
     CALL sp_registrar_log('Préstamo de recurso', CONCAT('Equipo ', v_codigo_recurso, ' prestado a ', TRIM(p_nick_solicitante)), 'prestamo_ct', p_nick_autorizador, 'Exitoso', NULL);
-    SET @iqual_log_silencioso = 0;
     COMMIT;
 
     SELECT 'OK' AS estado, v_id_prestamo AS id_prestamo, v_codigo_recurso AS equipo, 'Préstamo registrado.' AS mensaje;
@@ -671,9 +641,7 @@ BEGIN
             v_codigo = MYSQL_ERRNO,
             v_mensaje = MESSAGE_TEXT;
         ROLLBACK;
-        SET @iqual_log_silencioso = 1;
         CALL sp_registrar_log('Devolución de recurso', v_mensaje, 'prestamo_ct', p_nick_autorizador, 'Fallido', NULL);
-        SET @iqual_log_silencioso = 0;
         SELECT 'ERROR' AS estado, v_codigo AS codigo_sql, v_mensaje AS descripcion_error;
     END;
 
@@ -699,8 +667,7 @@ BEGIN
     SELECT id_prestamo, id_recurso, id_usuario_solicitante, hora_devolucion, observaciones
     INTO v_id_prestamo, v_id_recurso, v_id_solicitante, v_hora_devolucion, v_anterior
     FROM prestamo_ct
-    WHERE id_prestamo = p_id_prestamo
-    FOR UPDATE;
+    WHERE id_prestamo = p_id_prestamo;
     IF v_id_prestamo IS NULL THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se encontró el préstamo indicado.';
     END IF;
@@ -736,9 +703,7 @@ BEGIN
     WHERE id_prestamo = v_id_prestamo;
     UPDATE recursos_ct SET id_estado_recurso = v_id_estado WHERE id_recurso = v_id_recurso;
 
-    SET @iqual_log_silencioso = 1;
     CALL sp_registrar_log('Devolución de recurso', CONCAT('Préstamo ', v_id_prestamo, ' devuelto, queda: ', v_nuevo_estado), 'prestamo_ct', p_nick_autorizador, 'Exitoso', NULL);
-    SET @iqual_log_silencioso = 0;
     COMMIT;
 
     SELECT 'OK' AS estado, v_id_prestamo AS id_prestamo, v_nuevo_estado AS estado_recurso, 'Devolución registrada.' AS mensaje;
@@ -782,9 +747,7 @@ BEGIN
             v_codigo = MYSQL_ERRNO,
             v_mensaje = MESSAGE_TEXT;
         ROLLBACK;
-        SET @iqual_log_silencioso = 1;
         CALL sp_registrar_log('Reserva de sector', v_mensaje, 'reserva_sector', p_nick, 'Fallido', NULL);
-        SET @iqual_log_silencioso = 0;
         SELECT 'ERROR' AS estado, v_codigo AS codigo_sql, v_mensaje AS descripcion_error;
     END;
 
@@ -869,11 +832,9 @@ BEGIN
     VALUES (p_fecha, v_inicio, v_fin, v_id_usuario, v_id_sector, v_id_estado, v_autorizador);
     SET v_id_reserva = LAST_INSERT_ID();
 
-    SET @iqual_log_silencioso = 1;
     CALL sp_registrar_log('Reserva de sector',
         CONCAT('Reserva ', DATE_FORMAT(p_fecha, '%d/%m'), ' de ', v_inicio, ' a ', v_fin, ' (', v_estado, ')'),
         'reserva_sector', p_nick, 'Exitoso', NULL);
-    SET @iqual_log_silencioso = 0;
     COMMIT;
 
     SELECT 'OK' AS estado, v_id_reserva AS id_reserva, v_estado AS estado_reserva, v_texto AS mensaje;
@@ -914,9 +875,7 @@ BEGIN
         GET DIAGNOSTICS CONDITION 1
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
-        SET @iqual_log_silencioso = 1;
         CALL sp_registrar_log(v_evento, LEFT(mensaje_error, 200), v_entidad, p_nick_autorizador, 'Fallido', @@hostname);
-        SET @iqual_log_silencioso = 0;
         SELECT 'ERROR' AS estado, codigo_error AS codigo_sql, mensaje_error AS descripcion_error;
     END;
 
@@ -969,9 +928,7 @@ BEGIN
         WHERE id_reserva = p_id_reserva;
     END IF;
 
-    SET @iqual_log_silencioso = 1;
     CALL sp_registrar_log(v_evento, CONCAT('Reserva ', p_id_reserva, ': ', v_nuevo), v_entidad, p_nick_autorizador, 'Exitoso', @@hostname);
-    SET @iqual_log_silencioso = 0;
     SELECT 'OK' AS estado, p_id_reserva AS id_reserva, v_nuevo AS estado_reserva;
 END //
 
@@ -993,9 +950,7 @@ BEGIN
         GET DIAGNOSTICS CONDITION 1
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
-        SET @iqual_log_silencioso = 1;
         CALL sp_registrar_log(v_evento, LEFT(mensaje_error, 200), v_entidad, p_nick, 'Fallido', @@hostname);
-        SET @iqual_log_silencioso = 0;
         SELECT 'ERROR' AS estado, codigo_error AS codigo_sql, mensaje_error AS descripcion_error;
     END;
 
@@ -1029,9 +984,7 @@ BEGIN
             (SELECT id_estado_reporte FROM estado_reporte WHERE nombre_estado = 'Pendiente'));
     SET v_id_reporte = LAST_INSERT_ID();
 
-    SET @iqual_log_silencioso = 1;
     CALL sp_registrar_log(v_evento, CONCAT('Reporte en ', p_sector), v_entidad, p_nick, 'Exitoso', @@hostname);
-    SET @iqual_log_silencioso = 0;
     SELECT 'OK' AS estado, v_id_reporte AS id_reporte;
 END //
 
@@ -1052,9 +1005,7 @@ BEGIN
         GET DIAGNOSTICS CONDITION 1
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
-        SET @iqual_log_silencioso = 1;
         CALL sp_registrar_log(v_evento, LEFT(mensaje_error, 200), v_entidad, p_nick_resolutor, 'Fallido', @@hostname);
-        SET @iqual_log_silencioso = 0;
         SELECT 'ERROR' AS estado, codigo_error AS codigo_sql, mensaje_error AS descripcion_error;
     END;
 
@@ -1083,9 +1034,7 @@ BEGIN
         id_usuario_resolutor = v_id_usuario
     WHERE id_reporte = p_id_reporte;
 
-    SET @iqual_log_silencioso = 1;
     CALL sp_registrar_log(v_evento, CONCAT('Reporte ', p_id_reporte, ' resuelto'), v_entidad, p_nick_resolutor, 'Exitoso', @@hostname);
-    SET @iqual_log_silencioso = 0;
     SELECT 'OK' AS estado, p_id_reporte AS id_reporte;
 END //
 
@@ -1110,9 +1059,7 @@ BEGIN
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
         ROLLBACK;
-        SET @iqual_log_silencioso = 1;
         CALL sp_registrar_log(v_evento, LEFT(mensaje_error, 200), v_entidad, p_nick, 'Fallido', @@hostname);
-        SET @iqual_log_silencioso = 0;
         SELECT 'ERROR' AS estado, codigo_error AS codigo_sql, mensaje_error AS descripcion_error;
     END;
 
@@ -1153,9 +1100,7 @@ BEGIN
     UPDATE producto_buffet SET stock = stock - p_cantidad WHERE id_producto = p_id_producto;
     COMMIT;
 
-    SET @iqual_log_silencioso = 1;
     CALL sp_registrar_log(v_evento, CONCAT('Venta ', v_id_venta, ': producto ', p_id_producto, ' x', p_cantidad), v_entidad, p_nick, 'Exitoso', @@hostname);
-    SET @iqual_log_silencioso = 0;
     SELECT 'OK' AS estado, v_id_venta AS id_venta, p_cantidad * v_precio AS total;
 END //
 
@@ -1176,9 +1121,7 @@ BEGIN
         GET DIAGNOSTICS CONDITION 1
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
-        SET @iqual_log_silencioso = 1;
         CALL sp_registrar_log(v_evento, LEFT(mensaje_error, 200), v_entidad, p_nick, 'Fallido', @@hostname);
-        SET @iqual_log_silencioso = 0;
         SELECT 'ERROR' AS estado, codigo_error AS codigo_sql, mensaje_error AS descripcion_error;
     END;
 
@@ -1201,9 +1144,7 @@ BEGIN
     VALUES (p_monto, NOW(), v_id_usuario, p_id_grupo);
     SET v_id_donacion = LAST_INSERT_ID();
 
-    SET @iqual_log_silencioso = 1;
     CALL sp_registrar_log(v_evento, CONCAT('Donó $', p_monto, ' al grupo ', p_id_grupo), v_entidad, p_nick, 'Exitoso', @@hostname);
-    SET @iqual_log_silencioso = 0;
     SELECT 'OK' AS estado, v_id_donacion AS id_donacion, p_monto AS monto;
 END //
 
@@ -1228,9 +1169,7 @@ BEGIN
         GET DIAGNOSTICS CONDITION 1
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
-        SET @iqual_log_silencioso = 1;
         CALL sp_registrar_log(v_evento, LEFT(mensaje_error, 200), v_entidad, p_nick, 'Fallido', @@hostname);
-        SET @iqual_log_silencioso = 0;
         SELECT 'ERROR' AS estado, codigo_error AS codigo_sql, mensaje_error AS descripcion_error;
     END;
 
@@ -1272,9 +1211,7 @@ BEGIN
     VALUES (CURDATE(), v_id_usuario, p_id_oferta);
     SET v_id_inscripcion = LAST_INSERT_ID();
 
-    SET @iqual_log_silencioso = 1;
     CALL sp_registrar_log(v_evento, CONCAT('Inscripción a la oferta ', p_id_oferta), v_entidad, p_nick, 'Exitoso', @@hostname);
-    SET @iqual_log_silencioso = 0;
     SELECT 'OK' AS estado, v_id_inscripcion AS id_inscripcion, p_id_oferta AS id_oferta;
 END //
 
@@ -1295,9 +1232,7 @@ BEGIN
         GET DIAGNOSTICS CONDITION 1
             codigo_error = MYSQL_ERRNO,
             mensaje_error = MESSAGE_TEXT;
-        SET @iqual_log_silencioso = 1;
         CALL sp_registrar_log(v_evento, LEFT(mensaje_error, 200), v_entidad, p_nick, 'Fallido', @@hostname);
-        SET @iqual_log_silencioso = 0;
         SELECT 'ERROR' AS estado, codigo_error AS codigo_sql, mensaje_error AS descripcion_error;
     END;
 
@@ -1316,9 +1251,7 @@ BEGIN
 
     DELETE FROM inscripcion_ed_fisica WHERE id_usuario = v_id_usuario;
 
-    SET @iqual_log_silencioso = 1;
     CALL sp_registrar_log(v_evento, CONCAT('Inscripción a la oferta ', v_oferta, ' cancelada'), v_entidad, p_nick, 'Exitoso', @@hostname);
-    SET @iqual_log_silencioso = 0;
     SELECT 'OK' AS estado, v_oferta AS id_oferta;
 END //
 
@@ -1326,11 +1259,11 @@ END //
 DELIMITER ;
 
 -- PROYECTO IQUAL (SGE) - 05b_Backend_reportes.sql (Arce Thiago y Cabrera Ulises, ronda BBDD 14/11/2026)
--- 8 reportes + 1 de auditoria + 2 tuneados + indices. Solo MySQL (compatible con MySQL 8 y MariaDB 10.11).
+-- 8 reportes + 1 de auditoria + 2 tuneados (los indices del tuning estan en 03_ModeloSQL). Solo MySQL (compatible con MySQL 8 y MariaDB 10.11).
 -- Estilo de la clase 006: DELIMITER //, DROP PROCEDURE IF EXISTS, parametros p_..., EXIT HANDLER con GET DIAGNOSTICS.
 -- Todos devuelven su tabla de resultado, o una fila estado='ERROR', codigo_sql, descripcion_error si algo falla.
 -- Parametros de fecha: NULL = sin limite de ese lado. Rango invertido (desde > hasta) = ERROR de negocio (codigo_sql 1644).
--- Re-ejecutable: DROP PROCEDURE IF EXISTS en cada SP; los indices se crean una sola vez (ver seccion final).
+-- Re-ejecutable: DROP PROCEDURE IF EXISTS en cada SP.
 -- En DBeaver hay que ejecutar el archivo como script (Alt+X) para que respete el DELIMITER.
 -- Mapa de schemas (documental, en MySQL queda una sola base): equipos -> prestamos por carro; objetos -> objetos por
 -- categoria/estado; instalaciones -> higiene y ocupacion; tienda -> ventas y recaudado; deportes -> inscriptos;
@@ -1916,48 +1849,5 @@ BEGIN
     WHERE COALESCE(a.cantidad, 0) + COALESCE(b.cantidad, 0) + COALESCE(c.cantidad, 0) > 0
     ORDER BY total_actividad DESC, u.usuario_nick;
 END //
-
--- ============================================================================
--- INDICES de tuning y reportes (nombre ix_...). No se repiten los indices de las claves (PK, UNIQUE y FK ya los tienen).
--- Cada uno acelera el filtro por rango de fechas (y la reunion que sigue) de los reportes que se indican.
--- MySQL 8 no tiene CREATE INDEX IF NOT EXISTS: se crean dentro de un SP auxiliar que ignora el error 1061
--- (nombre de indice duplicado) con un CONTINUE HANDLER; asi el script se puede ejecutar varias veces.
--- ============================================================================
-DROP PROCEDURE IF EXISTS sp_aux_crear_indices //
-CREATE PROCEDURE sp_aux_crear_indices()
-BEGIN
-    DECLARE v_ya_existian INT DEFAULT 0;
-    DECLARE CONTINUE HANDLER FOR 1061 SET v_ya_existian = v_ya_existian + 1;
-
-    -- rango de fechas + reunion con recurso (sp_rep_prestamos_por_carro)
-    CREATE INDEX ix_prestamo_fecha_recurso ON prestamo_ct (fecha_prestamo, id_recurso);
-    -- conteo por usuario y fecha (actividad_por_usuario y su tuneado)
-    CREATE INDEX ix_prestamo_solic_fecha ON prestamo_ct (id_usuario_solicitante, fecha_prestamo);
-    -- rango de fechas + sector (sp_rep_ocupacion_sectores)
-    CREATE INDEX ix_reserva_fecha_sector ON reserva_sector (fecha_reserva, id_sector);
-    -- conteo por usuario y fecha (actividad_por_usuario y su tuneado)
-    CREATE INDEX ix_reserva_usuario_fecha ON reserva_sector (id_usuario, fecha_reserva);
-    -- conteo por usuario y fecha (actividad_por_usuario y su tuneado)
-    CREATE INDEX ix_reclamo_usuario_fecha ON reclamo_objeto (id_usuario, fecha_reclamo);
-    -- indice cubridor de sp_rep_objetos_por_categoria_estado
-    CREATE INDEX ix_objeto_fecha_cat_estado ON objeto_perdido (fecha_registro, id_categoria_objeto, id_estado_objeto);
-    -- rango de fechas (sp_rep_higiene_por_sector)
-    CREATE INDEX ix_higiene_fecha_sector ON reporte_higiene (fecha_hora, id_sector);
-    -- igualdad por estado + rango de fechas (ventas_por_producto y su tuneado, recaudado_por_grupo)
-    CREATE INDEX ix_venta_estado_fecha ON venta_buffet (id_estado_venta, fecha_hora);
-    -- rango de fechas (sp_rep_recaudado_por_grupo)
-    CREATE INDEX ix_donacion_fecha_grupo ON donacion_buffet (fecha_hora, id_grupo);
-    -- rango de fechas (sp_rep_inscriptos_por_deporte)
-    CREATE INDEX ix_inscripcion_fecha_oferta ON inscripcion_ed_fisica (fecha_inscripcion, id_oferta);
-    -- rango de fechas obligatorio (sp_rep_auditoria)
-    CREATE INDEX ix_log_fecha_tipo ON log_auditoria (fecha_hora, id_tipo_log);
-    -- filtro por usuario + fecha (sp_rep_auditoria)
-    CREATE INDEX ix_log_usuario_fecha ON log_auditoria (id_usuario, fecha_hora);
-
-    SELECT v_ya_existian AS indices_que_ya_existian, 'OK' AS estado;
-END //
-
-CALL sp_aux_crear_indices() //
-DROP PROCEDURE IF EXISTS sp_aux_crear_indices //
 
 DELIMITER ;

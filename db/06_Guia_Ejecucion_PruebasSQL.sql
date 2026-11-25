@@ -1,4 +1,4 @@
--- 06_Guia_Ejecucion_PruebasSQL.sql - PROYECTO IQUAL (SGE) - Grupo 00
+-- 06_Guia_Ejecucion_PruebasSQL.sql - PROYECTO IQUAL (SGE) - Grupo 06
 -- Guia para ejecutar a mano los 104 casos de 06_PruebasSQL.xlsx en MySQL Workbench (o DBeaver).
 -- Todo en la MISMA pestaña de consulta: las variables (@l, @obj, ...) viven solo en esa conexion.
 -- 1. Cargar desde cero 03_ModeloSQL, 04_DatosSQL y 05_Backend (Alt+X en cada uno).
@@ -19,45 +19,42 @@ SET SQL_SAFE_UPDATES = 0;
 -- ANTES: 1. Base iqual cargada con 03_ModeloSQL y 04_DatosSQL (catálogos tipo_log, entidad_log y resultado_log cargados).
 --        2. Existe el usuario alumno1.
 --        3. Sesión abierta con USE iqual.
--- ESPERADO: El CALL devuelve 1 fila: estado = 'OK', id_log = el id nuevo, mensaje = 'Evento registrado.'.
+-- ESPERADO: El CALL no devuelve filas: solo guarda el registro.
 --           El SELECT devuelve 1 fila: descripcion_evento 'Inicio de sesión exitoso de alumno1', direccion_ip 'PC-LAB-01', nombre_evento 'Inicio de sesión', nombre_entidad 'usuario', usuario_nick 'alumno1', nombre_resultado 'Exitoso'. La fecha_hora del registro es la actual.
--- 1. Poner la sesión en modo normal (el log devuelve su fila de resultado)
-SET @iqual_log_silencioso = 0;
+-- 1. Contar los registros del log antes
+SELECT COUNT(*) INTO @antes FROM log_auditoria;
 -- 2. Ejecutar el procedimiento
 CALL sp_registrar_log('Inicio de sesión', 'Inicio de sesión exitoso de alumno1', 'usuario', 'alumno1', 'Exitoso', 'PC-LAB-01');
 -- 3. Consultar el último registro del log
 SELECT l.id_log, l.descripcion_evento, l.direccion_ip, t.nombre_evento, e.nombre_entidad, u.usuario_nick, r.nombre_resultado FROM log_auditoria l JOIN tipo_log t ON t.id_tipo_log = l.id_tipo_log JOIN entidad_log e ON e.id_entidad = l.id_entidad JOIN resultado_log r ON r.id_resultado = l.id_resultado LEFT JOIN usuario u ON u.id_usuario = l.id_usuario WHERE l.id_log = (SELECT MAX(id_log) FROM log_auditoria);
 -- VOLVER ATRAS (despues de anotar el resultado):
-SET @ultimo_log = (SELECT MAX(id_log) FROM log_auditoria);
-DELETE FROM log_auditoria WHERE id_log = @ultimo_log;
+SET @ultimo_log = (SELECT MAX(id_log) FROM log_auditoria); DELETE FROM log_auditoria WHERE id_log = @ultimo_log;
 
 -- ====================================================================================================
 -- TC_SP_REGISTRAR_LOG_02 · Sin coincidencias: usuario inexistente (el evento se guarda sin usuario)
 -- ====================================================================================================
 -- ANTES: 1. Mismo entorno que el caso 01.
 --        2. No existe el usuario 'usuario_fantasma': SELECT COUNT(*) FROM usuario WHERE usuario_nick = 'usuario_fantasma'; da 0.
--- ESPERADO: El CALL no da error de ejecución: devuelve 1 fila con estado = 'OK' y mensaje = 'Evento registrado.'.
+-- ESPERADO: El CALL no da error de ejecución ni devuelve filas: solo guarda el registro.
 --           El SELECT devuelve usuario_nick = NULL (id_usuario NULL), nombre_resultado 'Fallido', direccion_ip 'PC-LAB-02', descripcion_evento 'Intento de inicio de sesión con usuario inexistente'.
--- 1. Poner la sesión en modo normal
-SET @iqual_log_silencioso = 0;
+-- 1. Contar los registros del log antes
+SELECT COUNT(*) INTO @antes FROM log_auditoria;
 -- 2. Ejecutar el procedimiento con un nick que no existe
 CALL sp_registrar_log('Inicio de sesión', 'Intento de inicio de sesión con usuario inexistente', 'usuario', 'usuario_fantasma', 'Fallido', 'PC-LAB-02');
 -- 3. Consultar el último registro del log
 SELECT l.id_log, l.descripcion_evento, l.direccion_ip, t.nombre_evento, e.nombre_entidad, u.usuario_nick, r.nombre_resultado FROM log_auditoria l JOIN tipo_log t ON t.id_tipo_log = l.id_tipo_log JOIN entidad_log e ON e.id_entidad = l.id_entidad JOIN resultado_log r ON r.id_resultado = l.id_resultado LEFT JOIN usuario u ON u.id_usuario = l.id_usuario WHERE l.id_log = (SELECT MAX(id_log) FROM log_auditoria);
 -- VOLVER ATRAS (despues de anotar el resultado):
-SET @ultimo_log = (SELECT MAX(id_log) FROM log_auditoria);
-DELETE FROM log_auditoria WHERE id_log = @ultimo_log;
+SET @ultimo_log = (SELECT MAX(id_log) FROM log_auditoria); DELETE FROM log_auditoria WHERE id_log = @ultimo_log;
 
 -- ====================================================================================================
 -- TC_SP_REGISTRAR_LOG_03 · Parámetros vacíos o NULL: error de negocio controlado
 -- ====================================================================================================
 -- ANTES: 1. Mismo entorno que el caso 01.
---        2. Modo normal de la sesión (SET @iqual_log_silencioso = 0;).
 -- ESPERADO: Paso 2: 1 fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'La descripción del evento es obligatoria.'.
 --           Paso 3: 1 fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'El tipo de evento no existe en el catálogo.'.
 --           Paso 4: sin_cambios = 1. No hay error de ejecución de MySQL ni filas con datos erróneos.
 -- 1. Contar los registros del log antes
-SET @iqual_log_silencioso = 0; SELECT COUNT(*) INTO @antes FROM log_auditoria;
+SELECT COUNT(*) INTO @antes FROM log_auditoria;
 -- 2. Descripción vacía
 CALL sp_registrar_log('Inicio de sesión', '', 'usuario', 'alumno1', 'Exitoso', NULL);
 -- 3. Tipo de evento NULL
@@ -70,9 +67,9 @@ SELECT COUNT(*) = @antes AS sin_cambios FROM log_auditoria;
 -- ====================================================================================================
 -- ANTES: 1. Mismo entorno que el caso 01.
 --        2. Existe el usuario alumno1.
--- ESPERADO: El SELECT del paso 3 devuelve exactamente la misma fila (6 columnas, mismos valores) que el SELECT directo del paso 4.
--- 1. Poner la sesión en modo normal
-SET @iqual_log_silencioso = 0;
+-- ESPERADO: El CALL no devuelve filas. El SELECT del paso 3 devuelve exactamente la misma fila (6 columnas, mismos valores) que el SELECT directo del paso 4.
+-- 1. Contar los registros del log antes
+SELECT COUNT(*) INTO @antes FROM log_auditoria;
 -- 2. Ejecutar el procedimiento con la IP en NULL
 CALL sp_registrar_log('Cierre de sesión', 'Cierre de sesión de alumno1', 'usuario', 'alumno1', 'Exitoso', NULL);
 -- 3. Leer el registro guardado
@@ -80,8 +77,7 @@ SELECT l.descripcion_evento, l.direccion_ip, t.nombre_evento, e.nombre_entidad, 
 -- 4. SELECT directo esperado (se compara con el paso 3)
 SELECT 'Cierre de sesión de alumno1' AS descripcion_evento, SUBSTRING_INDEX(USER(), '@', -1) AS direccion_ip, 'Cierre de sesión' AS nombre_evento, 'usuario' AS nombre_entidad, 'alumno1' AS usuario_nick, 'Exitoso' AS nombre_resultado;
 -- VOLVER ATRAS (despues de anotar el resultado):
-SET @ultimo_log = (SELECT MAX(id_log) FROM log_auditoria);
-DELETE FROM log_auditoria WHERE id_log = @ultimo_log;
+SET @ultimo_log = (SELECT MAX(id_log) FROM log_auditoria); DELETE FROM log_auditoria WHERE id_log = @ultimo_log;
 
 -- ====================================================================================================
 -- TC_SP_REGISTRAR_USUARIO_01 · Éxito: alta de un alumno de 4° 1° Computación
