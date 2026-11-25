@@ -172,7 +172,7 @@ bool MainWindow::abrirMySql(QSettings &cfg, QString &error)
     QSqlQuery q;
     q.exec("SET NAMES utf8mb4");
     if (!db.tables().contains("usuario")) {
-        error = "La base " + cfg.value("base/nombre").toString() + " existe pero está vacía. Cargá 03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql desde DBeaver.";
+        error = "La base " + cfg.value("base/nombre").toString() + " existe pero está vacía. Cargá 03_ModeloSQL_Grupo06.sql y 04_DatosSQL_Grupo06.sql desde DBeaver.";
         db.close();
         return false;
     }

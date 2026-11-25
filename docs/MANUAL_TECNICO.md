@@ -219,13 +219,13 @@ Recursos embebidos (`recursos.qrc`): `/imagenes` (logo y GIF del splash, sin uso
 **Probado (Linux, Qt 6.4, MariaDB 10.11):**
 - 131 consultas de la app validadas con el modo `ONLY_FULL_GROUP_BY`.
 - Los scripts `03`, `04` y `05` (47 tablas, 62 usuarios, 27 procedimientos), `consultas_demo.sql` y `consultas_verificacion_mysql.sql` corren sin errores.
-- 104 casos de prueba de los procedimientos (`db/06_PruebasSQL.xlsx`) planificados; 80 se ejecutaron a mano en la aplicación.
+- 104 casos de prueba de los procedimientos (`db/06_PruebasSQL.xlsx`), ejecutados el 25/11/2026 en MariaDB 10.11: 104 PASS.
 - La app compila con Qt 6.12 MinGW 64-bit (Windows).
 
 **No probado:**
 - MySQL 8 de Oracle (la base usada fue MariaDB 10.11) y SQL Server 2005 (`03_ModeloSQL_Grupo06_sqlserver.sql`, solo revisado por lectura).
 - Rendimiento con muchos usuarios simultáneos (RNF03).
-- De los 337 casos de prueba por pantalla se probaron 306 (285 OK y 21 con observación); 31 quedaron sin probar. De los 104 casos planificados de la base, 80 se ejecutaron a mano. El resultado de cada caso está en `docs/CASOS_PRUEBA_CONSOLIDADO.md` (columna «Resultado»).
+- De los 337 casos de prueba por pantalla se probaron 306 (285 OK y 21 con observación); 31 quedaron sin probar. El resultado de cada caso está en `docs/CASOS_PRUEBA_CONSOLIDADO.md` (columna «Resultado»).
 
 `REVISION_ESTATICA_MYSQL.md` es una revisión por lectura, anterior a las corridas con MariaDB.
 

@@ -24,7 +24,7 @@ Y un modelo de negocio: cómo se cobraría (secciones 6 y 7). Es un ejercicio co
 | Diseñador de base de datos | Modelo de 47 tablas en 3FN, diagramas, scripts MySQL y SQL Server, procedimientos | Ulises | 60 | $10.000 | $600.000 |
 | Programador C++/Qt | Aplicación de escritorio: 10 pantallas, conexión a la base, roles y permisos, auditoría | Ulises y Thiago | 120 | $10.000 | $1.200.000 |
 | Diseñador de interfaz | Maquetado, temas claro y oscuro, íconos | Thiago y Ulises | 25 | $10.000 | $250.000 |
-| QA / pruebas | 337 casos de prueba por pantalla, 104 casos de procedimientos almacenados (80 ejecutados), informe de errores y revisión de código | Thiago y Ulises | 35 | $10.000 | $350.000 |
+| QA / pruebas | 337 casos de prueba por pantalla, 104 casos de procedimientos almacenados (todos ejecutados), informe de errores y revisión de código | Thiago y Ulises | 35 | $10.000 | $350.000 |
 | Documentación | Manuales de usuario y técnico, guías de MySQL, bitácora | Thiago y Ulises | 30 | $10.000 | $300.000 |
 | Gestión del proyecto | Coordinación, entregas, presentación y pitch | Ulises | 20 | $10.000 | $200.000 |
 | **Total** | | | **320** | | **$3.200.000** |

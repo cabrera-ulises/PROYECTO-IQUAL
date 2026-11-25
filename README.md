@@ -86,8 +86,8 @@ Para registrar cuentas de Profesor, Preceptor o Maestranza la app pide un PIN in
 6. **Plan de emergencia para una demostración:** tener la base cargada y probada en la PC de la demo con anticipación; como alternativa, mostrar los scripts y las consultas desde DBeaver.
 
 ### 4.3 Qué se probó y qué no
-* **Pruebas de la base de datos:** el script de 47 tablas y los 27 procedimientos se integraron en MariaDB 10.11 (104 casos de prueba planificados en `db/06_PruebasSQL.xlsx`).
-* **Pruebas de la aplicación:** se hicieron a mano, en Windows con Qt 6.12 (MinGW) y MySQL por ODBC. De los 104 casos planificados se ejecutaron 80 en la aplicación. Los casos por pantalla suman 337: 285 OK, 21 con observación y 31 sin probar (detalle en `docs/CASOS_PRUEBA_CONSOLIDADO.md` y `docs/pdf/CASOS_PRUEBA_CON_RESULTADOS.pdf`).
+* **Pruebas de la base de datos:** el script de 47 tablas y los 27 procedimientos se integraron en MariaDB 10.11; los 104 casos de los procedimientos se ejecutaron el 25/11/2026 en MariaDB 10.11 con los scripts recién cargados: **104 PASS** (salida de cada caso en `db/06_PruebasSQL.xlsx`, hojas «Casos SP» y «Evidencia»). Guía para repetirlas en MySQL Workbench: `db/06_Guia_Ejecucion_PruebasSQL.sql`.
+* **Pruebas de la aplicación:** se hicieron a mano, en Windows con Qt 6.12 (MinGW) y MySQL por ODBC. Los casos por pantalla suman 337: 285 OK, 21 con observación y 31 sin probar (detalle en `docs/CASOS_PRUEBA_CONSOLIDADO.md` y `docs/pdf/CASOS_PRUEBA_CON_RESULTADOS.pdf`).
 * **No probado:** MySQL 8 de Oracle y SQL Server 2005.
 
 ---

@@ -4,7 +4,7 @@
 **Autores:** Arce Thiago · Cabrera Ulises
 **Fecha de este informe:** 24/11/2026 · **App evaluada:** v7 con las correcciones de la última ronda
 
-> **Estado en una línea:** hay **337 casos de prueba por pantalla escritos** y **104 casos de prueba planificados para los procedimientos de la base**, de los cuales **80 se ejecutaron a mano en la aplicación**. De los 337 casos por pantalla se probaron 306: **285 salieron OK, 21 con observación y 31 quedaron sin probar**. Se detectaron **55 errores** (por lectura de código y por las pruebas); no hay ninguno de gravedad alta. Dos errores hallados al probar (REG-22: usuario con espacios y contraseña en blanco; SEC-25: la cancelación de una reserva no quedaba en la auditoría) se corrigieron en el código.
+> **Estado en una línea:** hay **337 casos de prueba por pantalla escritos** y **104 casos de prueba para los procedimientos de la base**, ejecutados el 25/11/2026 en MariaDB 10.11: **104 PASS**. De los 337 casos por pantalla se probaron 306: **285 salieron OK, 21 con observación y 31 quedaron sin probar**. Se detectaron **55 errores** (por lectura de código y por las pruebas); no hay ninguno de gravedad alta. Dos errores hallados al probar (REG-22: usuario con espacios y contraseña en blanco; SEC-25: la cancelación de una reserva no quedaba en la auditoría) se corrigieron en el código.
 >
 ---
 
@@ -71,7 +71,7 @@ Controles del conteo: no hay IDs repetidos dentro de los casos (172, 78 y 87 IDs
 
 **Resultados de ejecución de los 337 casos por pantalla:** OK: 285 · con observación: 21 · NO PROBADA: 31. Los casos sin probar son AUD-07, SEC-08, SEC-19, SEC-29, HIG-13, TIE-P0-05 a 08 y 12 a 14, TIE-P1-07 a 11, TIE-P2-01 y 09 a 17, y TIE-P3-04 a 07.
 
-**Casos de procedimientos de la base:** 104 planificados (`db/06_PruebasSQL.xlsx`), 80 ejecutados a mano en la aplicación.
+**Casos de procedimientos de la base:** 104 (`db/06_PruebasSQL.xlsx`): 4 por cada uno de los 26 procedimientos (éxito, sin coincidencias, nulos o límite y equivalencia con un SELECT directo), ejecutados el 25/11/2026 en MariaDB 10.11 con los scripts recién cargados. Resultado: 104 PASS.
 
 ## 5. Errores por módulo y estado
 **Cómo se asignó el estado.** Arce Thiago y Cabrera Ulises tiene columna «Estado» en su documento. Los documentos de Arce Thiago y Cabrera Ulises y de Arce Thiago y Cabrera Ulises no la tienen, así que el estado sale de CONTEXTO §19.2 (errores corregidos), §19.3 (decisiones por defecto) y §20 (app v7):
@@ -155,7 +155,7 @@ Los estados de Arce Thiago y Cabrera Ulises son los que ellos mismos escribieron
 **Pendientes propios de Arce Thiago y Cabrera Ulises y 4** (no son errores de la tabla anterior): la pregunta sobre separar las observaciones de pedir y devolver un equipo (U11, decisión por defecto: un solo campo) y las listas de defectos visuales y de microcopy de las capturas (Arce Thiago y Cabrera Ulises sección 4b; Arce Thiago y Cabrera Ulises «Pendientes propios (b)», ítems V1–V13). Quedan registrados en sus documentos y en `docs/pruebas`.
 
 ## 6. Conclusiones
-1. **El sistema está cubierto por casos escritos y buena parte ejecutados:** de 337 casos por pantalla se probaron 306 (285 OK y 21 con observación) y 31 quedaron sin probar. De los 104 casos planificados de la base, 80 se ejecutaron. Lo que no se probó no se afirma.
+1. **El sistema está cubierto por casos escritos y buena parte ejecutados:** de 337 casos por pantalla se probaron 306 (285 OK y 21 con observación) y 31 quedaron sin probar. Los 104 casos de la base se ejecutaron (104 PASS). Lo que no se probó no se afirma.
 2. **No se encontró ningún error de gravedad alta.** Los 14 de gravedad media son de coherencia (números desactualizados, formularios que no se limpian, opciones mal preseleccionadas) y **13 figuran corregidos (11) o con decisión por defecto (2: ERR-04 y E4-05)**; el que queda abierto es E-18 (ventas con dos vendedores, que sale de los datos del script 04).
 3. **De los 55 errores, 20 están corregidos, 7 se dejaron a propósito** (decisión por defecto, el usuario puede cambiarla) y 1 ya no aplica (E-08). Quedan **26 abiertos** y 1 a verificar en MySQL (ERR-21), casi todos de gravedad baja (usabilidad, textos, robustez); algunos pueden estar ya arreglados sin que conste (ver 5).
 4. **Riesgos reales que siguen abiertos:** MySQL 8 de Oracle sin probar, SQL Server 2005 sin probar y rendimiento con muchos usuarios sin medir. La app sí se probó en Windows con ODBC.
