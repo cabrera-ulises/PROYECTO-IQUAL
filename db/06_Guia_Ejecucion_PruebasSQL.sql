@@ -1312,7 +1312,7 @@ CALL sp_rep_prestamos_por_carro('2000-01-01', '2000-01-31');
 -- 2. Sumar la columna total_prestamos de todas las filas y compararla con la consulta de control
 -- 3. Ejecutar CALL con rango invertido
 CALL sp_rep_prestamos_por_carro(NULL, NULL);
--- control: SELECT COUNT(*) FROM prestamo_ct pc JOIN recursos_ct rc ON rc.id_recurso = pc.id_recurso WHERE rc.id_carro IS NOT NULL;
+SELECT COUNT(*) FROM prestamo_ct pc JOIN recursos_ct rc ON rc.id_recurso = pc.id_recurso WHERE rc.id_carro IS NOT NULL;
 CALL sp_rep_prestamos_por_carro('2026-10-31', '2026-10-01');
 
 -- ====================================================================================================
@@ -1344,7 +1344,7 @@ ORDER BY total_prestamos DESC, c.nombre_carro;
 -- TC_SP_REP_OBJETOS_POR_CATEGORIA_ESTADO_01 · Rango válido con datos: devuelve el agrupamiento esperado
 -- ====================================================================================================
 -- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql). Semilla original de 04 (los esperados valen para esa semilla; si 04 trae más datos en el rango, usar como esperado el resultado del caso 04).
--- ESPERADO: Columnas, en este orden: nombre_categoria, nombre_estado, cantidad_objetos, primer_registro, ultimo_registro, dias_desde_el_mas_antiguo. 14 filas con los datos de la semilla ampliada (62 usuarios); primera fila: nombre_categoria=Documentación, nombre_estado=Archivado, cantidad_objetos=1, primer_registro=2026-10-13, ultimo_registro=2026-10-13, dias_desde_el_mas_antiguo=36. Los totales se verificaron con una consulta directa a las tablas. Sin fila estado='ERROR'.
+-- ESPERADO: Columnas, en este orden: nombre_categoria, nombre_estado, cantidad_objetos, primer_registro, ultimo_registro, dias_desde_el_mas_antiguo. 14 filas con los datos de la semilla ampliada (62 usuarios); primera fila: nombre_categoria=Documentación, nombre_estado=Archivado, cantidad_objetos=1, primer_registro=2026-10-13, ultimo_registro=2026-10-13, dias_desde_el_mas_antiguo = días desde 2026-10-13 hasta el día de la ejecución (cambia con la fecha: el 25/11/2026 da 43). Los totales se verificaron con una consulta directa a las tablas. Sin fila estado='ERROR'.
 -- 1. Ejecutar el CALL de TEST DATA
 -- 2. Comparar filas, columnas y orden
 CALL sp_rep_objetos_por_categoria_estado('2026-10-01', '2026-10-31');
@@ -1367,7 +1367,7 @@ CALL sp_rep_objetos_por_categoria_estado('2000-01-01', '2000-01-31');
 -- 2. Sumar la columna cantidad_objetos de todas las filas y compararla con la consulta de control
 -- 3. Ejecutar CALL con rango invertido
 CALL sp_rep_objetos_por_categoria_estado(NULL, NULL);
--- control: SELECT COUNT(*) FROM objeto_perdido;
+SELECT COUNT(*) FROM objeto_perdido;
 CALL sp_rep_objetos_por_categoria_estado('2026-10-31', '2026-10-01');
 
 -- ====================================================================================================
@@ -1421,7 +1421,7 @@ CALL sp_rep_higiene_por_sector('2000-01-01', '2000-01-31');
 -- 2. Sumar la columna total_reportes de todas las filas y compararla con la consulta de control
 -- 3. Ejecutar CALL con rango invertido
 CALL sp_rep_higiene_por_sector(NULL, NULL);
--- control: SELECT COUNT(*) FROM reporte_higiene;
+SELECT COUNT(*) FROM reporte_higiene;
 CALL sp_rep_higiene_por_sector('2026-10-31', '2026-10-01');
 
 -- ====================================================================================================
@@ -1477,7 +1477,7 @@ CALL sp_rep_ocupacion_sectores('2000-01-01', '2000-01-31');
 -- 2. Sumar la columna cantidad_reservas de todas las filas y compararla con la consulta de control
 -- 3. Ejecutar CALL con rango invertido
 CALL sp_rep_ocupacion_sectores(NULL, NULL);
--- control: SELECT COUNT(*) FROM reserva_sector;
+SELECT COUNT(*) FROM reserva_sector;
 CALL sp_rep_ocupacion_sectores('2026-10-31', '2026-10-01');
 
 -- ====================================================================================================
@@ -1534,7 +1534,7 @@ CALL sp_rep_ventas_por_producto('2000-01-01', '2000-01-31');
 -- 2. Sumar la columna monto_total de todas las filas y compararla con la consulta de control
 -- 3. Ejecutar CALL con rango invertido
 CALL sp_rep_ventas_por_producto(NULL, NULL);
--- control: SELECT SUM(d.cantidad * d.precio_unitario) FROM detalle_venta d JOIN venta_buffet v ON v.id_venta = d.id_venta JOIN estado_venta e ON e.id_estado_venta = v.id_estado_venta WHERE e.nombre_estado = 'Entregada';
+SELECT SUM(d.cantidad * d.precio_unitario) FROM detalle_venta d JOIN venta_buffet v ON v.id_venta = d.id_venta JOIN estado_venta e ON e.id_estado_venta = v.id_estado_venta WHERE e.nombre_estado = 'Entregada';
 CALL sp_rep_ventas_por_producto('2026-10-31', '2026-10-01');
 
 -- ====================================================================================================
@@ -1593,7 +1593,7 @@ CALL sp_rep_recaudado_por_grupo('2000-01-01', '2000-01-31');
 -- 2. Sumar la columna recaudado de todas las filas y compararla con la consulta de control
 -- 3. Ejecutar CALL con rango invertido
 CALL sp_rep_recaudado_por_grupo(NULL, NULL);
--- control: SELECT (SELECT COALESCE(SUM(dn.monto), 0) FROM donacion_buffet dn) + (SELECT COALESCE(SUM(d.cantidad * d.precio_unitario), 0) FROM detalle_venta d JOIN venta_buffet v ON v.id_venta = d.id_venta JOIN estado_venta e ON e.id_estado_venta = v.id_estado_venta JOIN producto_buffet p ON p.id_producto = d.id_producto WHERE e.nombre_estado = 'Entregada' AND p.id_grupo IS NOT NULL);
+SELECT (SELECT COALESCE(SUM(dn.monto), 0) FROM donacion_buffet dn) + (SELECT COALESCE(SUM(d.cantidad * d.precio_unitario), 0) FROM detalle_venta d JOIN venta_buffet v ON v.id_venta = d.id_venta JOIN estado_venta e ON e.id_estado_venta = v.id_estado_venta JOIN producto_buffet p ON p.id_producto = d.id_producto WHERE e.nombre_estado = 'Entregada' AND p.id_grupo IS NOT NULL);
 CALL sp_rep_recaudado_por_grupo('2026-10-31', '2026-10-01');
 
 -- ====================================================================================================
@@ -1657,7 +1657,7 @@ CALL sp_rep_inscriptos_por_deporte('2000-01-01', '2000-01-31');
 -- 2. Sumar la columna inscriptos de todas las filas y compararla con la consulta de control
 -- 3. Ejecutar CALL con rango invertido
 CALL sp_rep_inscriptos_por_deporte(NULL, NULL);
--- control: SELECT COUNT(*) FROM inscripcion_ed_fisica;
+SELECT COUNT(*) FROM inscripcion_ed_fisica;
 CALL sp_rep_inscriptos_por_deporte('2026-10-31', '2026-10-01');
 
 -- ====================================================================================================
@@ -1716,7 +1716,7 @@ CALL sp_rep_actividad_por_usuario('2000-01-01', '2000-01-31');
 -- 2. Sumar la columna total_actividad de todas las filas y compararla con la consulta de control
 -- 3. Ejecutar CALL con rango invertido
 CALL sp_rep_actividad_por_usuario(NULL, NULL);
--- control: SELECT (SELECT COUNT(*) FROM prestamo_ct) + (SELECT COUNT(*) FROM reserva_sector) + (SELECT COUNT(*) FROM reclamo_objeto);
+SELECT (SELECT COUNT(*) FROM prestamo_ct) + (SELECT COUNT(*) FROM reserva_sector) + (SELECT COUNT(*) FROM reclamo_objeto);
 CALL sp_rep_actividad_por_usuario('2026-10-31', '2026-10-01');
 
 -- ====================================================================================================
@@ -1786,7 +1786,7 @@ CALL sp_rep_auditoria(CURDATE(), CURDATE(), NULL, 'usuario_que_no_existe', NULL)
 -- 5. Ejecutar CALL con rango invertido (desde > hasta)
 CALL sp_rep_auditoria(CURDATE(), CURDATE(), NULL, NULL, NULL);
 CALL sp_rep_auditoria(CURDATE(), CURDATE(), '', '', '');
--- control: SELECT COUNT(*) FROM log_auditoria WHERE fecha_hora >= CURDATE() AND fecha_hora < DATE_ADD(CURDATE(), INTERVAL 1 DAY);
+SELECT COUNT(*) FROM log_auditoria WHERE fecha_hora >= CURDATE() AND fecha_hora < DATE_ADD(CURDATE(), INTERVAL 1 DAY);
 CALL sp_rep_auditoria(NULL, CURDATE(), NULL, NULL, NULL);
 CALL sp_rep_auditoria('2026-10-31', '2026-10-01', NULL, NULL, NULL);
 
@@ -1853,7 +1853,7 @@ SELECT * FROM tmp_ventas_entregadas;
 -- 2. Sumar monto_total de todas las filas y compararla con la consulta de control
 -- 3. Ejecutar CALL con rango invertido
 CALL sp_rep_ventas_por_producto_tuneado(NULL, NULL);
--- control: SELECT SUM(d.cantidad * d.precio_unitario) FROM detalle_venta d JOIN venta_buffet v ON v.id_venta = d.id_venta JOIN estado_venta e ON e.id_estado_venta = v.id_estado_venta WHERE e.nombre_estado = 'Entregada';
+SELECT SUM(d.cantidad * d.precio_unitario) FROM detalle_venta d JOIN venta_buffet v ON v.id_venta = d.id_venta JOIN estado_venta e ON e.id_estado_venta = v.id_estado_venta WHERE e.nombre_estado = 'Entregada';
 CALL sp_rep_ventas_por_producto_tuneado('2026-10-31', '2026-10-01');
 
 -- ====================================================================================================
@@ -1867,7 +1867,8 @@ CALL sp_rep_ventas_por_producto_tuneado('2026-10-31', '2026-10-01');
 -- 4. Repetir con (NULL, NULL) y con un rango sin datos
 CALL sp_rep_ventas_por_producto('2026-10-01', '2026-10-31');
 CALL sp_rep_ventas_por_producto_tuneado('2026-10-01', '2026-10-31');
--- repetir con: CALL sp_rep_ventas_por_producto(NULL, NULL); / CALL sp_rep_ventas_por_producto_tuneado(NULL, NULL);
+CALL sp_rep_ventas_por_producto(NULL, NULL);
+CALL sp_rep_ventas_por_producto_tuneado(NULL, NULL);
 
 -- ====================================================================================================
 -- TC_SP_REP_ACTIVIDAD_POR_USUARIO_TUNEADO_01 · Rango válido con datos: mismo resultado esperado que el original
@@ -1897,7 +1898,7 @@ CALL sp_rep_actividad_por_usuario_tuneado('2000-01-01', '2000-01-31');
 -- 2. Sumar total_actividad de todas las filas y compararla con la consulta de control
 -- 3. Ejecutar CALL con rango invertido
 CALL sp_rep_actividad_por_usuario_tuneado(NULL, NULL);
--- control: SELECT (SELECT COUNT(*) FROM prestamo_ct) + (SELECT COUNT(*) FROM reserva_sector) + (SELECT COUNT(*) FROM reclamo_objeto);
+SELECT (SELECT COUNT(*) FROM prestamo_ct) + (SELECT COUNT(*) FROM reserva_sector) + (SELECT COUNT(*) FROM reclamo_objeto);
 CALL sp_rep_actividad_por_usuario_tuneado('2026-10-31', '2026-10-01');
 
 -- ====================================================================================================
@@ -1911,5 +1912,6 @@ CALL sp_rep_actividad_por_usuario_tuneado('2026-10-31', '2026-10-01');
 -- 4. Repetir con (NULL, NULL) y con un rango sin datos
 CALL sp_rep_actividad_por_usuario('2026-10-01', '2026-10-31');
 CALL sp_rep_actividad_por_usuario_tuneado('2026-10-01', '2026-10-31');
--- repetir con: CALL sp_rep_actividad_por_usuario(NULL, NULL); / CALL sp_rep_actividad_por_usuario_tuneado(NULL, NULL);
+CALL sp_rep_actividad_por_usuario(NULL, NULL);
+CALL sp_rep_actividad_por_usuario_tuneado(NULL, NULL);
 
