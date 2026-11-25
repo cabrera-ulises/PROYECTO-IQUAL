@@ -1,4 +1,4 @@
--- 03_ModeloSQL_Grupo00.sql - PROYECTO IQUAL (SGE) - modelo de datos para MySQL 8 / MariaDB 10.11 (47 tablas en 3FN)
+-- 03_ModeloSQL_Grupo06.sql - PROYECTO IQUAL (SGE) - modelo de datos para MySQL 8 / MariaDB 10.11 (47 tablas en 3FN)
 -- Se puede ejecutar muchas veces: borra las tablas y las vuelve a crear, vacias. Los datos van en 04_DatosSQL.
 -- MAPA DE SCHEMAS (47 tablas, CONTEXTO_IQUAL 21):
 --   seguridad      (6) rol, usuario, log_auditoria, tipo_log, resultado_log, entidad_log

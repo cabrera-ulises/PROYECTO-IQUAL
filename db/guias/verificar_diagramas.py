@@ -3,13 +3,13 @@
 """
 verificar_diagramas.py - PROYECTO IQUAL (SGE)
 
-Compara 03_ModeloSQL_Grupo00.sql (la fuente de verdad: tablas, columnas, claves foraneas)
+Compara 03_ModeloSQL_Grupo06.sql (la fuente de verdad: tablas, columnas, claves foraneas)
 contra los dos diagramas de draw.io. Usa solo la biblioteca estandar de Python 3.8+
 (no hay que instalar nada). No modifica ningun archivo.
 
 Uso (Windows, en la carpeta donde estan los archivos):
     python verificar_diagramas.py
-    python verificar_diagramas.py --sql 03_ModeloSQL_Grupo00.sql --codd Proyecto_IQUAL_Edgar_Codd.xml --chen Proyecto_IQUAL_Peter_Chen.xml
+    python verificar_diagramas.py --sql 03_ModeloSQL_Grupo06.sql --codd Proyecto_IQUAL_Edgar_Codd.xml --chen Proyecto_IQUAL_Peter_Chen.xml
     python verificar_diagramas.py --md informe_generado.md     (ademas guarda la salida en un archivo)
 
 Que comprueba
@@ -422,8 +422,8 @@ def verificar_chen(sql, ruta):
 # --------------------------------------------------------------------------- main
 
 def main():
-    ap = argparse.ArgumentParser(description="Compara 03_ModeloSQL_Grupo00.sql con los diagramas Codd y Chen.")
-    ap.add_argument("--sql", default="03_ModeloSQL_Grupo00.sql")
+    ap = argparse.ArgumentParser(description="Compara 03_ModeloSQL_Grupo06.sql con los diagramas Codd y Chen.")
+    ap.add_argument("--sql", default="03_ModeloSQL_Grupo06.sql")
     ap.add_argument("--codd", default="Proyecto_IQUAL_Edgar_Codd.xml")
     ap.add_argument("--chen", default="Proyecto_IQUAL_Peter_Chen.xml")
     ap.add_argument("--md", default=None, help="guardar la salida tambien en este archivo")

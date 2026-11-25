@@ -1,4 +1,4 @@
--- 04_DatosSQL_Grupo00.sql - PROYECTO IQUAL (SGE) - MySQL 8 / MariaDB 10.11
+-- 04_DatosSQL_Grupo06.sql - PROYECTO IQUAL (SGE) - MySQL 8 / MariaDB 10.11
 -- Datos de la base. Se ejecuta DESPUES de 03_ModeloSQL y se puede repetir: primero vacia las 47 tablas y despues las carga.
 -- Primero van las filas que ya existian (con los mismos id) y despues las filas nuevas.
 -- Todos los nombres, DNI, correos y telefonos de personas son FICTICIOS. La clave de demostracion de todos los usuarios es la misma.

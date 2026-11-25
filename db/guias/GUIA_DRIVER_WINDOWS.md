@@ -63,7 +63,7 @@ nombre=iqual
 | Falta el driver QMYSQL de Qt | Pusiste `driver=qmysql` y ese plugin no está | Usar `driver=auto` u `odbc`, o hacer el Camino B |
 | Texto del driver con «Data source name not found and no default driver specified» (o parecido) | El nombre en `DRIVER={…}` no coincide con ningún driver instalado | Repetir A2 y copiar el nombre exacto en `odbc_driver=` |
 | «Can't connect to MySQL server» / «Access denied for user» | Servidor apagado, puerto distinto o clave mal | Ver `GUIA_INSTALACION_MYSQL.md` §6 (errores 2003 y 1045) |
-| «La base iqual existe pero está vacía. Cargá 03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql desde DBeaver.» | Se conectó, pero no hay tablas | Cargar `03_ModeloSQL_Grupo00.sql` y después `04_DatosSQL_Grupo00.sql` (`GUIA_INSTALACION_MYSQL.md` §3) |
+| «La base iqual existe pero está vacía. Cargá 03_ModeloSQL_Grupo06.sql y 04_DatosSQL_Grupo06.sql desde DBeaver.» | Se conectó, pero no hay tablas | Cargar `03_ModeloSQL_Grupo06.sql` y después `04_DatosSQL_Grupo06.sql` (`GUIA_INSTALACION_MYSQL.md` §3) |
 | «El driver ODBC no compara bien los textos (le pasa al MariaDB Connector/ODBC)…» | El autochequeo falló: las búsquedas por nombre devuelven 0 filas | Instalar **MySQL Connector/ODBC** (no el de MariaDB) o usar `QMYSQL`. La app no abre la base: corregí el driver y volvé a abrirla |
 
 Hallazgo previo (CONTEXTO §19 y prompt): con el conector ODBC **de MariaDB**, Qt manda los textos con un carácter nulo de más y por eso las comparaciones por nombre dan 0 filas. Con MySQL Connector/ODBC **no está probado**: el autochequeo existe justamente para detectarlo.
@@ -113,14 +113,14 @@ cmake --install .
 La app **no tiene base de respaldo**: si no conecta a MySQL, no se puede usar. Por eso hay que probarla en la compu donde se va a presentar, de preferencia la víspera y otra vez un rato antes.
 
 1. **Servidor encendido.** Conectate con DBeaver o Workbench con los mismos datos que `iqual.ini` (por defecto `localhost`, puerto `3306`, usuario `root`, base `iqual`).
-2. **Base cargada.** Corré `SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'iqual';` y comprobá que dé **47** (si da 0, falta cargar `03_ModeloSQL_Grupo00.sql` y `04_DatosSQL_Grupo00.sql`).
+2. **Base cargada.** Corré `SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'iqual';` y comprobá que dé **47** (si da 0, falta cargar `03_ModeloSQL_Grupo06.sql` y `04_DatosSQL_Grupo06.sql`).
 3. **`iqual.ini`.** Está junto al `.exe`; `host`, `puerto`, `usuario`, `clave` y `nombre` tienen que ser los del paso 1.
 4. **Abrir la app.** El título de la ventana tiene que terminar en **· MySQL** o **· MySQL (ODBC)**. Entrá con una cuenta de demostración (por ejemplo `alumno1`, clave `1234`, CONTEXTO §8).
 5. **Si no conecta, qué muestra la app.** Dos cuadros «Atención», uno atrás del otro, y después la ventana con todo deshabilitado y el título sin sufijo:
    - El primero: «No se pudo usar MySQL:» + el texto del error + «Revisá iqual.ini y que el servidor esté encendido.»
    - El segundo: «No se pudo abrir la base de datos. Revisá iqual.ini y que el servidor MySQL esté encendido.»
    - El texto del medio es el que dice qué pasó: ver la tabla de la sección A4 (driver que falta, servidor apagado o clave mal, base vacía, driver ODBC que no compara bien los textos).
-6. **Si falla en plena demo.** No hay otra base a la que cambiar. Lo que sí se puede seguir mostrando es la base y los procedimientos desde DBeaver o Workbench (`consultas_demo.sql` y `05_Backend_Grupo00.sql`). `[COMPLETAR: si el equipo prefiere llevar capturas de la app funcionando como respaldo]`
+6. **Si falla en plena demo.** No hay otra base a la que cambiar. Lo que sí se puede seguir mostrando es la base y los procedimientos desde DBeaver o Workbench (`consultas_demo.sql` y `05_Backend_Grupo06.sql`). `[COMPLETAR: si el equipo prefiere llevar capturas de la app funcionando como respaldo]`
 
 ## Desvíos
 - No se probó ningún paso en Windows. Todo lo marcado 🔶 es general o está sin confirmar.

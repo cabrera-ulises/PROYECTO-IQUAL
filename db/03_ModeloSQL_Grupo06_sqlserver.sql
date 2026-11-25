@@ -1,4 +1,4 @@
--- 03_ModeloSQL_Grupo00_sqlserver.sql - PROYECTO IQUAL (SGE) - modelo de datos para SQL Server 2005 (47 tablas en 3FN, 7 schemas)
+-- 03_ModeloSQL_Grupo06_sqlserver.sql - PROYECTO IQUAL (SGE) - modelo de datos para SQL Server 2005 (47 tablas en 3FN, 7 schemas)
 -- Se ejecuta con SSMS (los GO los entiende el cliente). Se puede repetir: borra las tablas y las vuelve a crear, vacias.
 -- MAPA DE SCHEMAS (47 tablas, CONTEXTO_IQUAL 21):
 --   seguridad      (6) rol, usuario, log_auditoria, tipo_log, resultado_log, entidad_log

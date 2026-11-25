@@ -17,7 +17,7 @@ Las 47 tablas se agrupan en 7 schemas (`seguridad`, `academico`, `objetos`, `ins
 
 ## 2. Las 47 tablas: Chen → Codd → SQL
 
-Los nombres de tabla y de columna son idénticos en los 2 scripts de modelo (`03_ModeloSQL_Grupo00_sqlserver.sql` y `03_ModeloSQL_Grupo00.sql`) y coinciden con la sección 5 y con el contrato de la sección 15 del CONTEXTO.
+Los nombres de tabla y de columna son idénticos en los 2 scripts de modelo (`03_ModeloSQL_Grupo06_sqlserver.sql` y `03_ModeloSQL_Grupo06.sql`) y coinciden con la sección 5 y con el contrato de la sección 15 del CONTEXTO.
 
 | # | Tabla (Codd = SQL) | En el Chen | Tipo |
 |---|---|---|---|
@@ -157,8 +157,8 @@ Cada punto se dejó **como está en el contrato (sección 5)**. Si el profesor o
 - Tipos: ids `INT IDENTITY(1,1)` (SQL Server 2005), `INT AUTO_INCREMENT` (MySQL 8). Textos con tildes: `NVARCHAR` en SQL Server; en MySQL `utf8mb4` con motor InnoDB. Fechas: `DATETIME` (SQL Server) y `DATE` (MySQL); horas `HH:mm` como texto de largo 5 en los dos.
 - Restricciones: PK, UQ, FK con nombre, CHECK (año 1–7, división 1–9, DNI de 7 a 8 dígitos, hora_fin > hora_inicio, precio > 0, stock >= 0, cantidad > 0, monto > 0, meta_monto > 0, cupo_maximo > 0). Nota para MySQL: los CHECK se aplican desde MySQL 8.0.16 y desde MariaDB 10.2.1; en versiones anteriores se aceptan pero se ignoran.
 - Datos de ejemplo: todo lo que está debajo de la línea `-- DATOS DE EJEMPLO, REEMPLAZAR AL FINAL`. Las reservas de sectores usan fechas relativas a hoy (`DATE_ADD(CURDATE(), INTERVAL n DAY)` en MySQL, `DATEADD(day, n, DATEADD(day, DATEDIFF(day, 0, GETDATE()), 0))` en SQL Server 2005, que deja la fecha a medianoche).
-- `03_ModeloSQL_Grupo00.sql` y `04_DatosSQL_Grupo00.sql`: sin triggers, sin BEGIN...END, sin `DELIMITER` y sin «;» dentro de textos o comentarios (la app los parte por «;»). Los procedimientos almacenados van aparte en `05_Backend_Grupo00.sql`.
-- **Qué se ejecutó y qué no.** MySQL: `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql` (47 tablas, 5 usuarios), `05_Backend_Grupo00.sql`, `consultas_demo.sql` y `consultas_verificacion_mysql.sql` corrieron **en MariaDB 10.11** con `ONLY_FULL_GROUP_BY`, sin errores y con los valores esperados (dato del 10/11/2026). **No se ejecutó:** MySQL 8 de Oracle, SQL Server 2005 (solo revisión de lectura: `REVISION_ESTATICA_SQLSERVER.md`) ni nada en Windows.
+- `03_ModeloSQL_Grupo06.sql` y `04_DatosSQL_Grupo06.sql`: sin triggers, sin BEGIN...END, sin `DELIMITER` y sin «;» dentro de textos o comentarios (la app los parte por «;»). Los procedimientos almacenados van aparte en `05_Backend_Grupo06.sql`.
+- **Qué se ejecutó y qué no.** MySQL: `03_ModeloSQL_Grupo06.sql y 04_DatosSQL_Grupo06.sql` (47 tablas, 5 usuarios), `05_Backend_Grupo06.sql`, `consultas_demo.sql` y `consultas_verificacion_mysql.sql` corrieron **en MariaDB 10.11** con `ONLY_FULL_GROUP_BY`, sin errores y con los valores esperados (dato del 10/11/2026). **No se ejecutó:** MySQL 8 de Oracle, SQL Server 2005 (solo revisión de lectura: `REVISION_ESTATICA_SQLSERVER.md`) ni nada en Windows.
 
 ## Desvíos
 

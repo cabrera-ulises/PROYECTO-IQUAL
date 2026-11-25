@@ -24,7 +24,7 @@ Los casos se relacionan con las historias de usuario (US) y los requerimientos (
 ## 2. Entorno
 | Dato | Valor |
 |---|---|
-| Probado por Arce Thiago y Cabrera Ulises (CONTEXTO §19.1 y §20) | Linux, Qt 6.4, MariaDB 10.11: 131 consultas validadas con `ONLY_FULL_GROUP_BY`; `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql`, procedimientos, `consultas_demo.sql` y `consultas_verificacion.sql` sin errores |
+| Probado por Arce Thiago y Cabrera Ulises (CONTEXTO §19.1 y §20) | Linux, Qt 6.4, MariaDB 10.11: 131 consultas validadas con `ONLY_FULL_GROUP_BY`; `03_ModeloSQL_Grupo06.sql y 04_DatosSQL_Grupo06.sql`, procedimientos, `consultas_demo.sql` y `consultas_verificacion.sql` sin errores |
 | **No probado** | MySQL 8 de Oracle · SQL Server 2005 · Windows (ni ODBC ni plugin `QMYSQL` compilado) |
 | Entorno de ejecución de los casos | Windows, Qt 6.12.0 MinGW 64-bit, conexión a MySQL con MySQL Connector/ODBC 26.10 (64 bits), app v7 con las correcciones de la última ronda |
 | Datos | Base de demostración recién cargada. Usuarios y claves: script de datos y `GUIA_CONEXION_APP_MYSQL.md` (no se copian acá) |

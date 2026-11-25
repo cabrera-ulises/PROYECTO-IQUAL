@@ -4,12 +4,11 @@
 
 | Archivo | Para qué |
 |---|---|
-| `03_ModeloSQL_Grupo00.sql` / `_sqlserver.sql` | Borra y crea las 47 tablas vacías (MySQL: una base `iqual`; SQL Server: 7 schemas) |
-| `04_DatosSQL_Grupo00.sql` / `_sqlserver.sql` | Vacía las 47 tablas y carga catálogos y datos (62 usuarios) |
-| `05_Backend_Grupo00.sql` | 27 procedimientos: 15 de funcionalidades (el 1 es `sp_registrar_log`), 9 de reportes y auditoría, 2 `_tuneado` y el auxiliar `sp_aux_solo_digitos`. Solo MySQL; usa `DELIMITER` |
+| `03_ModeloSQL_Grupo06.sql` / `_sqlserver.sql` | Borra y crea las 47 tablas vacías (MySQL: una base `iqual`; SQL Server: 7 schemas) |
+| `04_DatosSQL_Grupo06.sql` / `_sqlserver.sql` | Vacía las 47 tablas y carga catálogos y datos (62 usuarios) |
+| `05_Backend_Grupo06.sql` | 27 procedimientos: 15 de funcionalidades (el 1 es `sp_registrar_log`), 9 de reportes y auditoría, 2 `_tuneado` y el auxiliar `sp_aux_solo_digitos`. Solo MySQL; usa `DELIMITER` |
 | `06_PruebasSQL.xlsx` | Planilla de pruebas (104 casos de los procedimientos), no es un script |
 | `generar_datos.py`, `generar_modelo.py` | Generaron los cuatro archivos 03 y 04. Para volver a correrlos hacen falta `iqual_mysql.sql` e `iqual_sqlserver.sql` (las fuentes de la ronda anterior), que **ya no viajan en el repositorio**; sin ellos no se pueden regenerar |
-| `renombrar_grupo.sh` | Reemplaza `Grupo00` por el número de grupo en nombres de archivo y textos (ver la sección 4) |
 | `consultas_verificacion_mysql.sql` / `_sqlserver.sql` | Controles con el valor esperado en cada consulta |
 | `consultas_demo.sql` / `consultas_demo_sqlserver.sql` | Las 10 consultas para la defensa |
 
@@ -18,28 +17,28 @@
 ## 1. MySQL 8 / MariaDB (DBeaver)
 
 1. Conectate a `localhost:3306`.
-2. Abrí `03_ModeloSQL_Grupo00.sql` y ejecutalo **entero con Alt+X** (crea la base `iqual` si no existe, y hace `USE iqual`).
-3. Abrí `04_DatosSQL_Grupo00.sql` y ejecutalo con **Alt+X**.
-4. Abrí `05_Backend_Grupo00.sql` y ejecutalo **entero con Alt+X** (usa `DELIMITER`; si lo corrés sentencia por sentencia se corta a la mitad).
+2. Abrí `03_ModeloSQL_Grupo06.sql` y ejecutalo **entero con Alt+X** (crea la base `iqual` si no existe, y hace `USE iqual`).
+3. Abrí `04_DatosSQL_Grupo06.sql` y ejecutalo con **Alt+X**.
+4. Abrí `05_Backend_Grupo06.sql` y ejecutalo **entero con Alt+X** (usa `DELIMITER`; si lo corrés sentencia por sentencia se corta a la mitad).
 5. Verificá con `consultas_verificacion_mysql.sql`.
 
 Consola (cmd, no PowerShell):
 ```
-mysql -u root -p --default-character-set=utf8mb4 < 03_ModeloSQL_Grupo00.sql
-mysql -u root -p --default-character-set=utf8mb4 < 04_DatosSQL_Grupo00.sql
-mysql -u root -p --default-character-set=utf8mb4 < 05_Backend_Grupo00.sql
+mysql -u root -p --default-character-set=utf8mb4 < 03_ModeloSQL_Grupo06.sql
+mysql -u root -p --default-character-set=utf8mb4 < 04_DatosSQL_Grupo06.sql
+mysql -u root -p --default-character-set=utf8mb4 < 05_Backend_Grupo06.sql
 ```
 Para repetir: volvé a correr 03, después 04 y después 05 (03 borra las tablas pero no los procedimientos). No hace falta borrar la base. Los pasos de DBeaver y de consola están escritos de lo que se sabe del programa, sin probarlos en Windows. 🔶
 
 ## 2. SQL Server 2005 / Express (SSMS)
 
 1. Abrí SSMS, conectate (por ejemplo `.\SQLEXPRESS`).
-2. Abrí `03_ModeloSQL_Grupo00_sqlserver.sql` y apretá **F5**. Crea la base, los 7 schemas y las tablas. Si había una carga vieja sin schemas (`dbo.*`), la borra.
-3. Abrí `04_DatosSQL_Grupo00_sqlserver.sql` y **F5**.
+2. Abrí `03_ModeloSQL_Grupo06_sqlserver.sql` y apretá **F5**. Crea la base, los 7 schemas y las tablas. Si había una carga vieja sin schemas (`dbo.*`), la borra.
+3. Abrí `04_DatosSQL_Grupo06_sqlserver.sql` y **F5**.
 4. Verificá con `consultas_verificacion_sqlserver.sql` (ya trae los nombres con schema).
 5. Para repetir: volvé a correr 03 y después 04. No hay `05` para SQL Server: los procedimientos son solo de MySQL.
 
-Consola: `sqlcmd -S .\SQLEXPRESS -i 03_ModeloSQL_Grupo00_sqlserver.sql` y lo mismo con el 04 (los `GO` los entiende `sqlcmd`). Si las tildes salen mal, abrí el archivo en SSMS y guardalo como Unicode. 🔶
+Consola: `sqlcmd -S .\SQLEXPRESS -i 03_ModeloSQL_Grupo06_sqlserver.sql` y lo mismo con el 04 (los `GO` los entiende `sqlcmd`). Si las tildes salen mal, abrí el archivo en SSMS y guardalo como Unicode. 🔶
 
 ## 3. Qué esperar
 
@@ -62,16 +61,9 @@ Los valores esperados de los comentarios se calcularon con una carga de prueba f
 
 Si algo falla: copiá el mensaje completo (número y texto) y la línea que marca el programa.
 
-## 4. Cambiar `Grupo00` por el número de grupo
+## 4. Número de grupo
 
-El número de grupo ya se le consultó a Linares; mientras no lo informe, los archivos siguen con `Grupo00`. Cuando lo sepas, en Git Bash y parado en la carpeta del paquete (donde está `renombrar_grupo.sh`):
-
-```
-bash renombrar_grupo.sh --simular 7
-bash renombrar_grupo.sh 7
-```
-
-La primera línea solo muestra qué cambiaría; la segunda lo hace y deja `Grupo07`. Renombra los archivos `*_Grupo00*` y cambia el texto `Grupo00` en `.md`, `.sql`, `.xlsx`, `.sh`, `.py` y `.txt`. No toca `mainwindow.cpp`: ese archivo tiene el mensaje «Cargá 03_ModeloSQL_Grupo00.sql…», y si lo querés cambiar corré el script con `--incluir-app` (y recompilá). Hacelo antes de subir al repositorio. [COMPLETAR: número de grupo]
+Somos el **Grupo 6** (Arce Thiago y Cabrera Ulises), según lo informó el profesor. Los archivos ya están nombrados `*_Grupo06*`.
 
 ## Desvíos
 
@@ -86,4 +78,3 @@ La primera línea solo muestra qué cambiaría; la segunda lo hace y deja `Grupo
 
 - [COMPLETAR: versión de MySQL 8 y de SQL Server con los que se prueba]
 - [COMPLETAR: resultado de correr 03 y 04 en cada motor (ok o mensaje de error)]
-- [COMPLETAR: número de grupo que informe Linares (sección 4)]

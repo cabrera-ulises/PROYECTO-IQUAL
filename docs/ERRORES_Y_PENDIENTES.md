@@ -17,7 +17,7 @@
 | E-03 | Compilar y abrir la app en **Windows** (Qt 6.12 MinGW). Mirar el título de la ventana («· MySQL» o «· MySQL (ODBC)») y hacer una acción para ver el evento en `log_auditoria` | Driver y conexión sin probar en Windows |
 | E-04 | Ejecutar los casos de `docs/pruebas/CASOS_PRUEBA_*.md` y completar la columna Resultado, empezando por login, registro, objetos, préstamo, sectores, Tienda y Educación Física | Hoy no hay resultados cargados |
 | E-05 | Completar en `db/06_PruebasSQL.xlsx` la fecha de revisión del encabezado | Se corrió en MariaDB; falta repetir en MySQL 8 |
-| E-06 | Reemplazar `Grupo00` por el número de grupo con `renombrar_grupo.sh` | Los archivos de la consigna llevan el número |
+| E-06 | ~~Poner el número de grupo en los archivos~~ **Hecho:** Grupo 6, archivos `*_Grupo06*` | Los archivos de la consigna llevan el número |
 | E-07 | Sacar capturas reales de la app para los manuales | Las capturas actuales son de la etapa anterior |
 | E-08 | Decidir y escribir quién restablece contraseñas y quién entrega el PIN institucional | La app no tiene recuperación de clave |
 | E-09 | Buscar `COMPLETAR` en todo el repo y, en cada caso, completar el dato o borrar la línea (sobre todo presupuesto, análisis de competencia y guion del pitch) | No deben quedar marcas en la entrega |

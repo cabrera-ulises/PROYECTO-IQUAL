@@ -1,4 +1,4 @@
--- 05_Backend_Grupo00.sql - PROYECTO IQUAL (SGE) - Stored Procedures: funcionalidades (1 a 15), reportes, auditoria y tuneados
+-- 05_Backend_Grupo06.sql - PROYECTO IQUAL (SGE) - Stored Procedures: funcionalidades (1 a 15), reportes, auditoria y tuneados
 -- Orden: 05a (funcionalidades 1 a 8) + 05c (9 a 15) + 05b (reportes e indices). Re-ejecutable. Ejecutar completo (Alt+X en DBeaver).
 
 -- PROYECTO IQUAL (SGE) - 05a Backend: funcionalidades 1 a 8 (MySQL 8 / MariaDB 10.11)

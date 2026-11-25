@@ -16,7 +16,7 @@ Este sistema integrado surge para dar solución a la desorganización operativa 
 
 ## 2. Desarrollo del 4° Bimestre (Implementación y Código)
 En esta etapa, el proyecto avanza en la programación e implementación técnica del software en dupla de desarrollo:
-* **Modelo relacional:** esquema de base de datos en 3FN con integridad referencial, de **47 tablas**. La aplicación **se conecta a MySQL** (base `iqual`); si el servidor, el driver o la base fallan, avisa el motivo y no abre. El modelo también se entrega como script para **SQL Server 2005**, y hay 27 procedimientos almacenados para MySQL (`db/05_Backend_Grupo00.sql`).
+* **Modelo relacional:** esquema de base de datos en 3FN con integridad referencial, de **47 tablas**. La aplicación **se conecta a MySQL** (base `iqual`); si el servidor, el driver o la base fallan, avisa el motivo y no abre. El modelo también se entrega como script para **SQL Server 2005**, y hay 27 procedimientos almacenados para MySQL (`db/05_Backend_Grupo06.sql`).
 * **Interfaz y lógica de negocio:** aplicación de **escritorio** con una barra lateral de navegación, una barra superior (título de la página, usuario con su rol y botón de tema) y **dos temas**, claro y oscuro, que se recuerdan entre sesiones. Parte de las especificaciones y maquetados de la Carpeta V1 y los ajusta en el 4° Bimestre (ver [cambios respecto al diseño inicial](./docs/cambios-respecto-al-diseno-inicial.md)).
 
 ### 🧰 Tecnología
@@ -69,7 +69,7 @@ Para registrar cuentas de Profesor, Preceptor o Maestranza la app pide un PIN in
 4. Si CMake falla, revisá que abriste el `CMakeLists.txt` de la raíz y que el kit sea MinGW 64-bit con Widgets y Sql instalados.
 
 ### 4.2 Base de datos (MySQL)
-1. Instalar MySQL, crear la base `iqual` y ejecutar en este orden, con Alt+X en DBeaver o MySQL Workbench: `db/03_ModeloSQL_Grupo00.sql` (47 tablas), `db/04_DatosSQL_Grupo00.sql` (datos, 62 usuarios) y `db/05_Backend_Grupo00.sql` (procedimientos almacenados). Pasos detallados en [`db/guias/GUIA_INSTALACION_MYSQL.md`](./db/guias/GUIA_INSTALACION_MYSQL.md). La app **no crea** las tablas en MySQL; si la base existe pero está vacía, lo avisa.
+1. Instalar MySQL, crear la base `iqual` y ejecutar en este orden, con Alt+X en DBeaver o MySQL Workbench: `db/03_ModeloSQL_Grupo06.sql` (47 tablas), `db/04_DatosSQL_Grupo06.sql` (datos, 62 usuarios) y `db/05_Backend_Grupo06.sql` (procedimientos almacenados). Pasos detallados en [`db/guias/GUIA_INSTALACION_MYSQL.md`](./db/guias/GUIA_INSTALACION_MYSQL.md). La app **no crea** las tablas en MySQL; si la base existe pero está vacía, lo avisa.
 2. **Conexión (`iqual.ini`).** La primera vez que se abre, la app crea `iqual.ini` junto al ejecutable, con una sección `[base]`:
    | Clave | Valor por defecto | Para qué |
    | :--- | :--- | :--- |
@@ -106,7 +106,7 @@ Para registrar cuentas de Profesor, Preceptor o Maestranza la app pide un PIN in
 └── db/              Scripts SQL, consultas, justificación de 3FN, diagramas y guías (db/guias/)
 ```
 Contenido de `/db`:
-* **Scripts (orden de carga 03, 04, 05):** `03_ModeloSQL_Grupo00.sql` (47 tablas), `04_DatosSQL_Grupo00.sql` (datos), `05_Backend_Grupo00.sql` (procedimientos almacenados: 15 funcionalidades, 8 reportes, 1 auditoría y 2 tuneados) y `06_PruebasSQL.xlsx` (104 casos de prueba). Versión SQL Server 2005 con schemas: `*_sqlserver.sql`.
+* **Scripts (orden de carga 03, 04, 05):** `03_ModeloSQL_Grupo06.sql` (47 tablas), `04_DatosSQL_Grupo06.sql` (datos), `05_Backend_Grupo06.sql` (procedimientos almacenados: 15 funcionalidades, 8 reportes, 1 auditoría y 2 tuneados) y `06_PruebasSQL.xlsx` (104 casos de prueba). Versión SQL Server 2005 con schemas: `*_sqlserver.sql`.
 * **Consultas:** `consultas_verificacion_mysql.sql` (y su versión para SQL Server) y `consultas_demo.sql` (consultas para mostrar en la defensa).
 * **Documentos:** `justificacion_3FN.md` y las guías en `db/guias/` (`GUIA_INSTALACION_MYSQL.md`, `GUIA_CONEXION_APP_MYSQL.md`, `REVISION_ESTATICA_MYSQL.md`).
 * **Diagramas:** los dos XML de draw.io y sus PNG (sección 6).
@@ -169,4 +169,4 @@ Informe general: [`INFORME_PRUEBAS.md`](./docs/INFORME_PRUEBAS.md) y [`CASOS_PRU
 > **Nota de Créditos (3er Bimestre):** La fase de diagnóstico, investigación, MML, requerimientos y maquetados de la Carpeta V1 fue realizada durante el 3er Bimestre por el equipo original: Arce Thiago, Cabrera Ulises, Denuble Franco y González Manuel.
 
 ## Actualización v7: base de datos de la consigna de BBDD
-Los scripts están en `db/`: `03_ModeloSQL_Grupo00.sql` (47 tablas), `04_DatosSQL_Grupo00.sql` (62 usuarios y datos de las demás tablas), `05_Backend_Grupo00.sql` (procedimientos almacenados) y `06_PruebasSQL.xlsx` (104 casos con resultado real). Orden de carga: 03, 04, 05, con Alt+X en DBeaver. Hay versión para SQL Server (`*_sqlserver.sql`, con schemas). El número de grupo `Grupo00` es provisorio hasta confirmarlo con el profesor. Si en algún documento aparece "5 usuarios", es el dato de ejemplo anterior: ahora son 62.
+Los scripts están en `db/`: `03_ModeloSQL_Grupo06.sql` (47 tablas), `04_DatosSQL_Grupo06.sql` (62 usuarios y datos de las demás tablas), `05_Backend_Grupo06.sql` (procedimientos almacenados) y `06_PruebasSQL.xlsx` (104 casos con resultado real). Orden de carga: 03, 04, 05, con Alt+X en DBeaver. Hay versión para SQL Server (`*_sqlserver.sql`, con schemas). El número de grupo `Grupo06` es provisorio hasta confirmarlo con el profesor. Si en algún documento aparece "5 usuarios", es el dato de ejemplo anterior: ahora son 62.

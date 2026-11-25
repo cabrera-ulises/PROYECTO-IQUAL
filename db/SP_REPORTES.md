@@ -122,7 +122,7 @@ No se repiten los de las claves (PK, `UNIQUE`, FK). Se crean con un SP auxiliar 
 - **¿Qué es el HAVING?** Un filtro que se aplica **después** del `GROUP BY`, sobre agregados; el `WHERE` filtra antes y no puede usar `COUNT`/`SUM`.
 
 ## Desvíos
-- Nada se ejecutó (sin MySQL/MariaDB en el entorno): todo revisado a mano contra `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql`.
+- Nada se ejecutó (sin MySQL/MariaDB en el entorno): todo revisado a mano contra `03_ModeloSQL_Grupo06.sql y 04_DatosSQL_Grupo06.sql`.
 - La auditoría devuelve un resumen agrupado, no el detalle de cada log.
 
 ## Datos que faltan

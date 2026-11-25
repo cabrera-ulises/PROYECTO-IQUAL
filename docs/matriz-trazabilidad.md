@@ -7,7 +7,7 @@
 Relaciona cada requerimiento funcional con la historia de usuario que lo cubre, el módulo, las tablas de la base de datos que usa y la pantalla donde se ve. Sirve para responder en la defensa "¿dónde está implementado el RF0X?".
 
 * Requerimientos: [`requerimientos.md`](./requerimientos.md) · Historias: [`historias-de-usuario.md`](./historias-de-usuario.md).
-* Tablas: son las del modelo de **47 tablas** (las 44 anteriores más `software`, `recurso_software` y `categoria_producto`). Si el profesor de BBDD pide conservar `curso_materia`, `notificacion` o `metodo_pago`, el total cambia (pendiente de confirmar). El motor de la app es MySQL (sin base de respaldo); falta que el profesor Linares confirme la elección. La sección 6 lista las 47 tablas del script `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql` y los RF que las usan.
+* Tablas: son las del modelo de **47 tablas** (las 44 anteriores más `software`, `recurso_software` y `categoria_producto`). Si el profesor de BBDD pide conservar `curso_materia`, `notificacion` o `metodo_pago`, el total cambia (pendiente de confirmar). El motor de la app es MySQL (sin base de respaldo); falta que el profesor Linares confirme la elección. La sección 6 lista las 47 tablas del script `03_ModeloSQL_Grupo06.sql y 04_DatosSQL_Grupo06.sql` y los RF que las usan.
 * Pantalla: número de página del `QStackedWidget` de la aplicación (0 Landing, 1 Acceso, 2 Dashboard, 3 Objetos, 4 Higiene, 5 Tienda de alumnos, 6 Préstamo de equipos, 7 Sectores, 8 Ed. Física, 9 Mi Cuenta). Las pestañas de cada página se indican con su nombre.
 
 ---
@@ -125,7 +125,7 @@ Las filas se refieren a [`maquetado-y-usabilidad.xlsx`](./maquetado-y-usabilidad
 
 ## 6. Las 47 tablas del script → requerimientos
 
-Salen de `03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql` (47 sentencias `CREATE TABLE`) cruzadas con la sección 1. Se verificó con un script que cada tabla aparece al menos en un RF; ninguna quedó sin mapear.
+Salen de `03_ModeloSQL_Grupo06.sql y 04_DatosSQL_Grupo06.sql` (47 sentencias `CREATE TABLE`) cruzadas con la sección 1. Se verificó con un script que cada tabla aparece al menos en un RF; ninguna quedó sin mapear.
 
 | Tabla | Requerimientos que la usan |
 | :--- | :--- |

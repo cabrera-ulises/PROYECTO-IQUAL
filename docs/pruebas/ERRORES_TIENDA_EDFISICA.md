@@ -3,7 +3,7 @@
 **Proyecto:** PROYECTO IQUAL® · SGE · E.T. N°3 D.E.9
 **Cómo se obtuvo:** lectura del código integrado (`mainwindow.cpp`, `mainwindow.ui`) y de las capturas. **Nada de esto se ejecutó en una prueba formal** y **no se corrigió código** (lo corrigen Arce Thiago y Cabrera Ulises).
 **Estado de esta versión:** cada error se volvió a verificar en el código de la app v3 (`iqual_integrado_v3`, CONTEXTO §20 y §23), que ahora usa solo MySQL, comparándolo función por función con la versión anterior (CONTEXTO §19.2, §19.3 y §20). La columna **Estado** dice si quedó **Corregido**, **Abierto** o **Decisión por defecto**.
-**Datos:** revisado el 19/11/2026 contra los datos nuevos de MySQL (`04_DatosSQL_Grupo00.sql`, CONTEXTO §22): ninguno de los errores que seguían abiertos dejó de ocurrir; solo cambia cómo se reproducen algunos (E-04, E-06, E-09, E-11, E-16). Los errores nuevos E-17 y E-18 aparecen por las ventas de 2 productos que trae el script 04. Ronda del 19/11/2026 (CONTEXTO §23): E-08 pasa a «No aplica» porque dependía de comparar dos motores y ya hay uno solo.
+**Datos:** revisado el 19/11/2026 contra los datos nuevos de MySQL (`04_DatosSQL_Grupo06.sql`, CONTEXTO §22): ninguno de los errores que seguían abiertos dejó de ocurrir; solo cambia cómo se reproducen algunos (E-04, E-06, E-09, E-11, E-16). Los errores nuevos E-17 y E-18 aparecen por las ventas de 2 productos que trae el script 04. Ronda del 19/11/2026 (CONTEXTO §23): E-08 pasa a «No aplica» porque dependía de comparar dos motores y ya hay uno solo.
 **Gravedad:** Alta = pierde datos o bloquea el uso · Media = confunde o deja datos viejos a la vista · Baja = detalle, rendimiento o robustez. No encontré errores de gravedad Alta.
 
 ## 1. Resumen

@@ -635,7 +635,7 @@ DELETE FROM log_auditoria WHERE id_log = @l; DELETE FROM reserva_sector WHERE id
 -- ====================================================================================================
 -- TC_SP_RESOLVER_RESERVA_SECTOR_01 · Éxito: el Preceptor aprueba una reserva Pendiente
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). La reserva 1 (Biblioteca, de profe1) está en estado Pendiente. preceptor1 tiene rol Preceptor.
 -- ESPERADO: El SP devuelve una fila: estado = 'OK', id_reserva = 1, estado_reserva = 'Aprobada'. La consulta del paso 2 devuelve nombre_estado = 'Aprobada' y autorizo_preceptor1 = 1. El log muestra: 'Reserva de sector', 'Exitoso', 'Reserva 1: Aprobada', 'preceptor1'.
 -- 1. Ejecutar el SP
@@ -656,7 +656,7 @@ ORDER BY l.id_log DESC LIMIT 1;
 -- ====================================================================================================
 -- TC_SP_RESOLVER_RESERVA_SECTOR_02 · Sin coincidencias: reserva inexistente
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). No existe la reserva 99999.
 -- ESPERADO: Una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'Esa reserva no existe.'. La consulta del paso final de la tabla devuelve exactamente los mismos valores que antes (no se modificó ningún dato). El log muestra una fila nueva con evento propio del SP, resultado 'Fallido' y el mismo mensaje de error como descripción.
 -- 1. Anotar el estado de la tabla antes de llamar
@@ -676,7 +676,7 @@ ORDER BY l.id_log DESC LIMIT 1;
 -- ====================================================================================================
 -- TC_SP_RESOLVER_RESERVA_SECTOR_03 · Parámetros NULL o cadenas vacías: error de negocio controlado
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). 
 -- ESPERADO: Llamada 1: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'Acción inválida: usá Aprobar, Rechazar o Cancelar.'. Llamada 2: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'El usuario no existe.'. Llamada 3: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'Elegí una reserva de la lista.'. La consulta del paso final de la tabla devuelve exactamente los mismos valores que antes (no se modificó ningún dato). El log muestra 3 filas nuevas con evento propio del SP, resultado 'Fallido' y el mismo mensaje de error como descripción.
 -- 1. Anotar el estado de la tabla antes de llamar
@@ -700,7 +700,7 @@ ORDER BY l.id_log DESC LIMIT 3;
 -- ====================================================================================================
 -- TC_SP_RESOLVER_RESERVA_SECTOR_04 · Equivalencia: el resultado del SP es idéntico a un SELECT directo (cancelar una reserva Aprobada)
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). La reserva 4 (Laboratorio 1, de profe1) está en estado Aprobada. preceptor1 puede cancelar reservas de cualquier usuario.
 -- ESPERADO: El SP y el SELECT directo devuelven exactamente una fila idéntica: estado = 'OK', id_reserva = 4, estado_reserva = 'Cancelada'. El log muestra 'Reserva de sector', 'Exitoso', 'Reserva 4: Cancelada'.
 -- 1. Ejecutar el SP
@@ -721,7 +721,7 @@ ORDER BY l.id_log DESC LIMIT 1;
 -- ====================================================================================================
 -- TC_SP_REPORTAR_HIGIENE_01 · Éxito: un alumno reporta una rotura en un sector
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). Existen el sector 'Baño 2' y el tipo 'Rotura'. alumno1 existe.
 -- ESPERADO: El SP devuelve una fila: estado = 'OK', id_reporte = el valor de SELECT MAX(id_reporte) FROM reporte_higiene. La consulta del paso 2 devuelve: 'La canilla pierde agua', 'Baño 2', 'Rotura', 'Pendiente', 'alumno1', NULL. El log muestra: 'Reporte de higiene', 'Exitoso', 'Reporte en Baño 2', 'alumno1'.
 -- 1. Ejecutar el SP
@@ -745,7 +745,7 @@ ORDER BY l.id_log DESC LIMIT 1;
 -- ====================================================================================================
 -- TC_SP_REPORTAR_HIGIENE_02 · Sin coincidencias: sector y usuario inexistentes
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). No existe el sector 'Sector inexistente' ni el usuario 'usuario_fantasma'.
 -- ESPERADO: Llamada 1: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'Ese sector no existe.'. Llamada 2: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'El usuario no existe.'. La consulta del paso final de la tabla devuelve exactamente los mismos valores que antes (no se modificó ningún dato). El log muestra 2 filas nuevas con evento propio del SP, resultado 'Fallido' y el mismo mensaje de error como descripción.
 -- 1. Anotar el estado de la tabla antes de llamar
@@ -767,7 +767,7 @@ ORDER BY l.id_log DESC LIMIT 2;
 -- ====================================================================================================
 -- TC_SP_REPORTAR_HIGIENE_03 · Parámetros NULL, vacíos y límite de 200 caracteres: error de negocio controlado
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). 
 -- ESPERADO: Llamada 1: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'Contanos qué pasa para poder resolverlo.'. Llamada 2: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'Contanos qué pasa para poder resolverlo.'. Llamada 3: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'Elegí un sector para reportar.'. Llamada 4: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'Elegí un tipo de problema.'. Llamada 5: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'La observación puede tener hasta 200 caracteres.'. La consulta del paso final de la tabla devuelve exactamente los mismos valores que antes (no se modificó ningún dato). El log muestra 5 filas nuevas con evento propio del SP, resultado 'Fallido' y el mismo mensaje de error como descripción.
 -- 1. Anotar el estado de la tabla antes de llamar
@@ -795,7 +795,7 @@ ORDER BY l.id_log DESC LIMIT 5;
 -- ====================================================================================================
 -- TC_SP_REPORTAR_HIGIENE_04 · Equivalencia: el resultado del SP es idéntico a un SELECT directo
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). Existen el sector 'Patio', el tipo 'Limpieza' y el usuario maestranza1 (cualquier rol puede reportar).
 -- ESPERADO: El SP y el SELECT directo devuelven exactamente una fila idéntica: estado = 'OK' y el mismo id_reporte. El log muestra 'Reporte de higiene', 'Exitoso', 'Reporte en Patio', 'maestranza1'.
 -- 1. Ejecutar el SP
@@ -813,7 +813,7 @@ ORDER BY l.id_log DESC LIMIT 1;
 -- ====================================================================================================
 -- TC_SP_RESOLVER_REPORTE_HIGIENE_01 · Éxito: Maestranza marca resuelto un reporte Pendiente
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). El reporte 1 (Baño 1, de alumno1) está Pendiente. maestranza1 tiene rol Maestranza.
 -- ESPERADO: El SP devuelve una fila: estado = 'OK', id_reporte = 1. La consulta del paso 2 devuelve: 'Resuelto', 'maestranza1', 1. El log muestra: 'Resolución de reporte', 'Exitoso', 'Reporte 1 resuelto', 'maestranza1'.
 -- 1. Ejecutar el SP
@@ -835,7 +835,7 @@ ORDER BY l.id_log DESC LIMIT 1;
 -- ====================================================================================================
 -- TC_SP_RESOLVER_REPORTE_HIGIENE_02 · Sin coincidencias: reporte y usuario inexistentes
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). No existe el reporte 99999 ni el usuario 'usuario_fantasma'.
 -- ESPERADO: Llamada 1: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'Ese reporte no existe.'. Llamada 2: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'El usuario no existe.'. La consulta del paso final de la tabla devuelve exactamente los mismos valores que antes (no se modificó ningún dato). El log muestra 2 filas nuevas con evento propio del SP, resultado 'Fallido' y el mismo mensaje de error como descripción.
 -- 1. Anotar el estado de la tabla antes de llamar
@@ -857,7 +857,7 @@ ORDER BY l.id_log DESC LIMIT 2;
 -- ====================================================================================================
 -- TC_SP_RESOLVER_REPORTE_HIGIENE_03 · Parámetros NULL, vacíos y límites (rol no permitido, reporte ya resuelto): error de negocio controlado
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). El reporte 2 (Aula) ya está Resuelto en la base de demostración. alumno1 tiene rol Alumno.
 -- ESPERADO: Llamada 1: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'Elegí un reporte de la lista.'. Llamada 2: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'El usuario no existe.'. Llamada 3: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'Esta acción es solo para estos roles: Profesor, Preceptor, Maestranza.'. Llamada 4: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'Ese reporte ya está resuelto.'. La consulta del paso final de la tabla devuelve exactamente los mismos valores que antes (no se modificó ningún dato). El log muestra 4 filas nuevas con evento propio del SP, resultado 'Fallido' y el mismo mensaje de error como descripción.
 -- 1. Anotar el estado de la tabla antes de llamar
@@ -883,7 +883,7 @@ ORDER BY l.id_log DESC LIMIT 4;
 -- ====================================================================================================
 -- TC_SP_RESOLVER_REPORTE_HIGIENE_04 · Equivalencia: el resultado del SP es idéntico a un SELECT directo
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). Se crea un reporte Pendiente nuevo para este caso. profe1 tiene rol Profesor.
 -- ESPERADO: El SP (paso 3) y el SELECT directo (paso 4) devuelven exactamente una fila idéntica: estado = 'OK' y id_reporte = @id_nuevo. El log muestra 'Resolución de reporte', 'Exitoso', 'Reporte <id> resuelto', 'profe1'.
 -- 1. Crear un reporte Pendiente
@@ -909,7 +909,7 @@ ORDER BY l.id_log DESC LIMIT 1;
 -- ====================================================================================================
 -- TC_SP_COMPRAR_PRODUCTO_01 · Éxito: un alumno reserva 2 unidades de un producto de otro vendedor
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). El producto 1 (Alfajor de dulce de leche, $800, vendedor alumno1) tiene stock suficiente (18 en la demo). alumno2 no es el vendedor.
 -- ESPERADO: El SP devuelve una fila: estado = 'OK', id_venta = el valor de SELECT MAX(id_venta) FROM venta_buffet, total = 1600. La consulta del paso 3 devuelve: 'Reservada', 'alumno2', 2, 800 y un stock igual al del paso 1 menos 2. El log muestra: 'Reserva de producto', 'Exitoso', 'Venta <id>: producto 1 x2', 'alumno2'.
 -- 1. Anotar el stock antes
@@ -935,7 +935,7 @@ ORDER BY l.id_log DESC LIMIT 1;
 -- ====================================================================================================
 -- TC_SP_COMPRAR_PRODUCTO_02 · Sin coincidencias: producto y usuario inexistentes
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). No existe el producto 99999 ni el usuario 'usuario_fantasma'.
 -- ESPERADO: Llamada 1: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'Ese producto ya no existe.'. Llamada 2: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'El usuario no existe.'. La consulta del paso final de la tabla devuelve exactamente los mismos valores que antes (no se modificó ningún dato). El log muestra 2 filas nuevas con evento propio del SP, resultado 'Fallido' y el mismo mensaje de error como descripción.
 -- 1. Anotar el estado de la tabla antes de llamar
@@ -957,7 +957,7 @@ ORDER BY l.id_log DESC LIMIT 2;
 -- ====================================================================================================
 -- TC_SP_COMPRAR_PRODUCTO_03 · Parámetros NULL, cantidad 0 y límites (stock insuficiente, producto propio): error de negocio controlado
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). El producto 4 (Buzo de egresados) es de alumno2 y tiene stock 4. El producto 1 es de alumno1.
 -- ESPERADO: Llamada 1: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'La cantidad tiene que ser 1 o más.'. Llamada 2: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'La cantidad tiene que ser 1 o más.'. Llamada 3: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'Elegí un producto de la lista.'. Llamada 4: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'No hay stock suficiente: quedan 4 unidades.'. Llamada 5: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'No podés reservar tus propios productos.'. La consulta del paso final de la tabla devuelve exactamente los mismos valores que antes (no se modificó ningún dato). El log muestra 5 filas nuevas con evento propio del SP, resultado 'Fallido' y el mismo mensaje de error como descripción.
 -- 1. Anotar el estado de la tabla antes de llamar
@@ -985,7 +985,7 @@ ORDER BY l.id_log DESC LIMIT 5;
 -- ====================================================================================================
 -- TC_SP_COMPRAR_PRODUCTO_04 · Equivalencia: el resultado del SP es idéntico a un SELECT directo
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). El producto 3 (Jugo en caja, $700, vendedor alumno2) tiene stock mayor o igual a 1. profe1 no es el vendedor.
 -- ESPERADO: El SP y el SELECT directo devuelven exactamente una fila idéntica: estado = 'OK', el mismo id_venta y total = 700. El stock del paso 4 es el del paso 1 menos 1. El log muestra 'Reserva de producto', 'Exitoso', 'Venta <id>: producto 3 x1', 'profe1'.
 -- 1. Anotar el stock antes
@@ -1009,7 +1009,7 @@ ORDER BY l.id_log DESC LIMIT 1;
 -- ====================================================================================================
 -- TC_SP_DONAR_GRUPO_01 · Éxito: un alumno dona $500 a un grupo
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). El grupo 1 (Viaje de Estudios 4to 1ra) existe. alumno1 existe.
 -- ESPERADO: El SP devuelve una fila: estado = 'OK', id_donacion = el valor de SELECT MAX(id_donacion) FROM donacion_buffet, monto = 500. La consulta del paso 3 devuelve: 500, 'alumno1', 'Viaje de Estudios 4to 1ra' y donado_ahora = el valor del paso 1 más 500. El log muestra: 'Donación', 'Exitoso', 'Donó $500 al grupo 1', 'alumno1'.
 -- 1. Anotar lo donado al grupo antes
@@ -1033,7 +1033,7 @@ ORDER BY l.id_log DESC LIMIT 1;
 -- ====================================================================================================
 -- TC_SP_DONAR_GRUPO_02 · Sin coincidencias: grupo y usuario inexistentes
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). No existe el grupo 99999 ni el usuario 'usuario_fantasma'.
 -- ESPERADO: Llamada 1: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'Ese grupo no existe.'. Llamada 2: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'El usuario no existe.'. La consulta del paso final de la tabla devuelve exactamente los mismos valores que antes (no se modificó ningún dato). El log muestra 2 filas nuevas con evento propio del SP, resultado 'Fallido' y el mismo mensaje de error como descripción.
 -- 1. Anotar el estado de la tabla antes de llamar
@@ -1055,7 +1055,7 @@ ORDER BY l.id_log DESC LIMIT 2;
 -- ====================================================================================================
 -- TC_SP_DONAR_GRUPO_03 · Parámetros NULL, vacíos y monto límite (0 y negativo): error de negocio controlado
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). 
 -- ESPERADO: Llamada 1: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'Escribí un monto en pesos, mayor a 0 y sin centavos.'. Llamada 2: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'Escribí un monto en pesos, mayor a 0 y sin centavos.'. Llamada 3: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'Escribí un monto en pesos, mayor a 0 y sin centavos.'. Llamada 4: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'Todavía no hay grupos para donar.'. Llamada 5: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'El usuario no existe.'. La consulta del paso final de la tabla devuelve exactamente los mismos valores que antes (no se modificó ningún dato). El log muestra 5 filas nuevas con evento propio del SP, resultado 'Fallido' y el mismo mensaje de error como descripción.
 -- 1. Anotar el estado de la tabla antes de llamar
@@ -1083,7 +1083,7 @@ ORDER BY l.id_log DESC LIMIT 5;
 -- ====================================================================================================
 -- TC_SP_DONAR_GRUPO_04 · Equivalencia: el resultado del SP es idéntico a un SELECT directo
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). El grupo 1 existe. profe1 existe (cualquier rol puede donar).
 -- ESPERADO: El SP y el SELECT directo devuelven exactamente una fila idéntica: estado = 'OK', el mismo id_donacion y monto = 1000. El log muestra 'Donación', 'Exitoso', 'Donó $1000 al grupo 1', 'profe1'.
 -- 1. Ejecutar el SP
@@ -1103,7 +1103,7 @@ ORDER BY l.id_log DESC LIMIT 1;
 -- ====================================================================================================
 -- TC_SP_INSCRIBIR_ED_FISICA_01 · Éxito: un alumno se inscribe a una oferta con cupo y sin superposición de horario
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). alumno1 no tiene inscripción a Ed. Física (si un caso anterior la dejó creada, ejecutar antes CALL sp_cancelar_inscripcion_ed_fisica('alumno1');). La oferta 1 (Fútbol, lunes 10:00 a 12:00, cupo 20) tiene cupo y no se superpone con el horario de 4° 1° Computación (curso de alumno1).
 -- ESPERADO: El SP devuelve una fila: estado = 'OK', id_inscripcion = el valor de SELECT MAX(id_inscripcion) FROM inscripcion_ed_fisica, id_oferta = 1. La consulta del paso 2 devuelve: 1, 'Fútbol', 1. El log muestra: 'Inscripción a Ed. Física', 'Exitoso', 'Inscripción a la oferta 1', 'alumno1'.
 -- 1. Ejecutar el SP
@@ -1125,7 +1125,7 @@ ORDER BY l.id_log DESC LIMIT 1;
 -- ====================================================================================================
 -- TC_SP_INSCRIBIR_ED_FISICA_02 · Sin coincidencias: oferta y usuario inexistentes
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). No existe la oferta 99999 ni el usuario 'usuario_fantasma'.
 -- ESPERADO: Llamada 1: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'No hay clase de ese deporte en ese día y horario. Probá con otra combinación.'. Llamada 2: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'El usuario no existe.'. La consulta del paso final de la tabla devuelve exactamente los mismos valores que antes (no se modificó ningún dato). El log muestra 2 filas nuevas con evento propio del SP, resultado 'Fallido' y el mismo mensaje de error como descripción.
 -- 1. Anotar el estado de la tabla antes de llamar
@@ -1147,7 +1147,7 @@ ORDER BY l.id_log DESC LIMIT 2;
 -- ====================================================================================================
 -- TC_SP_INSCRIBIR_ED_FISICA_03 · Parámetros NULL, vacíos y límites (rol, ya inscripto, cupo lleno, superposición): error de negocio controlado
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). alumno1 no tiene inscripción a Ed. Física (si un caso anterior la dejó creada, ejecutar antes CALL sp_cancelar_inscripcion_ed_fisica('alumno1');). alumno2 sigue inscripto a la oferta 16 (Handball, lunes 08:00 a 10:00, cupo 1 de 1; estado inicial de la demo, por eso este caso va antes que TC_SP_CANCELAR_INSCRIPCION_ED_FISICA_01). La oferta 17 es Handball martes 16:00 a 18:00. La oferta 7 (Vóley, martes 14:00 a 16:00) se superpone con una materia del curso de alumno1 (en la demo, Bases de Datos; si hay más de una, el mensaje nombra la primera por orden alfabético, MIN(nombre_materia)).
 -- ESPERADO: Llamada 1: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'No hay clase de ese deporte en ese día y horario. Probá con otra combinación.'. Llamada 2: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'El usuario no existe.'. Llamada 3: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'Esta acción es solo para estos roles: Alumno.'. Llamada 4: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'Ya estás inscripto. Cancelá tu inscripción antes de elegir otra.'. Llamada 5: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'Esa opción ya no tiene cupo.'. Llamada 6: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'Esa opción se superpone con Bases de Datos en tu horario.'. La consulta del paso final de la tabla devuelve exactamente los mismos valores que antes (no se modificó ningún dato). El log muestra 6 filas nuevas con evento propio del SP, resultado 'Fallido' y el mismo mensaje de error como descripción. Para la última llamada, el nombre de la materia coincide con el resultado de: SELECT MIN(m.nombre_materia) FROM oferta_deporte o JOIN franja_horaria f ON f.id_franja = o.id_franja JOIN horario_dia hd ON hd.id_dia = o.id_dia JOIN horario_escolar he ON he.id_bloque = hd.id_bloque JOIN materia m ON m.id_materia = he.id_materia WHERE o.id_oferta = 7 AND he.id_curso = (SELECT id_curso FROM usuario WHERE usuario_nick = 'alumno1') AND he.hora_inicio < f.hora_fin AND he.hora_fin > f.hora_inicio;
 -- 1. Anotar el estado de la tabla antes de llamar
@@ -1177,7 +1177,7 @@ ORDER BY l.id_log DESC LIMIT 6;
 -- ====================================================================================================
 -- TC_SP_INSCRIBIR_ED_FISICA_04 · Equivalencia: el resultado del SP es idéntico a un SELECT directo
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). alumno1 no tiene inscripción a Ed. Física (si un caso anterior la dejó creada, ejecutar antes CALL sp_cancelar_inscripcion_ed_fisica('alumno1');). La oferta 1 tiene cupo y no se superpone con el horario de alumno1.
 -- ESPERADO: El SP y el SELECT directo devuelven exactamente una fila idéntica: estado = 'OK', el mismo id_inscripcion e id_oferta = 1. El log muestra 'Inscripción a Ed. Física', 'Exitoso', 'Inscripción a la oferta 1', 'alumno1'.
 -- 1. Ejecutar el SP
@@ -1197,7 +1197,7 @@ ORDER BY l.id_log DESC LIMIT 1;
 -- ====================================================================================================
 -- TC_SP_CANCELAR_INSCRIPCION_ED_FISICA_01 · Éxito: un alumno cancela su inscripción
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). alumno2 está inscripto a la oferta 16 (Handball, lunes 08:00 a 10:00, cupo 1 de 1), estado inicial de la demo.
 -- ESPERADO: El SP devuelve una fila: estado = 'OK', id_oferta = 16 (el valor del paso 1). La consulta del paso 3 devuelve inscripciones_de_alumno2 = 0 y cupos_libres_oferta_16 = 1. El log muestra: 'Inscripción a Ed. Física', 'Exitoso', 'Inscripción a la oferta 16 cancelada', 'alumno2'.
 -- 1. Anotar la oferta de la inscripción antes
@@ -1218,7 +1218,7 @@ ORDER BY l.id_log DESC LIMIT 1;
 -- ====================================================================================================
 -- TC_SP_CANCELAR_INSCRIPCION_ED_FISICA_02 · Sin coincidencias: usuario inexistente
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). No existe el usuario 'usuario_fantasma'.
 -- ESPERADO: Una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'El usuario no existe.'. La consulta del paso final de la tabla devuelve exactamente los mismos valores que antes (no se modificó ningún dato). El log muestra una fila nueva con evento propio del SP, resultado 'Fallido' y el mismo mensaje de error como descripción.
 -- 1. Anotar el estado de la tabla antes de llamar
@@ -1238,7 +1238,7 @@ ORDER BY l.id_log DESC LIMIT 1;
 -- ====================================================================================================
 -- TC_SP_CANCELAR_INSCRIPCION_ED_FISICA_03 · Parámetros NULL, vacíos y límite (alumno sin inscripción): error de negocio controlado
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). alumno1 no tiene inscripción a Ed. Física (si un caso anterior la dejó creada, ejecutar antes CALL sp_cancelar_inscripcion_ed_fisica('alumno1');). 
 -- ESPERADO: Llamada 1: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'El usuario no existe.'. Llamada 2: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'El usuario no existe.'. Llamada 3: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'Esta acción es solo para estos roles: Alumno.'. Llamada 4: una fila con estado = 'ERROR', codigo_sql = 1644, descripcion_error = 'No tenés ninguna inscripción para cancelar.'. La consulta del paso final de la tabla devuelve exactamente los mismos valores que antes (no se modificó ningún dato). El log muestra 4 filas nuevas con evento propio del SP, resultado 'Fallido' y el mismo mensaje de error como descripción.
 -- 1. Anotar el estado de la tabla antes de llamar
@@ -1264,7 +1264,7 @@ ORDER BY l.id_log DESC LIMIT 4;
 -- ====================================================================================================
 -- TC_SP_CANCELAR_INSCRIPCION_ED_FISICA_04 · Equivalencia: el resultado del SP es idéntico a un SELECT directo
 -- ====================================================================================================
--- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo00.sql completo (Alt+X): deja los datos como recien cargados. <<<
+-- >>> RECARGAR: antes de este caso ejecuta de nuevo 04_DatosSQL_Grupo06.sql completo (Alt+X): deja los datos como recien cargados. <<<
 -- ANTES: Base recargada con 04_DatosSQL (datos de demostración) y 05_Backend ejecutado (incluye sp_registrar_log). alumno1 no tiene inscripción a Ed. Física (si un caso anterior la dejó creada, ejecutar antes CALL sp_cancelar_inscripcion_ed_fisica('alumno1');). Este caso primero inscribe a alumno1 a la oferta 1 (sin superposición).
 -- ESPERADO: El SP (paso 3) y el SELECT directo (paso 4) devuelven exactamente una fila idéntica: estado = 'OK' e id_oferta = 1. El paso 5 devuelve inscripciones = 0. El log muestra 'Inscripción a Ed. Física', 'Exitoso', 'Inscripción a la oferta 1 cancelada', 'alumno1'.
 -- 1. Inscribir a alumno1
@@ -1288,7 +1288,7 @@ ORDER BY l.id_log DESC LIMIT 1;
 -- ====================================================================================================
 -- TC_SP_REP_PRESTAMOS_POR_CARRO_01 · Rango válido con datos: devuelve el agrupamiento esperado
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql). Semilla original de 04 (los esperados valen para esa semilla; si 04 trae más datos en el rango, usar como esperado el resultado del caso 04).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql). Semilla original de 04 (los esperados valen para esa semilla; si 04 trae más datos en el rango, usar como esperado el resultado del caso 04).
 -- ESPERADO: Columnas, en este orden: nombre_carro, total_prestamos, equipos_distintos, sin_devolver, primer_prestamo, ultimo_prestamo, dias_entre_extremos. 2 filas con los datos de la semilla ampliada (62 usuarios); primera fila: nombre_carro=C4, total_prestamos=1, equipos_distintos=1, sin_devolver=1, primer_prestamo=2026-10-23, ultimo_prestamo=2026-10-23, dias_entre_extremos=0. Los totales se verificaron con una consulta directa a las tablas. Sin fila estado='ERROR'.
 -- 1. Ejecutar el CALL de TEST DATA
 -- 2. Comparar filas, columnas y orden
@@ -1297,7 +1297,7 @@ CALL sp_rep_prestamos_por_carro('2026-10-22', '2026-10-23');
 -- ====================================================================================================
 -- TC_SP_REP_PRESTAMOS_POR_CARRO_02 · Rango sin coincidencias: 0 filas y sin error de ejecución
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Conjunto vacío (0 filas) con las columnas de siempre; no devuelve fila con estado='ERROR'.
 -- 1. Ejecutar el CALL con un rango en el año 2000 (sin datos)
 -- 2. Verificar que no hay fila de error
@@ -1306,7 +1306,7 @@ CALL sp_rep_prestamos_por_carro('2000-01-01', '2000-01-31');
 -- ====================================================================================================
 -- TC_SP_REP_PRESTAMOS_POR_CARRO_03 · Parámetros NULL (sin límite): no agrupa de más ni deja datos afuera; rango invertido: error controlado
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Paso 1: sin fila de error, una fila por grupo (nunca una fila por registro). Paso 2: la suma de total_prestamos = valor de la consulta de control (ningún registro queda afuera ni se cuenta dos veces). Paso 3: La segunda llamada devuelve UNA fila: estado='ERROR', codigo_sql=1644, descripcion_error='Rango de fechas invalido: desde es mayor que hasta'.
 -- 1. Ejecutar CALL con (NULL, NULL)
 -- 2. Sumar la columna total_prestamos de todas las filas y compararla con la consulta de control
@@ -1318,7 +1318,7 @@ CALL sp_rep_prestamos_por_carro('2026-10-31', '2026-10-01');
 -- ====================================================================================================
 -- TC_SP_REP_PRESTAMOS_POR_CARRO_04 · Equivalencia: el SP devuelve lo mismo que un SELECT directo
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Idénticas filas, columnas, valores y orden en ambos resultados.
 -- 1. Ejecutar el CALL
 -- 2. Ejecutar el SELECT directo (mismos literales)
@@ -1343,7 +1343,7 @@ ORDER BY total_prestamos DESC, c.nombre_carro;
 -- ====================================================================================================
 -- TC_SP_REP_OBJETOS_POR_CATEGORIA_ESTADO_01 · Rango válido con datos: devuelve el agrupamiento esperado
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql). Semilla original de 04 (los esperados valen para esa semilla; si 04 trae más datos en el rango, usar como esperado el resultado del caso 04).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql). Semilla original de 04 (los esperados valen para esa semilla; si 04 trae más datos en el rango, usar como esperado el resultado del caso 04).
 -- ESPERADO: Columnas, en este orden: nombre_categoria, nombre_estado, cantidad_objetos, primer_registro, ultimo_registro, dias_desde_el_mas_antiguo. 14 filas con los datos de la semilla ampliada (62 usuarios); primera fila: nombre_categoria=Documentación, nombre_estado=Archivado, cantidad_objetos=1, primer_registro=2026-10-13, ultimo_registro=2026-10-13, dias_desde_el_mas_antiguo = días desde 2026-10-13 hasta el día de la ejecución (cambia con la fecha: el 25/11/2026 da 43). Los totales se verificaron con una consulta directa a las tablas. Sin fila estado='ERROR'.
 -- 1. Ejecutar el CALL de TEST DATA
 -- 2. Comparar filas, columnas y orden
@@ -1352,7 +1352,7 @@ CALL sp_rep_objetos_por_categoria_estado('2026-10-01', '2026-10-31');
 -- ====================================================================================================
 -- TC_SP_REP_OBJETOS_POR_CATEGORIA_ESTADO_02 · Rango sin coincidencias: 0 filas y sin error de ejecución
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Conjunto vacío (0 filas) con las columnas de siempre; no devuelve fila con estado='ERROR'.
 -- 1. Ejecutar el CALL con un rango en el año 2000 (sin datos)
 -- 2. Verificar que no hay fila de error
@@ -1361,7 +1361,7 @@ CALL sp_rep_objetos_por_categoria_estado('2000-01-01', '2000-01-31');
 -- ====================================================================================================
 -- TC_SP_REP_OBJETOS_POR_CATEGORIA_ESTADO_03 · Parámetros NULL (sin límite): no agrupa de más ni deja datos afuera; rango invertido: error controlado
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Paso 1: sin fila de error, una fila por grupo (nunca una fila por registro). Paso 2: la suma de cantidad_objetos = valor de la consulta de control (ningún registro queda afuera ni se cuenta dos veces). Paso 3: La segunda llamada devuelve UNA fila: estado='ERROR', codigo_sql=1644, descripcion_error='Rango de fechas invalido: desde es mayor que hasta'.
 -- 1. Ejecutar CALL con (NULL, NULL)
 -- 2. Sumar la columna cantidad_objetos de todas las filas y compararla con la consulta de control
@@ -1373,7 +1373,7 @@ CALL sp_rep_objetos_por_categoria_estado('2026-10-31', '2026-10-01');
 -- ====================================================================================================
 -- TC_SP_REP_OBJETOS_POR_CATEGORIA_ESTADO_04 · Equivalencia: el SP devuelve lo mismo que un SELECT directo
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Idénticas filas, columnas, valores y orden en ambos resultados.
 -- 1. Ejecutar el CALL
 -- 2. Ejecutar el SELECT directo (mismos literales)
@@ -1397,7 +1397,7 @@ ORDER BY ca.nombre_categoria, es.nombre_estado;
 -- ====================================================================================================
 -- TC_SP_REP_HIGIENE_POR_SECTOR_01 · Rango válido con datos: devuelve el agrupamiento esperado
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql). Semilla original de 04 (los esperados valen para esa semilla; si 04 trae más datos en el rango, usar como esperado el resultado del caso 04).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql). Semilla original de 04 (los esperados valen para esa semilla; si 04 trae más datos en el rango, usar como esperado el resultado del caso 04).
 -- ESPERADO: Columnas, en este orden: nombre_sector, nombre_tipo, total_reportes, resueltos, pendientes, primer_reporte, ultimo_reporte, dias_promedio_resolucion. 16 filas con los datos de la semilla ampliada (62 usuarios); primera fila: nombre_sector=Baño 1, nombre_tipo=Limpieza, total_reportes=2, resueltos=0, pendientes=2, primer_reporte=2026-10-21, ultimo_reporte=2026-10-24, dias_promedio_resolucion=NULL. Los totales se verificaron con una consulta directa a las tablas. Sin fila estado='ERROR'.
 -- 1. Ejecutar el CALL de TEST DATA
 -- 2. Comparar filas, columnas y orden
@@ -1406,7 +1406,7 @@ CALL sp_rep_higiene_por_sector('2026-10-01', '2026-10-31');
 -- ====================================================================================================
 -- TC_SP_REP_HIGIENE_POR_SECTOR_02 · Rango sin coincidencias: 0 filas y sin error de ejecución
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Conjunto vacío (0 filas) con las columnas de siempre; no devuelve fila con estado='ERROR'.
 -- 1. Ejecutar el CALL con un rango en el año 2000 (sin datos)
 -- 2. Verificar que no hay fila de error
@@ -1415,7 +1415,7 @@ CALL sp_rep_higiene_por_sector('2000-01-01', '2000-01-31');
 -- ====================================================================================================
 -- TC_SP_REP_HIGIENE_POR_SECTOR_03 · Parámetros NULL (sin límite): no agrupa de más ni deja datos afuera; rango invertido: error controlado
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Paso 1: sin fila de error, una fila por grupo (nunca una fila por registro). Paso 2: la suma de total_reportes = valor de la consulta de control (ningún registro queda afuera ni se cuenta dos veces). Paso 3: La segunda llamada devuelve UNA fila: estado='ERROR', codigo_sql=1644, descripcion_error='Rango de fechas invalido: desde es mayor que hasta'.
 -- 1. Ejecutar CALL con (NULL, NULL)
 -- 2. Sumar la columna total_reportes de todas las filas y compararla con la consulta de control
@@ -1427,7 +1427,7 @@ CALL sp_rep_higiene_por_sector('2026-10-31', '2026-10-01');
 -- ====================================================================================================
 -- TC_SP_REP_HIGIENE_POR_SECTOR_04 · Equivalencia: el SP devuelve lo mismo que un SELECT directo
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Idénticas filas, columnas, valores y orden en ambos resultados.
 -- 1. Ejecutar el CALL
 -- 2. Ejecutar el SELECT directo (mismos literales)
@@ -1453,7 +1453,7 @@ ORDER BY pendientes DESC, total_reportes DESC, s.nombre_sector, t.nombre_tipo;
 -- ====================================================================================================
 -- TC_SP_REP_OCUPACION_SECTORES_01 · Rango válido con datos: devuelve el agrupamiento esperado
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql). Semilla original de 04 (los esperados valen para esa semilla; si 04 trae más datos en el rango, usar como esperado el resultado del caso 04).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql). Semilla original de 04 (los esperados valen para esa semilla; si 04 trae más datos en el rango, usar como esperado el resultado del caso 04).
 -- ESPERADO: Columnas, en este orden: nombre_sector, nombre_tipo, nombre_estado, cantidad_reservas, dias_con_reservas, horas_reservadas, primera_fecha, ultima_fecha. 4 filas con los datos de la semilla ampliada (62 usuarios); primera fila: nombre_sector=Biblioteca, nombre_tipo=Reservable, nombre_estado=Cancelada, cantidad_reservas=1, dias_con_reservas=1, horas_reservadas=1.00, primera_fecha=2026-11-19, ultima_fecha=2026-11-19. Los totales se verificaron con una consulta directa a las tablas. Sin fila estado='ERROR'.
 -- 1. Ejecutar el CALL de TEST DATA
 -- 2. Comparar filas, columnas y orden
@@ -1462,7 +1462,7 @@ CALL sp_rep_ocupacion_sectores(CURDATE(), DATE_ADD(CURDATE(), INTERVAL 2 DAY));
 -- ====================================================================================================
 -- TC_SP_REP_OCUPACION_SECTORES_02 · Rango sin coincidencias: 0 filas y sin error de ejecución
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Conjunto vacío (0 filas) con las columnas de siempre; no devuelve fila con estado='ERROR'.
 -- 1. Ejecutar el CALL con un rango en el año 2000 (sin datos)
 -- 2. Verificar que no hay fila de error
@@ -1471,7 +1471,7 @@ CALL sp_rep_ocupacion_sectores('2000-01-01', '2000-01-31');
 -- ====================================================================================================
 -- TC_SP_REP_OCUPACION_SECTORES_03 · Parámetros NULL (sin límite): no agrupa de más ni deja datos afuera; rango invertido: error controlado
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Paso 1: sin fila de error, una fila por grupo (nunca una fila por registro). Paso 2: la suma de cantidad_reservas = valor de la consulta de control (ningún registro queda afuera ni se cuenta dos veces). Paso 3: La segunda llamada devuelve UNA fila: estado='ERROR', codigo_sql=1644, descripcion_error='Rango de fechas invalido: desde es mayor que hasta'.
 -- 1. Ejecutar CALL con (NULL, NULL)
 -- 2. Sumar la columna cantidad_reservas de todas las filas y compararla con la consulta de control
@@ -1483,7 +1483,7 @@ CALL sp_rep_ocupacion_sectores('2026-10-31', '2026-10-01');
 -- ====================================================================================================
 -- TC_SP_REP_OCUPACION_SECTORES_04 · Equivalencia: el SP devuelve lo mismo que un SELECT directo
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Idénticas filas, columnas, valores y orden en ambos resultados.
 -- 1. Ejecutar el CALL
 -- 2. Ejecutar el SELECT directo (mismos literales)
@@ -1510,7 +1510,7 @@ ORDER BY s.nombre_sector, es.nombre_estado;
 -- ====================================================================================================
 -- TC_SP_REP_VENTAS_POR_PRODUCTO_01 · Rango válido con datos: devuelve el agrupamiento esperado
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql). Semilla original de 04 (los esperados valen para esa semilla; si 04 trae más datos en el rango, usar como esperado el resultado del caso 04).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql). Semilla original de 04 (los esperados valen para esa semilla; si 04 trae más datos en el rango, usar como esperado el resultado del caso 04).
 -- ESPERADO: Columnas, en este orden: id_producto, nombre_producto, nombre_categoria, unidades_vendidas, cantidad_ventas, monto_total, primera_venta, ultima_venta. 10 filas con los datos de la semilla ampliada (62 usuarios); primera fila: id_producto=30, nombre_producto=Buzo personalizado, nombre_categoria=Ropa, unidades_vendidas=2, cantidad_ventas=1, monto_total=28000, primera_venta=2026-10-27, ultima_venta=2026-10-27. Los totales se verificaron con una consulta directa a las tablas. Sin fila estado='ERROR'.
 -- 1. Ejecutar el CALL de TEST DATA
 -- 2. Comparar filas, columnas y orden
@@ -1519,7 +1519,7 @@ CALL sp_rep_ventas_por_producto('2026-10-01', '2026-10-31');
 -- ====================================================================================================
 -- TC_SP_REP_VENTAS_POR_PRODUCTO_02 · Rango sin coincidencias: 0 filas y sin error de ejecución
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Conjunto vacío (0 filas) con las columnas de siempre; no devuelve fila con estado='ERROR'.
 -- 1. Ejecutar el CALL con un rango en el año 2000 (sin datos)
 -- 2. Verificar que no hay fila de error
@@ -1528,7 +1528,7 @@ CALL sp_rep_ventas_por_producto('2000-01-01', '2000-01-31');
 -- ====================================================================================================
 -- TC_SP_REP_VENTAS_POR_PRODUCTO_03 · Parámetros NULL (sin límite): no agrupa de más ni deja datos afuera; rango invertido: error controlado
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Paso 1: sin fila de error, una fila por grupo (nunca una fila por registro). Paso 2: la suma de monto_total = valor de la consulta de control (ningún registro queda afuera ni se cuenta dos veces). Paso 3: La segunda llamada devuelve UNA fila: estado='ERROR', codigo_sql=1644, descripcion_error='Rango de fechas invalido: desde es mayor que hasta'.
 -- 1. Ejecutar CALL con (NULL, NULL)
 -- 2. Sumar la columna monto_total de todas las filas y compararla con la consulta de control
@@ -1540,7 +1540,7 @@ CALL sp_rep_ventas_por_producto('2026-10-31', '2026-10-01');
 -- ====================================================================================================
 -- TC_SP_REP_VENTAS_POR_PRODUCTO_04 · Equivalencia: el SP devuelve lo mismo que un SELECT directo
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Idénticas filas, columnas, valores y orden en ambos resultados.
 -- 1. Ejecutar el CALL
 -- 2. Ejecutar el SELECT directo (mismos literales)
@@ -1569,7 +1569,7 @@ ORDER BY monto_total DESC, p.nombre_producto, p.id_producto;
 -- ====================================================================================================
 -- TC_SP_REP_RECAUDADO_POR_GRUPO_01 · Rango válido con datos: devuelve el agrupamiento esperado
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql). Semilla original de 04 (los esperados valen para esa semilla; si 04 trae más datos en el rango, usar como esperado el resultado del caso 04).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql). Semilla original de 04 (los esperados valen para esa semilla; si 04 trae más datos en el rango, usar como esperado el resultado del caso 04).
 -- ESPERADO: Columnas, en este orden: nombre_grupo, meta_monto, donaciones, ventas_entregadas, recaudado, porcentaje_meta, cantidad_movimientos, ultimo_movimiento. 14 filas con los datos de la semilla ampliada (62 usuarios); primera fila: nombre_grupo=Viaje de Estudios 5to 1ra Óptica, meta_monto=80000, donaciones=5000, ventas_entregadas=1800, recaudado=6800, porcentaje_meta=8.5, cantidad_movimientos=2, ultimo_movimiento=2026-10-28. Los totales se verificaron con una consulta directa a las tablas. Sin fila estado='ERROR'.
 -- 1. Ejecutar el CALL de TEST DATA
 -- 2. Comparar filas, columnas y orden
@@ -1578,7 +1578,7 @@ CALL sp_rep_recaudado_por_grupo('2026-10-01', '2026-10-31');
 -- ====================================================================================================
 -- TC_SP_REP_RECAUDADO_POR_GRUPO_02 · Rango sin coincidencias: 0 filas y sin error de ejecución
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Conjunto vacío (0 filas) con las columnas de siempre; no devuelve fila con estado='ERROR'.
 -- 1. Ejecutar el CALL con un rango en el año 2000 (sin datos)
 -- 2. Verificar que no hay fila de error
@@ -1587,7 +1587,7 @@ CALL sp_rep_recaudado_por_grupo('2000-01-01', '2000-01-31');
 -- ====================================================================================================
 -- TC_SP_REP_RECAUDADO_POR_GRUPO_03 · Parámetros NULL (sin límite): no agrupa de más ni deja datos afuera; rango invertido: error controlado
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Paso 1: sin fila de error, una fila por grupo (nunca una fila por registro). Paso 2: la suma de recaudado = valor de la consulta de control (ningún registro queda afuera ni se cuenta dos veces). Paso 3: La segunda llamada devuelve UNA fila: estado='ERROR', codigo_sql=1644, descripcion_error='Rango de fechas invalido: desde es mayor que hasta'.
 -- 1. Ejecutar CALL con (NULL, NULL)
 -- 2. Sumar la columna recaudado de todas las filas y compararla con la consulta de control
@@ -1599,7 +1599,7 @@ CALL sp_rep_recaudado_por_grupo('2026-10-31', '2026-10-01');
 -- ====================================================================================================
 -- TC_SP_REP_RECAUDADO_POR_GRUPO_04 · Equivalencia: el SP devuelve lo mismo que un SELECT directo
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Idénticas filas, columnas, valores y orden en ambos resultados.
 -- 1. Ejecutar el CALL
 -- 2. Ejecutar el SELECT directo (mismos literales)
@@ -1633,7 +1633,7 @@ ORDER BY recaudado DESC, g.nombre_grupo;
 -- ====================================================================================================
 -- TC_SP_REP_INSCRIPTOS_POR_DEPORTE_01 · Rango válido con datos: devuelve el agrupamiento esperado
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql). Semilla original de 04 (los esperados valen para esa semilla; si 04 trae más datos en el rango, usar como esperado el resultado del caso 04).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql). Semilla original de 04 (los esperados valen para esa semilla; si 04 trae más datos en el rango, usar como esperado el resultado del caso 04).
 -- ESPERADO: Columnas, en este orden: nombre_deporte, nombre_dia, hora_inicio, hora_fin, cupo_maximo, inscriptos, cupos_libres, primera_inscripcion, ultima_inscripcion. 13 filas con los datos de la semilla ampliada (62 usuarios); primera fila: nombre_deporte=Vóley, nombre_dia=Miércoles, hora_inicio=10:00, hora_fin=12:00, cupo_maximo=12, inscriptos=3, cupos_libres=9, primera_inscripcion=2026-10-27, ultima_inscripcion=2026-10-28. Los totales se verificaron con una consulta directa a las tablas. Sin fila estado='ERROR'.
 -- 1. Ejecutar el CALL de TEST DATA
 -- 2. Comparar filas, columnas y orden
@@ -1642,7 +1642,7 @@ CALL sp_rep_inscriptos_por_deporte('2026-10-01', '2026-10-31');
 -- ====================================================================================================
 -- TC_SP_REP_INSCRIPTOS_POR_DEPORTE_02 · Rango sin coincidencias: 0 filas y sin error de ejecución
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Conjunto vacío (0 filas) con las columnas de siempre; no devuelve fila con estado='ERROR'.
 -- 1. Ejecutar el CALL con un rango en el año 2000 (sin datos)
 -- 2. Verificar que no hay fila de error
@@ -1651,7 +1651,7 @@ CALL sp_rep_inscriptos_por_deporte('2000-01-01', '2000-01-31');
 -- ====================================================================================================
 -- TC_SP_REP_INSCRIPTOS_POR_DEPORTE_03 · Parámetros NULL (sin límite): no agrupa de más ni deja datos afuera; rango invertido: error controlado
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Paso 1: sin fila de error, una fila por grupo (nunca una fila por registro). Paso 2: la suma de inscriptos = valor de la consulta de control (ningún registro queda afuera ni se cuenta dos veces). Paso 3: La segunda llamada devuelve UNA fila: estado='ERROR', codigo_sql=1644, descripcion_error='Rango de fechas invalido: desde es mayor que hasta'.
 -- 1. Ejecutar CALL con (NULL, NULL)
 -- 2. Sumar la columna inscriptos de todas las filas y compararla con la consulta de control
@@ -1663,7 +1663,7 @@ CALL sp_rep_inscriptos_por_deporte('2026-10-31', '2026-10-01');
 -- ====================================================================================================
 -- TC_SP_REP_INSCRIPTOS_POR_DEPORTE_04 · Equivalencia: el SP devuelve lo mismo que un SELECT directo
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Idénticas filas, columnas, valores y orden en ambos resultados.
 -- 1. Ejecutar el CALL
 -- 2. Ejecutar el SELECT directo (mismos literales)
@@ -1692,7 +1692,7 @@ ORDER BY inscriptos DESC, d.nombre_deporte, ds.id_dia, f.hora_inicio;
 -- ====================================================================================================
 -- TC_SP_REP_ACTIVIDAD_POR_USUARIO_01 · Rango válido con datos: devuelve el agrupamiento esperado
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql). Semilla original de 04 (los esperados valen para esa semilla; si 04 trae más datos en el rango, usar como esperado el resultado del caso 04).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql). Semilla original de 04 (los esperados valen para esa semilla; si 04 trae más datos en el rango, usar como esperado el resultado del caso 04).
 -- ESPERADO: Columnas, en este orden: usuario_nick, nombre_completo, nombre_rol, prestamos, reservas, reclamos, total_actividad. 29 filas con los datos de la semilla ampliada (62 usuarios); primera fila: usuario_nick=alumno2, nombre_completo=Alumno Dos, nombre_rol=Alumno, prestamos=1, reservas=0, reclamos=2, total_actividad=3. Los totales se verificaron con una consulta directa a las tablas. Sin fila estado='ERROR'.
 -- 1. Ejecutar el CALL de TEST DATA
 -- 2. Comparar filas, columnas y orden
@@ -1701,7 +1701,7 @@ CALL sp_rep_actividad_por_usuario('2026-10-01', '2026-10-31');
 -- ====================================================================================================
 -- TC_SP_REP_ACTIVIDAD_POR_USUARIO_02 · Rango sin coincidencias: 0 filas y sin error de ejecución
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Conjunto vacío (0 filas) con las columnas de siempre; no devuelve fila con estado='ERROR'.
 -- 1. Ejecutar el CALL con un rango en el año 2000 (sin datos)
 -- 2. Verificar que no hay fila de error
@@ -1710,7 +1710,7 @@ CALL sp_rep_actividad_por_usuario('2000-01-01', '2000-01-31');
 -- ====================================================================================================
 -- TC_SP_REP_ACTIVIDAD_POR_USUARIO_03 · Parámetros NULL (sin límite): no agrupa de más ni deja datos afuera; rango invertido: error controlado
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Paso 1: sin fila de error, una fila por grupo (nunca una fila por registro). Paso 2: la suma de total_actividad = valor de la consulta de control (ningún registro queda afuera ni se cuenta dos veces). Paso 3: La segunda llamada devuelve UNA fila: estado='ERROR', codigo_sql=1644, descripcion_error='Rango de fechas invalido: desde es mayor que hasta'.
 -- 1. Ejecutar CALL con (NULL, NULL)
 -- 2. Sumar la columna total_actividad de todas las filas y compararla con la consulta de control
@@ -1722,7 +1722,7 @@ CALL sp_rep_actividad_por_usuario('2026-10-31', '2026-10-01');
 -- ====================================================================================================
 -- TC_SP_REP_ACTIVIDAD_POR_USUARIO_04 · Equivalencia: el SP devuelve lo mismo que un SELECT directo
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Idénticas filas, columnas, valores y orden en ambos resultados.
 -- 1. Ejecutar el CALL
 -- 2. Ejecutar el SELECT directo (mismos literales)
@@ -1826,7 +1826,7 @@ ORDER BY fecha, t.nombre_evento, rl.nombre_resultado, nick;
 -- ====================================================================================================
 -- TC_SP_REP_VENTAS_POR_PRODUCTO_TUNEADO_01 · Rango válido con datos: mismo resultado esperado que el original
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql). Semilla original de 04.
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql). Semilla original de 04.
 -- ESPERADO: Columnas, en este orden: id_producto, nombre_producto, nombre_categoria, unidades_vendidas, cantidad_ventas, monto_total, primera_venta, ultima_venta. 10 filas con los datos de la semilla ampliada (62 usuarios); primera fila: id_producto=30, nombre_producto=Buzo personalizado, nombre_categoria=Ropa, unidades_vendidas=2, cantidad_ventas=1, monto_total=28000, primera_venta=2026-10-27, ultima_venta=2026-10-27. Los totales se verificaron con una consulta directa a las tablas. Sin fila estado='ERROR'. Mismo resultado que el SP original.
 -- 1. Ejecutar el CALL de TEST DATA
 -- 2. Comparar con lo esperado
@@ -1835,7 +1835,7 @@ CALL sp_rep_ventas_por_producto_tuneado('2026-10-01', '2026-10-31');
 -- ====================================================================================================
 -- TC_SP_REP_VENTAS_POR_PRODUCTO_TUNEADO_02 · Rango sin coincidencias: 0 filas y sin error
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Conjunto vacío (0 filas) y no devuelve fila con estado='ERROR'. El SELECT a tmp_ventas_entregadas da error 1146 (la tabla temporal se borra al terminar).
 -- 1. Ejecutar el CALL con un rango en el año 2000
 -- 2. Verificar que no hay fila de error
@@ -1847,7 +1847,7 @@ SELECT * FROM tmp_ventas_entregadas;
 -- ====================================================================================================
 -- TC_SP_REP_VENTAS_POR_PRODUCTO_TUNEADO_03 · Parámetros NULL (sin límite) y rango invertido
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Paso 1: sin fila de error. Paso 2: la suma de monto_total = valor de control. Paso 3: La segunda llamada devuelve UNA fila: estado='ERROR', codigo_sql=1644, descripcion_error='Rango de fechas invalido: desde es mayor que hasta'.
 -- 1. Ejecutar CALL con (NULL, NULL)
 -- 2. Sumar monto_total de todas las filas y compararla con la consulta de control
@@ -1859,7 +1859,7 @@ CALL sp_rep_ventas_por_producto_tuneado('2026-10-31', '2026-10-01');
 -- ====================================================================================================
 -- TC_SP_REP_VENTAS_POR_PRODUCTO_TUNEADO_04 · Equivalencia con el SP original: mismas filas, columnas y orden
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql). Original y tuneado creados.
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql). Original y tuneado creados.
 -- ESPERADO: Resultados idénticos en cantidad de filas, nombres y orden de columnas, valores y orden de filas. Los dos devuelven conjunto vacío con el rango sin datos.
 -- 1. Ejecutar el CALL del original
 -- 2. Ejecutar el CALL del tuneado con los mismos parámetros
@@ -1873,7 +1873,7 @@ CALL sp_rep_ventas_por_producto_tuneado(NULL, NULL);
 -- ====================================================================================================
 -- TC_SP_REP_ACTIVIDAD_POR_USUARIO_TUNEADO_01 · Rango válido con datos: mismo resultado esperado que el original
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql). Semilla original de 04.
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql). Semilla original de 04.
 -- ESPERADO: Columnas, en este orden: usuario_nick, nombre_completo, nombre_rol, prestamos, reservas, reclamos, total_actividad. 29 filas con los datos de la semilla ampliada (62 usuarios); primera fila: usuario_nick=alumno2, nombre_completo=Alumno Dos, nombre_rol=Alumno, prestamos=1, reservas=0, reclamos=2, total_actividad=3. Los totales se verificaron con una consulta directa a las tablas. Sin fila estado='ERROR'. Mismo resultado que el SP original.
 -- 1. Ejecutar el CALL de TEST DATA
 -- 2. Comparar con lo esperado
@@ -1882,7 +1882,7 @@ CALL sp_rep_actividad_por_usuario_tuneado('2026-10-01', '2026-10-31');
 -- ====================================================================================================
 -- TC_SP_REP_ACTIVIDAD_POR_USUARIO_TUNEADO_02 · Rango sin coincidencias: 0 filas y sin error
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Conjunto vacío (0 filas) y no devuelve fila con estado='ERROR'.
 -- 1. Ejecutar el CALL con un rango en el año 2000
 -- 2. Verificar que no hay fila de error
@@ -1892,7 +1892,7 @@ CALL sp_rep_actividad_por_usuario_tuneado('2000-01-01', '2000-01-31');
 -- ====================================================================================================
 -- TC_SP_REP_ACTIVIDAD_POR_USUARIO_TUNEADO_03 · Parámetros NULL (sin límite) y rango invertido
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql).
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql).
 -- ESPERADO: Paso 1: sin fila de error. Paso 2: la suma de total_actividad = valor de control. Paso 3: La segunda llamada devuelve UNA fila: estado='ERROR', codigo_sql=1644, descripcion_error='Rango de fechas invalido: desde es mayor que hasta'.
 -- 1. Ejecutar CALL con (NULL, NULL)
 -- 2. Sumar total_actividad de todas las filas y compararla con la consulta de control
@@ -1904,7 +1904,7 @@ CALL sp_rep_actividad_por_usuario_tuneado('2026-10-31', '2026-10-01');
 -- ====================================================================================================
 -- TC_SP_REP_ACTIVIDAD_POR_USUARIO_TUNEADO_04 · Equivalencia con el SP original: mismas filas, columnas y orden
 -- ====================================================================================================
--- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo00.sql). Original y tuneado creados.
+-- ANTES: Base iqual cargada (03 + 04) y SP creado (05_Backend_Grupo06.sql). Original y tuneado creados.
 -- ESPERADO: Resultados idénticos en cantidad de filas, nombres y orden de columnas, valores y orden de filas. Los dos devuelven conjunto vacío con el rango sin datos.
 -- 1. Ejecutar el CALL del original
 -- 2. Ejecutar el CALL del tuneado con los mismos parámetros

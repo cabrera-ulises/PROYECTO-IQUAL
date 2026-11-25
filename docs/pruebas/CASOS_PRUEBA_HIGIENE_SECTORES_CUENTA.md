@@ -4,7 +4,7 @@
 
 **Versión de la ronda final (app v3).** Reemplaza al `CASOS_PRUEBA_HIGIENE_SECTORES_CUENTA.md` anterior. Está al día con la **app v3** (`iqual_integrado_v3`, la documentación). Los IDs anteriores no cambian; los casos de esta ronda siguen la numeración: `HIG-23`, `SEC-28`, `SEC-29`, `CUE-25` y `CUE-26` (cinco casos de borde nuevos). Cambiaron por la v3 los casos `HIG-16`, `CUE-06`, `CUE-09` y `CUE-18`.
 
-**Ronda sin SQLite (19/11/2026).** SQLite se sacó del proyecto (la documentación): la app usa solo MySQL, así que todos los casos valen con los datos de `db/04_DatosSQL_Grupo00.sql` (62 usuarios, 22 reportes de higiene, 28 reservas de sectores, 22 sectores). Se quitaron los resultados «datos: SQLite» y el juego chico de datos. Los IDs no cambian y se mantienen los **78 casos** (HIG 23, SEC 29, CUE 26): ninguno de estos tres módulos tenía un caso que solo tuviera sentido con SQLite, así que no se borró ni se reemplazó ninguno. Cambió el texto de 24 casos: `HIG-01`, `HIG-02`, `HIG-06`, `HIG-07`, `HIG-08`, `HIG-10`, `HIG-12`, `HIG-14`, `HIG-20`, `HIG-21`, `HIG-23`, `SEC-01`, `SEC-03`, `SEC-05`, `SEC-11`, `SEC-12`, `SEC-14`, `SEC-15`, `SEC-17`, `SEC-19`, `SEC-21`, `SEC-26`, `SEC-27` y `CUE-19` (14 de ellos tenían un resultado «datos: SQLite»; en los otros 10 solo se sacó la etiqueta «datos: MySQL», que pasó a ser la única). Hay un resumen en la sección «Qué cambia con los datos de MySQL (resumen)».
+**Ronda sin SQLite (19/11/2026).** SQLite se sacó del proyecto (la documentación): la app usa solo MySQL, así que todos los casos valen con los datos de `db/04_DatosSQL_Grupo06.sql` (62 usuarios, 22 reportes de higiene, 28 reservas de sectores, 22 sectores). Se quitaron los resultados «datos: SQLite» y el juego chico de datos. Los IDs no cambian y se mantienen los **78 casos** (HIG 23, SEC 29, CUE 26): ninguno de estos tres módulos tenía un caso que solo tuviera sentido con SQLite, así que no se borró ni se reemplazó ninguno. Cambió el texto de 24 casos: `HIG-01`, `HIG-02`, `HIG-06`, `HIG-07`, `HIG-08`, `HIG-10`, `HIG-12`, `HIG-14`, `HIG-20`, `HIG-21`, `HIG-23`, `SEC-01`, `SEC-03`, `SEC-05`, `SEC-11`, `SEC-12`, `SEC-14`, `SEC-15`, `SEC-17`, `SEC-19`, `SEC-21`, `SEC-26`, `SEC-27` y `CUE-19` (14 de ellos tenían un resultado «datos: SQLite»; en los otros 10 solo se sacó la etiqueta «datos: MySQL», que pasó a ser la única). Hay un resumen en la sección «Qué cambia con los datos de MySQL (resumen)».
 
 ## Cómo usar este documento
 - La columna **Resultado** está vacía a propósito: la completa quien ejecuta la prueba (OK / FALLA + observación + fecha).
@@ -13,7 +13,7 @@
 - **Verificar en la base:** los casos que piden mirar `log_auditoria` se comprueban con una consulta directa (DBeaver o MySQL Workbench), porque la auditoría no tiene pantalla (RF18).
 
 ## Datos de demostración que se usan
-(Del script `db/04_DatosSQL_Grupo00.sql`. Contraseña de todas las cuentas: `1234`.)
+(Del script `db/04_DatosSQL_Grupo06.sql`. Contraseña de todas las cuentas: `1234`.)
 | Dato | Valor |
 |---|---|
 | Cuentas | `alumno1` (4° 1° Computación, con horario cargado, tel. 1155550001), `alumno2` (5° 2° Óptica, sin horario cargado, inscripto en Handball lunes 08:00 a 10:00), `profe1`, `preceptor1`, `maestranza1`. En total hay 62 usuarios (46 Alumnos, 9 Profesores, 4 Preceptores y 3 Maestranza); los casos usan estas cinco cuentas |
@@ -23,7 +23,7 @@
 | Horario de 4° 1° Computación | Programación lun y mié 13:00–14:40 · Bases de Datos mar y jue 14:50–16:30 · Matemática mar y vie 13:00–14:40 · Lengua y Literatura mié y vie 14:50–16:30 · Proyecto Informático I lun 14:50–16:30 |
 | Ofertas de Ed. Física que se usan | Handball lunes 08:00–10:00 (cupo 1, no choca con 4° 1°); Vóley martes 14:00–16:00 (choca con "Bases de Datos"; cupo 12, con 1 inscripto en MySQL) |
 
-> Las reservas demo se crean con fechas relativas al **día en que se carga la base** (de +1 a +5 días), no se mueven solas con los días: pasados unos días desde la carga ya figuran como fechas vencidas y la app deja de mostrarlas (filtra fecha ≥ hoy). En los casos, "mañana" = hoy+1 y "pasado" = hoy+2. Después de ejecutar un caso que cambia datos conviene volver a cargar la base demo antes del siguiente, salvo que el caso indique lo contrario: volver a ejecutar `04_DatosSQL_Grupo00.sql` (vacía las tablas y las carga de nuevo con las fechas de ese día).
+> Las reservas demo se crean con fechas relativas al **día en que se carga la base** (de +1 a +5 días), no se mueven solas con los días: pasados unos días desde la carga ya figuran como fechas vencidas y la app deja de mostrarlas (filtra fecha ≥ hoy). En los casos, "mañana" = hoy+1 y "pasado" = hoy+2. Después de ejecutar un caso que cambia datos conviene volver a cargar la base demo antes del siguiente, salvo que el caso indique lo contrario: volver a ejecutar `04_DatosSQL_Grupo06.sql` (vacía las tablas y las carga de nuevo con las fechas de ese día).
 
 ---
 
@@ -127,7 +127,7 @@
 ---
 
 ## Qué cambia con los datos de MySQL (resumen)
-Números que dependen de `04_DatosSQL_Grupo00.sql` y que ya figuran dentro de cada caso (se juntan acá para consultarlos de un vistazo).
+Números que dependen de `04_DatosSQL_Grupo06.sql` y que ya figuran dentro de cada caso (se juntan acá para consultarlos de un vistazo).
 | Caso | Con los datos de MySQL |
 |---|---|
 | HIG-01 | Chip de 9 a 10 pendientes |
@@ -192,7 +192,7 @@ La app usa solo MySQL (la documentación). Estos casos conviene mirarlos con ate
 
 ## Desvíos
 - No ejecuté la app: los resultados esperados salen de leer el código y de ejecutar sus consultas sobre la base demo; la columna Resultado queda para quien pruebe.
-- Los números de los casos salen de cargar `03_ModeloSQL_Grupo00.sql` y `04_DatosSQL_Grupo00.sql` en MariaDB 10.11 y ejecutar consultas equivalentes a las que arma `mainwindow.cpp` (mismos filtros y orden), tomando como "hoy" el día de la carga. Los casos de la sección «Qué cambia con los datos de MySQL (resumen)» quedan **por confirmar en la compu del usuario**, viendo la pantalla.
+- Los números de los casos salen de cargar `03_ModeloSQL_Grupo06.sql` y `04_DatosSQL_Grupo06.sql` en MariaDB 10.11 y ejecutar consultas equivalentes a las que arma `mainwindow.cpp` (mismos filtros y orden), tomando como "hoy" el día de la carga. Los casos de la sección «Qué cambia con los datos de MySQL (resumen)» quedan **por confirmar en la compu del usuario**, viendo la pantalla.
 - No hay caso para E4-09 (reservas de hoy ya terminadas) porque depende de la hora del día; el hallazgo trae los pasos.
 - Los casos con MySQL (sección "Pasada con MySQL") quedan sin resultado: no pude ejecutar la app contra MySQL.
 - Ronda sin SQLite: no hay caso de estas tres pantallas que dependiera de la vuelta a SQLite, así que no agregué ninguno. El caso de falla de conexión es del arranque de la app y conviene que viva en el documento general. Comportamiento real según `mainwindow.cpp`: si no se puede usar MySQL (driver faltante, servidor apagado o base vacía) aparecen dos avisos «Atención»: primero "No se pudo usar MySQL:" + el motivo + "Revisá iqual.ini y que el servidor esté encendido." y después "No se pudo abrir la base de datos. Revisá iqual.ini y que el servidor MySQL esté encendido."; la ventana se muestra (después del splash) con las páginas deshabilitadas (`stackedWidget->setEnabled(false)`) y el título **sin** el sufijo "· MySQL". El pedido decía que la app «no abre»: el código no cierra la ventana, solo la deja inutilizable.

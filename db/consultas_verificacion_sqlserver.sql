@@ -1,5 +1,5 @@
 -- PROYECTO IQUAL (SGE) - consultas de verificación (CONTEXTO_IQUAL v3.2) - versión SQL Server 2005
--- Se corren sobre la base iqual cargada con 03_ModeloSQL_Grupo00_sqlserver.sql y 04_DatosSQL_Grupo00_sqlserver.sql (47 tablas en 7 schemas, 62 usuarios). Las tablas llevan su schema (por ejemplo seguridad.usuario). Diferencias con MySQL: TOP en vez de LIMIT, fechas con DATEADD/DATEDIFF
+-- Se corren sobre la base iqual cargada con 03_ModeloSQL_Grupo06_sqlserver.sql y 04_DatosSQL_Grupo06_sqlserver.sql (47 tablas en 7 schemas, 62 usuarios). Las tablas llevan su schema (por ejemplo seguridad.usuario). Diferencias con MySQL: TOP en vez de LIMIT, fechas con DATEADD/DATEDIFF
 -- y literales 'yyyymmdd', y sys.tables en vez de information_schema. No se ejecutó en SQL Server: la sintaxis se revisó contra lo visto en la clase 003 y el 19/11/2026 se comparó sentencia por sentencia con la versión MySQL (ver guias/REVISION_ESTATICA_SQLSERVER.md).
 -- Las reservas de ejemplo de sectores tienen fecha relativa a hoy (mañana y pasado mañana).
 -- Antes de empezar: USE iqual; GO

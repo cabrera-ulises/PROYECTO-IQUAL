@@ -1,5 +1,5 @@
 -- PROYECTO IQUAL (SGE) - consultas para mostrar en la defensa (10, de menor a mayor dificultad)
--- Base: iqual cargada con 03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql (MySQL) o con las versiones _sqlserver (SQL Server 2005), con los datos de ejemplo (62 usuarios). Antes de empezar: USE iqual;
+-- Base: iqual cargada con 03_ModeloSQL_Grupo06.sql y 04_DatosSQL_Grupo06.sql (MySQL) o con las versiones _sqlserver (SQL Server 2005), con los datos de ejemplo (62 usuarios). Antes de empezar: USE iqual;
 -- Cada consulta dice cuántas filas tiene que devolver con esos datos.
 -- Solo se usa lo del nivel de la materia (CONTEXTO 11): JOIN, WHERE, GROUP BY con COUNT y SUM, HAVING, subconsultas escalares y EXISTS.
 -- Esta es la versión para SQL Server 2005: las tablas llevan su schema y la consulta 8 usa GETDATE(). La versión para MySQL es consultas_demo.sql.

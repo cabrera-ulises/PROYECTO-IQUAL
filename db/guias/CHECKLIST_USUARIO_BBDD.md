@@ -12,8 +12,8 @@ Nadie más puede hacer estos pasos: necesitan tu compu y tus programas. Tildá c
 ## B. MySQL 8
 
 5. [ ] Anotá la versión: `SELECT VERSION();` → [COMPLETAR: versión].
-6. [ ] Corré `03_ModeloSQL_Grupo00.sql` y **después** `04_DatosSQL_Grupo00.sql`, cada uno con Alt+X en DBeaver (o por consola). El 03 ya crea la base `iqual`.
-7. [ ] Corré `05_Backend_Grupo00.sql` con Alt+X (después del 04) y comprobá `SHOW PROCEDURE STATUS WHERE Db = 'iqual';` → 27 filas.
+6. [ ] Corré `03_ModeloSQL_Grupo06.sql` y **después** `04_DatosSQL_Grupo06.sql`, cada uno con Alt+X en DBeaver (o por consola). El 03 ya crea la base `iqual`.
+7. [ ] Corré `05_Backend_Grupo06.sql` con Alt+X (después del 04) y comprobá `SHOW PROCEDURE STATUS WHERE Db = 'iqual';` → 27 filas.
 8. [ ] Corré `consultas_verificacion_mysql.sql` y comprobá: 47 tablas, 1A = 1 fila, 1B = 0 filas, recaudado 3500, los 21 controles de la consulta 15 todos en 0 (1A y 1B dan eso solo si se consulta el mismo día de la carga).
 9. [ ] Corré `consultas_demo.sql` (las 10 consultas de la defensa).
 10. [ ] Probá algunos `CALL` (el archivo 05 ya no trae llamadas de ejemplo): por ejemplo `CALL sp_rep_recaudado_por_grupo('2026-01-01', '2026-12-31');` y `CALL sp_rep_prestamos_por_carro('2026-01-01', '2026-12-31');`. Los casos con resultado esperado están en `06_PruebasSQL.xlsx`.
@@ -21,7 +21,7 @@ Nadie más puede hacer estos pasos: necesitan tu compu y tus programas. Tildá c
 ## C. SQL Server 2005 / Express
 
 11. [ ] Anotá la versión: `SELECT @@VERSION;` → [COMPLETAR: versión].
-12. [ ] Abrí `03_ModeloSQL_Grupo00_sqlserver.sql` en SSMS y ejecutalo con F5; después abrí `04_DatosSQL_Grupo00_sqlserver.sql` y ejecutalo también (sin el 04 las tablas quedan vacías). No hay `05` para SQL Server.
+12. [ ] Abrí `03_ModeloSQL_Grupo06_sqlserver.sql` en SSMS y ejecutalo con F5; después abrí `04_DatosSQL_Grupo06_sqlserver.sql` y ejecutalo también (sin el 04 las tablas quedan vacías). No hay `05` para SQL Server.
 13. [ ] Abrí `consultas_verificacion_sqlserver.sql` (con `USE iqual; GO` antes) y comprobá los mismos valores que en MySQL (en vez de `information_schema`, la consulta 16 usa `sys.tables`).
 14. [ ] Corré la versión de SQL Server de la consulta 8 de `consultas_demo.sql` (es la única que cambia entre motores).
 15. [ ] Si el script da error, copiá el **número y el texto completo** del mensaje y la línea.

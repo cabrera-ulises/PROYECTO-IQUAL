@@ -1,4 +1,4 @@
--- 04_DatosSQL_Grupo00_sqlserver.sql - PROYECTO IQUAL (SGE) - SQL Server 2005
+-- 04_DatosSQL_Grupo06_sqlserver.sql - PROYECTO IQUAL (SGE) - SQL Server 2005
 -- Datos de la base. Se ejecuta DESPUES de 03_ModeloSQL y se puede repetir: primero vacia las 47 tablas y despues las carga.
 -- Primero van las filas que ya existian (con los mismos id) y despues las filas nuevas.
 -- Todos los nombres, DNI, correos y telefonos de personas son FICTICIOS. La clave de demostracion de todos los usuarios es la misma.

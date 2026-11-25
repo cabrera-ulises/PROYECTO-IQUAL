@@ -3,7 +3,7 @@
 """
 generar_modelo.py - PROYECTO IQUAL (SGE)
 
-Genera 03_ModeloSQL_Grupo00.sql (MySQL) y 03_ModeloSQL_Grupo00_sqlserver.sql (SQL Server 2005) a partir de
+Genera 03_ModeloSQL_Grupo06.sql (MySQL) y 03_ModeloSQL_Grupo06_sqlserver.sql (SQL Server 2005) a partir de
 iqual_mysql.sql e iqual_sqlserver.sql. NO cambia la estructura: las 47 tablas, claves, FK e indices salen
 identicos. Solo agrega el encabezado (con el mapa de schemas), el borrado previo y, en SQL Server, los schemas.
 Usa solo la biblioteca estandar de Python 3.8 o mas nueva.
@@ -96,7 +96,7 @@ def main():
     ap.add_argument("--mysql", default="iqual_mysql.sql")
     ap.add_argument("--sqlserver", default="iqual_sqlserver.sql")
     ap.add_argument("--salida", default=".")
-    ap.add_argument("--grupo", default="Grupo00")
+    ap.add_argument("--grupo", default="Grupo06")
     a = ap.parse_args()
     try:
         t_mysql = leer(a.mysql)

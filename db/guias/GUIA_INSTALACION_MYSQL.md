@@ -4,9 +4,9 @@ Para PROYECTO IQUAL (SGE). Pensada para que la puedas seguir sin ayuda y explica
 
 **Qué dice y qué no dice la clase 006.** La guía 006 de Linares (Ubuntu) enseña: instalar `libmysqlclient-dev`, verificar que el servidor MySQL esté corriendo, entrar desde **MySQL Workbench** (instancia local, puerto 3306, contraseña `12341234`), crear una base con `IF NOT EXISTS`, crear y ejecutar un *stored procedure* con `CALL` y `EXIT HANDLER FOR SQLEXCEPTION` + `GET DIAGNOSTICS`, entrar con **DBeaver-ce**, y conectar desde C con `mysql_init` / `mysql_real_connect` / `mysql_query`. **No dice nada de instalar MySQL en Windows** ni de cargar un script grande de 47 tablas: esas partes están armadas con pasos generales y están marcadas con 🔶 («no está en las guías»). Las pantallas pueden verse un poco distintas según la versión.
 
-**Qué ya se ejecutó de verdad (CONTEXTO §22; dato que me pasaron, no lo corrí yo).** En un **MariaDB 10.11** (compatible con MySQL 8, pero no es MySQL 8): `03_ModeloSQL_Grupo00.sql` y `04_DatosSQL_Grupo00.sql` cargan sin errores (47 tablas, 62 usuarios), `05_Backend_Grupo00.sql` crea los 27 procedimientos y hay 104 casos planificados en `06_PruebasSQL.xlsx`. Los valores esperados de las consultas de `consultas_demo.sql` (10) y `consultas_verificacion_mysql.sql` con los 62 usuarios se calcularon con una carga de prueba fuera de MySQL el 19/11/2026: **no están confirmados en MariaDB ni en MySQL 8**, así que si alguna da otra cantidad de filas, avisá. **Sigue sin probarse:** MySQL 8 de Oracle, SQL Server 2005 y Windows. Si algo falla en tu instalación, copiá el mensaje de error completo (número y texto) y avisá.
+**Qué ya se ejecutó de verdad (CONTEXTO §22; dato que me pasaron, no lo corrí yo).** En un **MariaDB 10.11** (compatible con MySQL 8, pero no es MySQL 8): `03_ModeloSQL_Grupo06.sql` y `04_DatosSQL_Grupo06.sql` cargan sin errores (47 tablas, 62 usuarios), `05_Backend_Grupo06.sql` crea los 27 procedimientos y hay 104 casos planificados en `06_PruebasSQL.xlsx`. Los valores esperados de las consultas de `consultas_demo.sql` (10) y `consultas_verificacion_mysql.sql` con los 62 usuarios se calcularon con una carga de prueba fuera de MySQL el 19/11/2026: **no están confirmados en MariaDB ni en MySQL 8**, así que si alguna da otra cantidad de filas, avisá. **Sigue sin probarse:** MySQL 8 de Oracle, SQL Server 2005 y Windows. Si algo falla en tu instalación, copiá el mensaje de error completo (número y texto) y avisá.
 
-Archivos que vas a usar, **siempre en este orden**: `03_ModeloSQL_Grupo00.sql` (crea las 47 tablas vacías), `04_DatosSQL_Grupo00.sql` (carga los datos de ejemplo: 62 usuarios y el resto), `05_Backend_Grupo00.sql` (27 procedimientos), `consultas_verificacion_mysql.sql` (para comprobar) y `consultas_demo.sql` (consultas de la defensa).
+Archivos que vas a usar, **siempre en este orden**: `03_ModeloSQL_Grupo06.sql` (crea las 47 tablas vacías), `04_DatosSQL_Grupo06.sql` (carga los datos de ejemplo: 62 usuarios y el resto), `05_Backend_Grupo06.sql` (27 procedimientos), `consultas_verificacion_mysql.sql` (para comprobar) y `consultas_demo.sql` (consultas de la defensa).
 
 ---
 
@@ -49,19 +49,19 @@ USE iqual;
 
 Ejecutalo con **Alt+X** (ejecuta todo el script).
 
-## 3. Cargar `03_ModeloSQL_Grupo00.sql` y después `04_DatosSQL_Grupo00.sql`
+## 3. Cargar `03_ModeloSQL_Grupo06.sql` y después `04_DatosSQL_Grupo06.sql`
 
 Son **dos archivos y van uno detrás del otro** (03 y después 04; el 05 es el paso 5). El 03 ya trae `CREATE DATABASE IF NOT EXISTS iqual` y `USE iqual;`, así que el paso 2 es opcional: sirve para comprobar que la conexión anda. El 03 **borra las tablas y las crea de nuevo, vacías**; el 04 vacía las tablas y carga los datos. Los dos se pueden repetir.
 
 ### Workbench
-1. **File → Open SQL Script…** y elegí `03_ModeloSQL_Grupo00.sql`.
+1. **File → Open SQL Script…** y elegí `03_ModeloSQL_Grupo06.sql`.
 2. Apretá el **rayo** (ejecuta *todo* el script, no una sola sentencia). Abajo, en *Output*, cada sentencia tiene que salir con ✔ verde.
-3. Repetí 1 y 2 con `04_DatosSQL_Grupo00.sql` (es grande: tarda unos segundos; si el 04 se queda sin terminar, revisá la sección 6).
+3. Repetí 1 y 2 con `04_DatosSQL_Grupo06.sql` (es grande: tarda unos segundos; si el 04 se queda sin terminar, revisá la sección 6).
 
 ### DBeaver-ce
-1. **File → Open File…** y elegí `03_ModeloSQL_Grupo00.sql` (o arrastralo).
+1. **File → Open File…** y elegí `03_ModeloSQL_Grupo06.sql` (o arrastralo).
 2. Ejecutá con **Alt+X** (*Execute script*). Con `Ctrl+Enter` solo corre **una** sentencia: no sirve para cargar todo.
-3. Repetí con `04_DatosSQL_Grupo00.sql`.
+3. Repetí con `04_DatosSQL_Grupo06.sql`.
 
 > **Para volver a cargar desde cero:** alcanza con volver a ejecutar el 03 y después el 04 (y el 05 si querés recrear los procedimientos). No hace falta `DROP DATABASE`.
 
@@ -107,15 +107,15 @@ Las reservas de ejemplo de sectores se cargan con fechas **relativas al día de 
 
 ## 5. Cargar los procedimientos con `DELIMITER` y llamarlos con `CALL`
 
-`05_Backend_Grupo00.sql` define **27 procedimientos** (primero hay que cargar 03 y 04, porque el 05 empieza con `USE iqual;`). **Usan `DELIMITER //`**: por eso van en un archivo aparte y **no** dentro de 03 ni de 04 (esos se parten por `;`, y el `;` de adentro de un procedimiento los cortaría a la mitad). El archivo se puede ejecutar de nuevo: cada procedimiento se borra y se vuelve a crear.
+`05_Backend_Grupo06.sql` define **27 procedimientos** (primero hay que cargar 03 y 04, porque el 05 empieza con `USE iqual;`). **Usan `DELIMITER //`**: por eso van en un archivo aparte y **no** dentro de 03 ni de 04 (esos se parten por `;`, y el `;` de adentro de un procedimiento los cortaría a la mitad). El archivo se puede ejecutar de nuevo: cada procedimiento se borra y se vuelve a crear.
 
 - **15 de funcionalidades:** `sp_registrar_log`, `sp_registrar_usuario`, `sp_publicar_objeto`, `sp_reclamar_objeto`, `sp_resolver_reclamo`, `sp_prestar_equipo`, `sp_devolver_equipo`, `sp_reservar_sector`, `sp_resolver_reserva_sector`, `sp_reportar_higiene`, `sp_resolver_reporte_higiene`, `sp_comprar_producto`, `sp_donar_grupo`, `sp_inscribir_ed_fisica`, `sp_cancelar_inscripcion_ed_fisica`.
 - **9 de reportes y auditoría:** `sp_rep_prestamos_por_carro`, `sp_rep_objetos_por_categoria_estado`, `sp_rep_higiene_por_sector`, `sp_rep_ocupacion_sectores`, `sp_rep_ventas_por_producto`, `sp_rep_recaudado_por_grupo`, `sp_rep_inscriptos_por_deporte`, `sp_rep_actividad_por_usuario` y `sp_rep_auditoria`.
 - **2 tuneados:** `sp_rep_ventas_por_producto_tuneado` y `sp_rep_actividad_por_usuario_tuneado`.
 - **1 auxiliar:** `sp_aux_solo_digitos`. (El archivo también crea y borra `sp_aux_crear_indices`, que solo sirve durante la carga.)
 
-1. Abrí el archivo `05_Backend_Grupo00.sql` en Workbench (**File → Open SQL Script**) o DBeaver.
-2. Ejecutalo **entero**: rayo en Workbench, **Alt+X** en DBeaver. (Si ejecutás una sola sentencia suelta, el `DELIMITER` no se interpreta bien: ver «Script cortado por el DELIMITER» en la sección 6.) También anda desde la consola: `mysql -u root -p --default-character-set=utf8mb4 < 05_Backend_Grupo00.sql`.
+1. Abrí el archivo `05_Backend_Grupo06.sql` en Workbench (**File → Open SQL Script**) o DBeaver.
+2. Ejecutalo **entero**: rayo en Workbench, **Alt+X** en DBeaver. (Si ejecutás una sola sentencia suelta, el `DELIMITER` no se interpreta bien: ver «Script cortado por el DELIMITER» en la sección 6.) También anda desde la consola: `mysql -u root -p --default-character-set=utf8mb4 < 05_Backend_Grupo06.sql`.
 3. Comprobá que quedaron **27**: `SHOW PROCEDURE STATUS WHERE Db = 'iqual';`
 4. Probá algunos con `CALL` (el archivo ya no trae llamadas de ejemplo al final). Los reportes reciben un rango de fechas:
 
@@ -150,7 +150,7 @@ Cada procedimiento valida lo que recibe y devuelve una fila con `estado` (`OK` o
 
 ## 7. Conectar la app
 
-La app **ya se conecta a MySQL** (lee `iqual.ini`, junto al `.exe`; por defecto `localhost:3306`, usuario `root`, clave `12341234`, base `iqual`). **No crea las tablas**: tenés que cargar `03_ModeloSQL_Grupo00.sql` y después `04_DatosSQL_Grupo00.sql` vos, con el paso 3 de esta guía (el 05 no lo necesita la app: es para la defensa de Bases de Datos). Si MySQL falla (servidor apagado, clave mal, base vacía o falta el driver), la app **avisa el motivo y no abre** (no tiene base de respaldo: ver «Probar la conexión antes de la demo» en `GUIA_CONEXION_APP_MYSQL.md`). El título de la ventana dice con qué driver está conectada: **· MySQL** o **· MySQL (ODBC)**; sin sufijo es que no conectó.
+La app **ya se conecta a MySQL** (lee `iqual.ini`, junto al `.exe`; por defecto `localhost:3306`, usuario `root`, clave `12341234`, base `iqual`). **No crea las tablas**: tenés que cargar `03_ModeloSQL_Grupo06.sql` y después `04_DatosSQL_Grupo06.sql` vos, con el paso 3 de esta guía (el 05 no lo necesita la app: es para la defensa de Bases de Datos). Si MySQL falla (servidor apagado, clave mal, base vacía o falta el driver), la app **avisa el motivo y no abre** (no tiene base de respaldo: ver «Probar la conexión antes de la demo» en `GUIA_CONEXION_APP_MYSQL.md`). El título de la ventana dice con qué driver está conectada: **· MySQL** o **· MySQL (ODBC)**; sin sufijo es que no conectó.
 
 - Cómo es `iqual.ini`, cómo saber qué motor se está usando y qué cambió en el código: `GUIA_CONEXION_APP_MYSQL.md`.
 - Cómo conseguir el driver en Windows (Qt MinGW no trae `QMYSQL`; el camino recomendado es ODBC): `GUIA_DRIVER_WINDOWS.md`. **Ese paso no está probado en Windows.**
@@ -166,7 +166,7 @@ La app **ya se conecta a MySQL** (lee `iqual.ini`, junto al `.exe`; por defecto 
 - Ronda de cierre (19/11/2026): se corrigió el nombre de archivo que había quedado pegado («03… y 04…» como si fuera un solo archivo), el orden de carga 03 → 04 → 05, la sección 5 (ahora son 27 procedimientos con sus nombres reales; el archivo ya no trae `sp_prueba_error` ni llamadas de ejemplo al final), las cifras de usuarios (62) y el error 1050.
 - Que los `CALL` de la sección 5 devuelvan lo esperado no lo verifiqué: no hay MySQL ni MariaDB en mi entorno.
 - Los pasos de DBeaver y Workbench se mantienen como en la clase 006; no se pudieron probar con pantallas reales.
-- Las filas esperadas de los catálogos se contaron el 19/11/2026 contra `04_DatosSQL_Grupo00.sql` con una carga de prueba fuera de MySQL y coinciden con el script; en MariaDB o MySQL falta confirmarlas.
+- Las filas esperadas de los catálogos se contaron el 19/11/2026 contra `04_DatosSQL_Grupo06.sql` con una carga de prueba fuera de MySQL y coinciden con el script; en MariaDB o MySQL falta confirmarlas.
 
 ## Datos que faltan
 - `[COMPLETAR: versión de MySQL Server que instalaste (8.0.x) y si la carga del script dio 47 tablas]`

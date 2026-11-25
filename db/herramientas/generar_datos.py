@@ -3,7 +3,7 @@
 """
 generar_datos.py - PROYECTO IQUAL (SGE)
 
-Genera 04_DatosSQL_Grupo00.sql (MySQL) y 04_DatosSQL_Grupo00_sqlserver.sql (SQL Server 2005)
+Genera 04_DatosSQL_Grupo06.sql (MySQL) y 04_DatosSQL_Grupo06_sqlserver.sql (SQL Server 2005)
 a partir de los scripts actuales. Es determinista: siempre produce los mismos archivos.
 Usa solo la biblioteca estandar de Python 3.8 o mas nuevo (no hay que instalar nada).
 
@@ -22,7 +22,7 @@ Uso (en la carpeta donde estan los scripts):
     python generar_datos.py --mysql iqual_mysql.sql --sqlserver iqual_sqlserver.sql --salida .
     python generar_datos.py --resumen                      (muestra cuantas filas nuevas pone en cada tabla)
 
-Los nombres del grupo se cambian con --grupo (por defecto Grupo00).
+Los nombres del grupo se cambian con --grupo (por defecto Grupo06).
 """
 import argparse
 import os
@@ -886,7 +886,7 @@ def main():
     ap.add_argument("--mysql", default="iqual_mysql.sql")
     ap.add_argument("--sqlserver", default="iqual_sqlserver.sql")
     ap.add_argument("--salida", default=".")
-    ap.add_argument("--grupo", default="Grupo00")
+    ap.add_argument("--grupo", default="Grupo06")
     ap.add_argument("--resumen", action="store_true")
     a = ap.parse_args()
     try:

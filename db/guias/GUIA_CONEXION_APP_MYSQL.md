@@ -3,11 +3,11 @@
 La app usa solo MySQL. Si no puede conectar, avisa el motivo y deja la pantalla deshabilitada: no tiene base de respaldo. El título de la ventana termina en **· MySQL** (o **· MySQL (ODBC)**) cuando está conectada.
 
 ## Qué se probó y qué no
-- **Probado (Linux, Qt 6.4, MariaDB 10.11):** los scripts `03_ModeloSQL_Grupo00.sql` (47 tablas), `04_DatosSQL_Grupo00.sql` (62 usuarios) y `05_Backend_Grupo00.sql` (27 procedimientos) se cargan sin errores, en ese orden (CONTEXTO §22; dato que me pasaron); las consultas de la defensa y las de verificación corrieron sin errores en MariaDB en la ronda anterior (con los datos de entonces; con los 62 usuarios, ver `LEEME_BASE_DE_DATOS.md`); las 131 consultas que tiene el código de la app se validaron con la regla `ONLY_FULL_GROUP_BY` de MySQL 8; los tests automáticos que existían en la ronda anterior (Objetos, Tienda, Ed. Física, Higiene, Sectores, Préstamo, Mi cuenta, login) dieron 0 fallas con el driver `QMYSQL`; esos tests ya no se mantienen (CONTEXTO §23): hoy las pruebas de la app son los casos por pantalla.
+- **Probado (Linux, Qt 6.4, MariaDB 10.11):** los scripts `03_ModeloSQL_Grupo06.sql` (47 tablas), `04_DatosSQL_Grupo06.sql` (62 usuarios) y `05_Backend_Grupo06.sql` (27 procedimientos) se cargan sin errores, en ese orden (CONTEXTO §22; dato que me pasaron); las consultas de la defensa y las de verificación corrieron sin errores en MariaDB en la ronda anterior (con los datos de entonces; con los 62 usuarios, ver `LEEME_BASE_DE_DATOS.md`); las 131 consultas que tiene el código de la app se validaron con la regla `ONLY_FULL_GROUP_BY` de MySQL 8; los tests automáticos que existían en la ronda anterior (Objetos, Tienda, Ed. Física, Higiene, Sectores, Préstamo, Mi cuenta, login) dieron 0 fallas con el driver `QMYSQL`; esos tests ya no se mantienen (CONTEXTO §23): hoy las pruebas de la app son los casos por pantalla.
 - **No probado:** MySQL 8 de Oracle, SQL Server, Windows, ni el camino ODBC con *MySQL Connector/ODBC* (con el conector ODBC de MariaDB la app detecta un problema de textos y avisa, sin abrir). 🔶
 
 ## 1. Cargar la base (DBeaver)
-Seguí `GUIA_INSTALACION_MYSQL.md`, paso 3: ejecutar `03_ModeloSQL_Grupo00.sql` y después `04_DatosSQL_Grupo00.sql`, cada uno con **Alt+X** (el 03 ya crea la base `iqual`). El `05_Backend_Grupo00.sql` **no hace falta para la app**: es de la defensa de Bases de Datos. Comprobá que da **47** tablas.
+Seguí `GUIA_INSTALACION_MYSQL.md`, paso 3: ejecutar `03_ModeloSQL_Grupo06.sql` y después `04_DatosSQL_Grupo06.sql`, cada uno con **Alt+X** (el 03 ya crea la base `iqual`). El `05_Backend_Grupo06.sql` **no hace falta para la app**: es de la defensa de Bases de Datos. Comprobá que da **47** tablas.
 
 ## 2. Archivo `iqual.ini`
 Se crea solo, junto al programa, la primera vez que se abre la app:
@@ -52,7 +52,7 @@ La app **no tiene base de respaldo**: si no conecta, no se puede usar. Probala e
 - «No se pudo usar MySQL:» + el error (servidor apagado, clave mal, falta el driver, base vacía, driver ODBC que no compara bien los textos) + «Revisá iqual.ini y que el servidor esté encendido.»
 - «No se pudo abrir la base de datos. Revisá iqual.ini y que el servidor MySQL esté encendido.»
 
-Si falla en plena demo no hay otra base a la que cambiar: se puede seguir mostrando la base y los procedimientos desde DBeaver (`consultas_demo.sql`, `05_Backend_Grupo00.sql`). `[COMPLETAR: si el equipo prefiere llevar capturas de la app funcionando como respaldo]`
+Si falla en plena demo no hay otra base a la que cambiar: se puede seguir mostrando la base y los procedimientos desde DBeaver (`consultas_demo.sql`, `05_Backend_Grupo06.sql`). `[COMPLETAR: si el equipo prefiere llevar capturas de la app funcionando como respaldo]`
 
 El título de la ventana dice con qué driver está conectada: «· MySQL» (`QMYSQL`) o «· MySQL (ODBC)». Sin sufijo es que no conectó.
 

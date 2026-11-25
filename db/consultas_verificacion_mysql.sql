@@ -1,5 +1,5 @@
 -- PROYECTO IQUAL (SGE) - consultas de verificación (CONTEXTO_IQUAL v3.2) - versión MySQL 8
--- Se corren sobre la base iqual cargada con 03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql (47 tablas, 62 usuarios).
+-- Se corren sobre la base iqual cargada con 03_ModeloSQL_Grupo06.sql y 04_DatosSQL_Grupo06.sql (47 tablas, 62 usuarios).
 -- Versión para SQL Server 2005: consultas_verificacion_sqlserver.sql.
 -- Las reservas de ejemplo de sectores tienen fecha relativa a hoy (mañana y pasado mañana), por eso se usa DATE_ADD(CURDATE(), ...).
 -- Horas 'HH:mm' como texto (D14). Antes de empezar: USE iqual;

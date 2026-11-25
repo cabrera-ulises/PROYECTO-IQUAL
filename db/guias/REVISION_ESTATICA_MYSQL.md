@@ -1,11 +1,11 @@
-# REVISION_ESTATICA_MYSQL.md — revisión de `03_ModeloSQL_Grupo00.sql`, `04_DatosSQL_Grupo00.sql` y `05_Backend_Grupo00.sql`
+# REVISION_ESTATICA_MYSQL.md — revisión de `03_ModeloSQL_Grupo06.sql`, `04_DatosSQL_Grupo06.sql` y `05_Backend_Grupo06.sql`
 
 ## 0. Qué se ejecutó y qué no (estado al 19/11/2026)
 
 **Ejecutado de verdad (CONTEXTO §22; dato que me pasaron, no lo corrí yo en esta sesión):** en un **MariaDB 10.11** (compatible con MySQL 8, pero **no es** MySQL 8) con `ONLY_FULL_GROUP_BY` activada:
 
-- `03_ModeloSQL_Grupo00.sql` y `04_DatosSQL_Grupo00.sql` cargan sin errores: 47 tablas, 62 usuarios.
-- `05_Backend_Grupo00.sql` carga y crea los 27 procedimientos; hay 104 casos planificados en `06_PruebasSQL.xlsx`.
+- `03_ModeloSQL_Grupo06.sql` y `04_DatosSQL_Grupo06.sql` cargan sin errores: 47 tablas, 62 usuarios.
+- `05_Backend_Grupo06.sql` carga y crea los 27 procedimientos; hay 104 casos planificados en `06_PruebasSQL.xlsx`.
 - `consultas_demo.sql` (10 consultas) y `consultas_verificacion_mysql.sql` (28 sentencias) corrieron con 0 errores en la ronda anterior (recaudado 3500; 47 tablas).
 
 **Valores esperados (19/11/2026):** los comentarios de `consultas_demo.sql` y `consultas_verificacion_mysql.sql` traen la cantidad de filas esperada con los 62 usuarios (y los 21 controles de integridad en 0). Esos valores se calcularon con una carga de prueba fuera de MySQL y **no están confirmados con los datos ampliados en MariaDB ni en MySQL 8**. `[COMPLETAR: correr las consultas en MariaDB o MySQL y anotar si coinciden]`
@@ -24,7 +24,7 @@ Lo que sigue en las secciones 1 a 3 es **lectura del texto** (antes de que se ej
 | Chequeo | Cómo | Resultado |
 |---|---|---|
 | Cantidad de tablas | Se contaron los `CREATE TABLE` | 47. En MariaDB 10.11 se confirmó con la consulta 16 |
-| Columnas, nulabilidad, PK, UQ, FK, CHECK | Se comparó automáticamente con el script que había antes (ya no existe); hoy la referencia es `03_ModeloSQL_Grupo00.sql`, que además se contrastó con los diagramas (`INFORME_DIAGRAMAS.md`) | Sin diferencias en esa comparación |
+| Columnas, nulabilidad, PK, UQ, FK, CHECK | Se comparó automáticamente con el script que había antes (ya no existe); hoy la referencia es `03_ModeloSQL_Grupo06.sql`, que además se contrastó con los diagramas (`INFORME_DIAGRAMAS.md`) | Sin diferencias en esa comparación |
 | Datos de ejemplo | Comparación fila por fila de los `INSERT` de MySQL contra los de SQL Server (19/11/2026) | Sin diferencias (62 usuarios; salvo la expresión de fecha de las 28 reservas de sectores, que es la misma en cada motor) |
 | Orden de creación | Cada `REFERENCES` apunta a una tabla creada antes | Sin hallazgos (confirmado al cargar en MariaDB) |
 | Palabras reservadas de MySQL 8 | Se cruzaron nombres de tabla y columna contra la lista | Ninguna usada |
@@ -63,7 +63,7 @@ Las tablas se crean con `DEFAULT CHARSET=utf8mb4` y **sin `COLLATE`**, así que 
 | Opción | Qué implica | A favor | En contra |
 |---|---|---|---|
 | **A. Dejarlo como está** (recomendada) | Collation por defecto del servidor | No se cambia ningún script ya probado en MariaDB. Es el comportamiento habitual de MySQL. El login ya está protegido por el `LOWER()` de la app | No distingue tildes (`jose` = `josé`): con los datos de ejemplo no se nota |
-| B. `utf8mb4_bin` solo en `usuario.usuario_nick` | Una columna con `COLLATE utf8mb4_bin` | El login y el `UNIQUE` del nick distinguen tildes | Hay que modificar `03_ModeloSQL_Grupo00.sql` y volver a probarlo; solo cubre un campo; el resto sigue sin distinguir tildes |
+| B. `utf8mb4_bin` solo en `usuario.usuario_nick` | Una columna con `COLLATE utf8mb4_bin` | El login y el `UNIQUE` del nick distinguen tildes | Hay que modificar `03_ModeloSQL_Grupo06.sql` y volver a probarlo; solo cubre un campo; el resto sigue sin distinguir tildes |
 | C. `utf8mb4_bin` en todas las columnas de texto | Collation binaria en todo | Todo el texto se compara exacto (mayúsculas y tildes) | Se pierde el beneficio en emails y catálogos; cambia muchas líneas; más riesgo |
 | D. Collation explícita `utf8mb4_unicode_ci` en las tablas | Misma sensibilidad en todo el servidor, MySQL y MariaDB | Mismo comportamiento en MySQL 8 y MariaDB (la collation `0900` no existe en MariaDB y falla si se la pide: error 1273) | Hay que modificar el script; hoy no hace falta |
 
@@ -85,11 +85,11 @@ Ojo con una trampa: **si algún día se pone `COLLATE utf8mb4_0900_ai_ci` a mano
 
 | # | Archivo | Qué | Gravedad | Qué hacer |
 |---|---|---|---|---|
-| 1 | `05_Backend_Grupo00.sql` | **Obsoleto:** este hallazgo hablaba de `sp_recaudado_grupo`, que ya no existe (el 05 actual tiene 27 procedimientos). | — | Sin acción. |
-| 2 | `05_Backend_Grupo00.sql` | Las validaciones de negocio (por ejemplo rango de fechas invertido) salen con `SIGNAL SQLSTATE '45000'`, que el mismo `EXIT HANDLER FOR SQLEXCEPTION` devuelve como fila `ERROR`. | Informativa | Se explica en la defensa como «validación de negocio». Leído en el código, no ejecutado por mí. |
-| 3 | `05_Backend_Grupo00.sql` | El archivo usa `DELIMITER //`: solo funciona en clientes (Workbench, DBeaver con Alt+X), no se puede mandar con `mysql_query()` ni con Qt. | Informativa | Está documentado en la cabecera del archivo y en `GUIA_INSTALACION_MYSQL.md`. |
-| 4 | `03_ModeloSQL_Grupo00.sql` | **Cambió:** ahora trae `CREATE DATABASE IF NOT EXISTS iqual` y `USE iqual;` sin comentar, y borra las tablas antes de crearlas (se puede repetir). | Informativa | Las guías ya lo dicen. El `DELIMITER` solo está en el 05. |
-| 5 | `04_DatosSQL_Grupo00.sql` | **Obsoleto:** el marcador `-- DATOS DE EJEMPLO, REEMPLAZAR AL FINAL` ya no existe. | — | Para datos reales ver `COMO_COMPLETAR_DATOS_REALES.md`. |
+| 1 | `05_Backend_Grupo06.sql` | **Obsoleto:** este hallazgo hablaba de `sp_recaudado_grupo`, que ya no existe (el 05 actual tiene 27 procedimientos). | — | Sin acción. |
+| 2 | `05_Backend_Grupo06.sql` | Las validaciones de negocio (por ejemplo rango de fechas invertido) salen con `SIGNAL SQLSTATE '45000'`, que el mismo `EXIT HANDLER FOR SQLEXCEPTION` devuelve como fila `ERROR`. | Informativa | Se explica en la defensa como «validación de negocio». Leído en el código, no ejecutado por mí. |
+| 3 | `05_Backend_Grupo06.sql` | El archivo usa `DELIMITER //`: solo funciona en clientes (Workbench, DBeaver con Alt+X), no se puede mandar con `mysql_query()` ni con Qt. | Informativa | Está documentado en la cabecera del archivo y en `GUIA_INSTALACION_MYSQL.md`. |
+| 4 | `03_ModeloSQL_Grupo06.sql` | **Cambió:** ahora trae `CREATE DATABASE IF NOT EXISTS iqual` y `USE iqual;` sin comentar, y borra las tablas antes de crearlas (se puede repetir). | Informativa | Las guías ya lo dicen. El `DELIMITER` solo está en el 05. |
+| 5 | `04_DatosSQL_Grupo06.sql` | **Obsoleto:** el marcador `-- DATOS DE EJEMPLO, REEMPLAZAR AL FINAL` ya no existe. | — | Para datos reales ver `COMO_COMPLETAR_DATOS_REALES.md`. |
 
 No se encontraron errores de sintaxis y la carga en MariaDB 10.11 no dio errores. **Falta lo que esta revisión no puede dar: correrlos en MySQL 8.** Si al ejecutarlos aparece un error, copiá el mensaje completo (número y texto) y la línea que marca Workbench o DBeaver.
 
@@ -105,5 +105,5 @@ No se encontraron errores de sintaxis y la carga en MariaDB 10.11 no dio errores
 ## Datos que faltan
 
 - [COMPLETAR: collation real del servidor que se use (`SHOW VARIABLES LIKE 'collation_database';`)]
-- [COMPLETAR: resultado de cargar `03_ModeloSQL_Grupo00.sql`, `04_DatosSQL_Grupo00.sql` y `05_Backend_Grupo00.sql` en MySQL 8 de Oracle, si es el motor de la defensa]
+- [COMPLETAR: resultado de cargar `03_ModeloSQL_Grupo06.sql`, `04_DatosSQL_Grupo06.sql` y `05_Backend_Grupo06.sql` en MySQL 8 de Oracle, si es el motor de la defensa]
 - [COMPLETAR: si el profesor quiere que el login distinga tildes (en ese caso, opción B)]

@@ -21,7 +21,7 @@ No. Depende de la clave completa (venta y producto) y no se puede calcular desde
 Son datos derivados: se calculan con `SUM` y `COUNT` desde otras tablas. Si los guardáramos habría que actualizarlos a mano y podrían quedar mal. Por eso el `recaudado` es una elipse punteada en el Chen y no existe en el Codd. Regla vigente: donaciones más ventas **entregadas** del grupo (3500 con los datos de ejemplo).
 
 **7. ¿Qué es un procedimiento almacenado y cuáles hicieron?**
-Es código SQL guardado en la base que se ejecuta con `CALL`. Hicimos 27 en MySQL (`05_Backend_Grupo00.sql`): 15 funcionalidades (por ejemplo `sp_registrar_usuario`, `sp_prestar_equipo`, `sp_comprar_producto`, `sp_reservar_sector`), 9 reportes y auditoría (`sp_rep_…`), 2 versiones tuneadas de reportes pesados y 1 auxiliar. Las funcionalidades usan `DECLARE EXIT HANDLER FOR SQLEXCEPTION` y `GET DIAGNOSTICS` (como en la clase 006) y las reglas de negocio se rechazan con `SIGNAL SQLSTATE '45000'`. La app no los usa: se cargan a mano con Alt+X después de 03 y 04, y se pueden volver a correr.
+Es código SQL guardado en la base que se ejecuta con `CALL`. Hicimos 27 en MySQL (`05_Backend_Grupo06.sql`): 15 funcionalidades (por ejemplo `sp_registrar_usuario`, `sp_prestar_equipo`, `sp_comprar_producto`, `sp_reservar_sector`), 9 reportes y auditoría (`sp_rep_…`), 2 versiones tuneadas de reportes pesados y 1 auxiliar. Las funcionalidades usan `DECLARE EXIT HANDLER FOR SQLEXCEPTION` y `GET DIAGNOSTICS` (como en la clase 006) y las reglas de negocio se rechazan con `SIGNAL SQLSTATE '45000'`. La app no los usa: se cargan a mano con Alt+X después de 03 y 04, y se pueden volver a correr.
 
 **8. ¿Por qué `usuario.id_curso` admite NULL, y `horario_escolar` guarda el turno?**
 Solo los alumnos tienen curso; para los otros roles queda NULL (D5: la alternativa sería una tabla `alumno`, que no está en el contrato). El turno (Mañana/Tarde) se guarda en el horario como dato propio; si dependiera solo de la hora sería una dependencia transitiva, y por eso está anotado como duda D1 en la justificación.
@@ -34,7 +34,7 @@ La base no impide que un préstamo lo pida alguien que no es alumno (D8) ni dos 
 
 ## Para preguntarle a Linares (abiertas, 19/11/2026)
 
-1. **Número de grupo:** ya se le preguntó. Respuesta: **Grupo [COMPLETAR: número que informe Linares]**. Cuando lo tengas, corré `renombrar_grupo.sh` (ver `LEEME_BASE_DE_DATOS.md`, sección 4); hasta entonces los archivos se llaman `…_Grupo00…`.
+1. **Número de grupo:** respondido: somos el **Grupo 6** (Arce Thiago y Cabrera Ulises). Los archivos ya dicen `Grupo06`.
 2. **Esquemas en MySQL:** en SQL Server hay 7 esquemas (`seguridad`, `academico`, `objetos`, `instalaciones`, `tienda`, `equipos`, `deportes`). En MySQL un esquema es una base, y nosotros tenemos una sola (`iqual`) con las 47 tablas. ¿Alcanza con eso o quiere 7 bases en MySQL? [COMPLETAR: respuesta]
 3. **Catálogos con menos de 20 filas:** casi todos los catálogos tienen entre 2 y 14 filas (rol 4, turno 2, estado_venta 3, etc.). Si la consigna pide mínimo 20 filas por tabla, ¿vale para los catálogos o solo para las entidades? [COMPLETAR: respuesta]
 4. **Tablas temporales en el procedimiento tuneado:** `sp_rep_ventas_por_producto_tuneado` usa `CREATE TEMPORARY TABLE` (técnica de la clase 004). ¿Está bien usar tabla temporal, o prefiere que el tuning sea solo con índices y pre-agregado? [COMPLETAR: respuesta]

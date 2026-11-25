@@ -1,6 +1,6 @@
-# INFORME_DIAGRAMAS.md — 03_ModeloSQL_Grupo00.sql contra los diagramas Codd y Chen
+# INFORME_DIAGRAMAS.md — 03_ModeloSQL_Grupo06.sql contra los diagramas Codd y Chen
 
-Corrida del 19/11/2026 de `verificar_diagramas.py` (Python estándar, sin instalar nada) sobre los archivos de `paquete_v7.zip`: `03_ModeloSQL_Grupo00.sql` (el único script que importa: el 04 son datos), `Proyecto_IQUAL_Edgar_Codd.xml`, `Proyecto_IQUAL_Peter_Chen.xml`. Dio las mismas cifras que la corrida del 12/11 (47 tablas, 57 claves foráneas, 41 entidades, 51 rombos, 113 elipses) y código de salida 0. Cómo correrlo en Windows, parado en la carpeta con los tres archivos: `python verificar_diagramas.py` (o `py verificar_diagramas.py`). Devuelve código 0 si no hay diferencias.
+Corrida del 19/11/2026 de `verificar_diagramas.py` (Python estándar, sin instalar nada) sobre los archivos de `paquete_v7.zip`: `03_ModeloSQL_Grupo06.sql` (el único script que importa: el 04 son datos), `Proyecto_IQUAL_Edgar_Codd.xml`, `Proyecto_IQUAL_Peter_Chen.xml`. Dio las mismas cifras que la corrida del 12/11 (47 tablas, 57 claves foráneas, 41 entidades, 51 rombos, 113 elipses) y código de salida 0. Cómo correrlo en Windows, parado en la carpeta con los tres archivos: `python verificar_diagramas.py` (o `py verificar_diagramas.py`). Devuelve código 0 si no hay diferencias.
 
 **Resultado: sin diferencias reales. No hace falta entregar XML corregidos.**
 
@@ -51,7 +51,7 @@ Nota: `recaudado` en GRUPO_BUFFET es una elipse punteada (dato derivado, duda D4
 ## Desvíos
 
 - El pedido describía el Chen como un diagrama que no dibuja las 24 tablas de catálogo como entidades. El diagrama vigente (y la regla 7 de `justificacion_3FN.md`) hace otra cosa: solo `anio` y `division` pasan a multivalorados y los otros 22 catálogos son entidades. Verifiqué el diagrama contra esa regla y no lo cambié. Si el profesor pide sacar todos los catálogos, hay que decidirlo y se rehace el Chen (y el script cambia el conjunto `MULTIVALORADAS`).
-- El script lee el SQL de MySQL (`03_ModeloSQL_Grupo00.sql`), no el de SQL Server; el 19/11/2026 se comparó además el 03 de SQL Server contra el de MySQL y tienen las mismas 47 tablas, columnas y 57 claves foráneas (ver `REVISION_ESTATICA_SQLSERVER.md`).
+- El script lee el SQL de MySQL (`03_ModeloSQL_Grupo06.sql`), no el de SQL Server; el 19/11/2026 se comparó además el 03 de SQL Server contra el de MySQL y tienen las mismas 47 tablas, columnas y 57 claves foráneas (ver `REVISION_ESTATICA_SQLSERVER.md`).
 - No entregué XML corregidos porque no hubo diferencias.
 
 ## Datos que faltan

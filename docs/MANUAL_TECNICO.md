@@ -103,19 +103,19 @@ Toda acción relevante (alta, baja, cambio de estado, intento fallido) termina e
 ### 3.2 Scripts
 | Script | Para qué sirve | Quién lo usa |
 |---|---|---|
-| `03_ModeloSQL_Grupo00.sql` | Crea la base `iqual` y las 47 tablas | Se carga a mano en DBeaver o Workbench |
-| `04_DatosSQL_Grupo00.sql` | Carga los datos de demostración (62 usuarios) | Se carga a mano, después del 03 |
-| `05_Backend_Grupo00.sql` | Crea los 27 procedimientos almacenados (usa `DELIMITER`, se carga aparte) | Se carga a mano, después del 04 |
-| `03_ModeloSQL_Grupo00_sqlserver.sql` y `04_DatosSQL_Grupo00_sqlserver.sql` | Versión para SQL Server 2005 | Entrega del proyecto; **no se probó** |
+| `03_ModeloSQL_Grupo06.sql` | Crea la base `iqual` y las 47 tablas | Se carga a mano en DBeaver o Workbench |
+| `04_DatosSQL_Grupo06.sql` | Carga los datos de demostración (62 usuarios) | Se carga a mano, después del 03 |
+| `05_Backend_Grupo06.sql` | Crea los 27 procedimientos almacenados (usa `DELIMITER`, se carga aparte) | Se carga a mano, después del 04 |
+| `03_ModeloSQL_Grupo06_sqlserver.sql` y `04_DatosSQL_Grupo06_sqlserver.sql` | Versión para SQL Server 2005 | Entrega del proyecto; **no se probó** |
 | `consultas_demo.sql` | Consultas para la demostración | A mano |
 | `consultas_verificacion_mysql.sql` | Consultas para verificar la carga | A mano |
 
 La app no trae ningún script embebido: no crea tablas ni datos.
 
-**Importante:** la app **no crea las tablas en MySQL**. Si la base `iqual` existe pero está vacía, la app avisa que hay que cargar `03_ModeloSQL_Grupo00.sql` y `04_DatosSQL_Grupo00.sql` desde DBeaver.
+**Importante:** la app **no crea las tablas en MySQL**. Si la base `iqual` existe pero está vacía, la app avisa que hay que cargar `03_ModeloSQL_Grupo06.sql` y `04_DatosSQL_Grupo06.sql` desde DBeaver.
 
 ### 3.3 Procedimientos almacenados
-`db/05_Backend_Grupo00.sql` crea **27 rutinas**: 15 procedimientos de funcionalidades (registrar log y usuario, objetos y reclamos, préstamo y devolución de equipos, reservas de sectores, higiene, compras y donaciones, inscripciones de Educación Física), 9 de reportes y auditoría, 2 versiones tuneadas de reportes y el auxiliar `sp_aux_solo_digitos`. (El script también crea y borra al final `sp_aux_crear_indices`, que solo sirve para crear índices al cargarlo.) Cada procedimiento devuelve un único resultado: `estado = 'OK'` con los ids, o `estado = 'ERROR'` con `codigo_sql` y `descripcion_error`.
+`db/05_Backend_Grupo06.sql` crea **27 rutinas**: 15 procedimientos de funcionalidades (registrar log y usuario, objetos y reclamos, préstamo y devolución de equipos, reservas de sectores, higiene, compras y donaciones, inscripciones de Educación Física), 9 de reportes y auditoría, 2 versiones tuneadas de reportes y el auxiliar `sp_aux_solo_digitos`. (El script también crea y borra al final `sp_aux_crear_indices`, que solo sirve para crear índices al cargarlo.) Cada procedimiento devuelve un único resultado: `estado = 'OK'` con los ids, o `estado = 'ERROR'` con `codigo_sql` y `descripcion_error`.
 
 **La app llama solo a `sp_registrar_log`** (`CALL sp_registrar_log(...)` desde `registrarLog`, para el log de auditoría). Si ese `CALL` falla, hace el `INSERT` en `log_auditoria` directamente. Las demás consultas de la app están escritas en `mainwindow.cpp`; los otros 26 procedimientos se usan desde la base (DBeaver o Workbench).
 
@@ -160,7 +160,7 @@ Todas van en la sección `[base]`. Los valores de usuario y clave **no se escrib
 - Con ODBC arma la cadena de conexión `DRIVER={...};SERVER=...;PORT=...;DATABASE=...`.
 - `nombreDriverOdbc` busca en el registro de Windows (`HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI\ODBC Drivers`) un driver de MySQL y prefiere el que dice «Unicode». Se puede forzar con `odbc_driver`.
 - Después de conectar ejecuta `SET NAMES utf8mb4` para que las tildes y la ñ viajen bien.
-- Si la base existe pero no tiene la tabla `usuario`, devuelve el error «La base … existe pero está vacía. Cargá 03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql desde DBeaver.»
+- Si la base existe pero no tiene la tabla `usuario`, devuelve el error «La base … existe pero está vacía. Cargá 03_ModeloSQL_Grupo06.sql y 04_DatosSQL_Grupo06.sql desde DBeaver.»
 
 ### 4.4 Autochequeo con ODBC
 Con ODBC, la app hace una consulta de prueba (`SELECT COUNT(*) FROM rol WHERE nombre_rol = :nombre` buscando «Alumno»). Si devuelve menos de 1, entiende que el driver no está pasando bien los parámetros, cierra la conexión y devuelve un error que sugiere instalar MySQL Connector/ODBC o usar el driver `QMYSQL`. No hay otra base a la que pasar.
@@ -188,7 +188,7 @@ Si `abrirMySql` falla (servidor apagado, clave mal, base vacía, falta el driver
 2. Elegir el kit Desktop Qt 6.12.0 MinGW 64-bit.
 3. Compilar y ejecutar el objetivo **`PROYECTO_IQUAL`**.
 4. En la primera ejecución se crea `iqual.ini` **junto al .exe**, no junto al código.
-5. Antes de abrir la app: levantar el servidor MySQL, cargar `03_ModeloSQL_Grupo00.sql`, `04_DatosSQL_Grupo00.sql` y `05_Backend_Grupo00.sql` y revisar `iqual.ini` (`GUIA_INSTALACION_MYSQL.md` y `GUIA_CONEXION_APP_MYSQL.md`).
+5. Antes de abrir la app: levantar el servidor MySQL, cargar `03_ModeloSQL_Grupo06.sql`, `04_DatosSQL_Grupo06.sql` y `05_Backend_Grupo06.sql` y revisar `iqual.ini` (`GUIA_INSTALACION_MYSQL.md` y `GUIA_CONEXION_APP_MYSQL.md`).
 
 ### 5.3 Observaciones sobre el proyecto CMake
 - `CMakeLists.txt` compila solo `main.cpp`, `mainwindow.*`, `ventanadetalle.*`, `ventanaproducto.*`, `ventanainicio.*` y `recursos.qrc`, y enlaza `Qt6::Widgets` y `Qt6::Sql`. Ya no hay ejecutables de prueba aparte (`harness*`): las pruebas de la app son los casos por pantalla de `docs/pruebas` y los 104 casos de los procedimientos (`db/06_PruebasSQL.xlsx`).
@@ -223,7 +223,7 @@ Recursos embebidos (`recursos.qrc`): `/imagenes` (logo y GIF del splash, sin uso
 - La app compila con Qt 6.12 MinGW 64-bit (Windows).
 
 **No probado:**
-- MySQL 8 de Oracle (la base usada fue MariaDB 10.11) y SQL Server 2005 (`03_ModeloSQL_Grupo00_sqlserver.sql`, solo revisado por lectura).
+- MySQL 8 de Oracle (la base usada fue MariaDB 10.11) y SQL Server 2005 (`03_ModeloSQL_Grupo06_sqlserver.sql`, solo revisado por lectura).
 - Rendimiento con muchos usuarios simultáneos (RNF03).
 - De los 337 casos de prueba por pantalla se probaron 306 (285 OK y 21 con observación); 31 quedaron sin probar. De los 104 casos planificados de la base, 80 se ejecutaron a mano. El resultado de cada caso está en `docs/CASOS_PRUEBA_CONSOLIDADO.md` (columna «Resultado»).
 
@@ -264,7 +264,7 @@ ERR-01, 02, 03, 05, 06, 07 ; E4-01, 02, 03, 11 ; E-01, 02, 03 . En la app v7  se
 
 ## 9. Datos de demostración
 
-Los usuarios, claves y PIN de demostración **no se escriben acá**: están en el script de datos (`03_ModeloSQL_Grupo00.sql y 04_DatosSQL_Grupo00.sql`) y en `GUIA_CONEXION_APP_MYSQL.md`. Resumen de lo que hay cargado : usuarios `alumno1`, `alumno2`, `profe1`, `preceptor1` y `maestranza1`; objetos perdidos de ejemplo; el grupo «Viaje de Estudios 4to 1ra» con tres productos; un equipo prestado; un tablero fuera de servicio; 20 ofertas de Educación Física.
+Los usuarios, claves y PIN de demostración **no se escriben acá**: están en el script de datos (`03_ModeloSQL_Grupo06.sql y 04_DatosSQL_Grupo06.sql`) y en `GUIA_CONEXION_APP_MYSQL.md`. Resumen de lo que hay cargado : usuarios `alumno1`, `alumno2`, `profe1`, `preceptor1` y `maestranza1`; objetos perdidos de ejemplo; el grupo «Viaje de Estudios 4to 1ra» con tres productos; un equipo prestado; un tablero fuera de servicio; 20 ofertas de Educación Física.
 
 **Reservas de sectores:** el script de datos las carga con fechas relativas a hoy (`DATE_ADD(CURDATE(), INTERVAL 1 DAY)` y `INTERVAL 2 DAY`), así que siempre aparecen como futuras.
 
